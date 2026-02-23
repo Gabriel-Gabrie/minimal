@@ -827,26 +827,26 @@
                 <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Preferences</div>
                 <div class="bg-zinc-900 rounded-3xl overflow-hidden">
 
-                    <!-- Income Types accordion -->
-                    <button onclick="toggleIncomeAccordion()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
-                        <div class="w-9 h-9 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 text-base">💰</div>
-                        <div class="flex-1 text-left">
-                            <div class="font-semibold text-sm">Income Types</div>
-                            <div id="income-type-count" class="text-[11px] text-zinc-500 mt-0.5"></div>
+                    <!-- Budget Categories accordion -->
+                    <button onclick="toggleCategoryEditorAccordion()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
+                        <div class="w-9 h-9 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0">
+                            <svg width="16" height="16" fill="none" stroke="#a1a1aa" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
                         </div>
-                        <svg id="income-acc-chevron" class="acc-chevron w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+                        <div class="flex-1 text-left">
+                            <div class="font-semibold text-sm">Budget Categories</div>
+                            <div id="cat-editor-count" class="text-[11px] text-zinc-500 mt-0.5"></div>
+                        </div>
+                        <svg id="cat-editor-chevron" class="acc-chevron w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
                     </button>
-                    <div class="acc-body" id="income-acc-body">
-                        <div>
-                            <div class="border-t border-zinc-800">
-                                <div id="income-types-list"></div>
-                                <button onclick="addIncomeTypeInline()" class="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-zinc-800/60 transition-colors group border-t border-zinc-800">
-                                    <div class="w-7 h-7 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
-                                        <svg class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                                    </div>
-                                    <span class="text-sm text-zinc-500 group-hover:text-emerald-400 transition-colors">Add income type</span>
-                                </button>
-                            </div>
+                    <div class="acc-body" id="cat-editor-body">
+                        <div class="border-t border-zinc-800">
+                            <div id="category-editor-list"></div>
+                            <button onclick="addCategoryInline()" class="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-zinc-800/60 transition-colors group border-t border-zinc-800">
+                                <div class="w-7 h-7 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
+                                    <svg class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                                </div>
+                                <span class="text-sm text-zinc-500 group-hover:text-emerald-400 transition-colors">Add category</span>
+                            </button>
                         </div>
                     </div>
 
@@ -1050,11 +1050,10 @@
 
                     <!-- Take the Tour -->
                     <button onclick="tutOpen(); hideDataModal();" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors group">
-                        <div class="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0 group-hover:bg-violet-500/25 transition-colors">
-                            <svg width="17" height="17" fill="none" stroke="#a78bfa" stroke-width="2" viewBox="0 0 24 24">
+                        <div class="w-9 h-9 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0 group-hover:bg-sky-500/25 transition-colors">
+                            <svg width="17" height="17" fill="none" stroke="#38bdf8" stroke-width="2" viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10"/>
-                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                <polygon points="10 8 16 12 10 16 10 8" fill="#38bdf8" stroke="none"/>
                             </svg>
                         </div>
                         <div class="flex-1 text-left">
@@ -1098,18 +1097,19 @@
         let _editingTxIdx = null;
         let _editingGoalIdx = null;
 
-        let mainEmojis = { "Food":"🍔","Living":"🏠","Personal":"👤","Health":"🩺","Transportation":"🚗","Debt":"💳","Savings":"🏦","Banking":"🏛️" };
-        let incomeCats = ["Salary","Freelance","Investments","Gifts","Other"];
+        let mainEmojis = { "Income":"💵","Food":"🍔","Household":"🏠","Personal":"👤","Health":"🩺","Transportation":"🚗","Debt":"💳","Savings":"🏦","Banking":"🏛️" };
+        let incomeCats = ["Salary","Freelance","Investments","Gifts","Other"]; // legacy — now derived from expenseCategories['Income']
 
         const defaultCategories = {
-            "Food": ["Groceries", "Restaurants/Coffee"],
-            "Living": ["Rent/Mortgage", "Utilities", "Internet"],
-            "Personal": ["Phone Plan", "Subscriptions", "Entertainment", "Education", "Grooming/Haircut", "Laundry"],
-            "Health": ["Supplements", "Medical", "Training"],
+            "Income":         ["Salary", "Freelance", "Investments"],
+            "Food":           ["Groceries", "Restaurants/Coffee"],
+            "Personal":       ["Phone Plan", "Subscriptions", "Entertainment", "Education", "Grooming/Haircut", "Laundry"],
+            "Household":      ["Rent/Mortgage", "Utilities", "Internet"],
             "Transportation": ["Car Payment", "Auto Insurance", "Gas/Charging", "Maintenance", "Parking/Tolls"],
-            "Debt": ["Student Loans"],
-            "Savings": ["Emergency Fund", "Tuition"],
-            "Banking": ["Bank Fees", "Transfers", "Cash Withdrawal"]
+            "Health":         ["Supplements", "Medical", "Training"],
+            "Banking":        ["Bank Fees", "Transfers", "Cash Withdrawal"],
+            "Debt":           ["Student Loans"],
+            "Savings":        ["Emergency Fund", "Tuition"],
         };
 
         /* ── Persistence helpers ─────────────────────── */
@@ -1119,7 +1119,8 @@
         function saveData() {
             if (_demoMode) return; // never persist demo data
             const snap = {
-                transactions, expenseCategories, monthlyBudgets, goals, incomeCats
+                transactions, expenseCategories, monthlyBudgets, goals
+                // incomeCats is now derived from expenseCategories['Income'] — not saved separately
             };
             // Always write to localStorage as offline cache
             Object.entries(snap).forEach(([k, v]) => localStorage.setItem(k, JSON.stringify(v)));
@@ -1143,6 +1144,35 @@
             transactions      = d.transactions      || [];
             incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
             selectedBudgetMonth = getCurrentMonthKey();
+
+            // ── Migration 1: "Living" → "Household" ────────────────────────
+            if ('Living' in expenseCategories && !('Household' in expenseCategories)) {
+                const rebuilt = {};
+                Object.keys(expenseCategories).forEach(k => {
+                    rebuilt[k === 'Living' ? 'Household' : k] = expenseCategories[k];
+                });
+                expenseCategories = rebuilt;
+                Object.keys(monthlyBudgets).forEach(m => {
+                    if (monthlyBudgets[m]['Living']) {
+                        monthlyBudgets[m]['Household'] = monthlyBudgets[m]['Living'];
+                        delete monthlyBudgets[m]['Living'];
+                    }
+                });
+                transactions.forEach(t => {
+                    if (t.type === 'expense' && t.mainCategory === 'Living') t.mainCategory = 'Household';
+                });
+            }
+
+            // ── Migration 2: Inject Income as first category ────────────────
+            if (!('Income' in expenseCategories)) {
+                const incItems = (incomeCats && incomeCats.length)
+                    ? incomeCats.slice()
+                    : ["Salary", "Freelance", "Investments"];
+                expenseCategories = { "Income": incItems, ...expenseCategories };
+            }
+
+            // ── Migration 3: Keep incomeCats in sync (derived) ─────────────
+            incomeCats = expenseCategories['Income'] || [];
         }
 
         function loadData() {
@@ -1225,6 +1255,13 @@
         function calculateSpentInMonth(monthKey, main, sub = null) {
             return transactions.filter(t => t.type === 'expense' && !t.excluded && t.date.startsWith(monthKey) && (!main || t.mainCategory === main) && (!sub || t.subCategory === sub))
                 .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        }
+
+        function calculateIncomeInMonth(monthKey, item = null) {
+            return transactions
+                .filter(t => t.type === 'income' && !t.excluded && t.date.startsWith(monthKey)
+                          && (!item || t.mainCategory === item))
+                .reduce((s, t) => s + parseFloat(t.amount), 0);
         }
 
         function calculateGoalProgress(linkedSub) {
@@ -1537,9 +1574,11 @@
             const lbl = document.getElementById('tx-filter-label');
             if (lbl) lbl.textContent = LABELS[txFilter] || 'All';
             if (btn) {
-                const active = txFilter !== 'all';
-                btn.className = 'shrink-0 flex items-center gap-1 px-3 py-3 rounded-2xl text-xs font-semibold transition-colors '
-                    + (active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800');
+                const activeClass =
+                    txFilter === 'expense' ? 'bg-rose-500/20 text-rose-400' :
+                    txFilter === 'income'  ? 'bg-emerald-500/20 text-emerald-400' :
+                                            'bg-zinc-900 text-zinc-400 hover:bg-zinc-800';
+                btn.className = 'shrink-0 flex items-center gap-1 px-3 py-3 rounded-2xl text-xs font-semibold transition-colors ' + activeClass;
             }
         }
 
@@ -1881,40 +1920,58 @@
             // ── Normal state: budget exists ───────────────────────────────
             monthlyBudgets[selectedBudgetMonth] = monthlyBudgets[selectedBudgetMonth] || {};
 
-            // Compute overall totals for summary card
-            let grandSpent = 0, grandBudget = 0;
-            Object.keys(expenseCategories).forEach(main => {
-                grandSpent += calculateSpentInMonth(selectedBudgetMonth, main);
-                expenseCategories[main].forEach(sub => {
-                    monthBudgets[main] = monthBudgets[main] || {};
-                    grandBudget += monthBudgets[main][sub] || 0;
+            // ── Zero-Sum Budget Balancer ───────────────────────────────────
+            const incomePlanned = Object.values(monthBudgets['Income'] || {})
+                .reduce((s, v) => s + (v || 0), 0);
+            let expBudgeted = 0;
+            Object.keys(expenseCategories).forEach(cat => {
+                if (cat === 'Income') return;
+                expenseCategories[cat].forEach(item => {
+                    expBudgeted += (monthBudgets[cat] || {})[item] || 0;
                 });
             });
-            const grandUtil = grandBudget > 0 ? Math.min(150, Math.round(grandSpent / grandBudget * 100)) : 0;
-            const summaryColor = grandUtil > 100 ? '#ef4444' : grandUtil > 80 ? '#f59e0b' : '#10b981';
-            const summaryTextColor = grandUtil > 100 ? 'text-rose-400' : grandUtil > 80 ? 'text-amber-400' : 'text-emerald-400';
-            const summaryBadgeBg = grandUtil > 100 ? 'bg-rose-500/20 text-rose-400' : grandUtil > 80 ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400';
+            const balance = incomePlanned - expBudgeted;
+            const balPct  = incomePlanned > 0 ? Math.min(100, Math.round(expBudgeted / incomePlanned * 100)) : 0;
+            const balColor    = balance === 0 ? '#10b981' : balance > 0 ? '#f59e0b' : '#ef4444';
+            const balBadgeCls = balance === 0 ? 'bg-emerald-500/20 text-emerald-400'
+                              : balance > 0   ? 'bg-amber-500/20 text-amber-400'
+                              :                 'bg-rose-500/20 text-rose-400';
+            const balLabel    = balance === 0 ? 'Balanced ✓'
+                              : balance > 0   ? `Unallocated`
+                              :                 `Over Budget`;
+            const balSign     = balance > 0 ? '+' : '';
 
             const summaryEl = document.getElementById('budget-summary');
             if (summaryEl) {
                 summaryEl.innerHTML = `<div class="bg-zinc-900 rounded-3xl p-5">
-                    <div class="flex justify-between items-start mb-4">
+                    <div class="text-[9px] font-black tracking-[.12em] text-zinc-500 uppercase mb-4">Budget Balance</div>
+                    <div class="flex justify-between items-end mb-4">
                         <div>
-                            <div class="text-[9px] font-black tracking-[.12em] text-zinc-500 uppercase mb-1">Month Budget Health</div>
-                            <div class="text-2xl font-semibold tracking-tight">$${grandSpent.toFixed(2)} <span class="text-zinc-600 text-lg">/ $${grandBudget.toFixed(2)}</span></div>
+                            <div class="text-[10px] text-zinc-500 mb-1">Planned Income</div>
+                            <div class="text-xl font-semibold text-emerald-400 tabular-nums">$${incomePlanned.toFixed(2)}</div>
                         </div>
-                        <div class="${summaryBadgeBg} text-sm font-bold px-3 py-1.5 rounded-full">${grandUtil}%</div>
+                        <div class="text-right">
+                            <div class="text-[10px] text-zinc-500 mb-1">Expenses Budgeted</div>
+                            <div class="text-xl font-semibold text-zinc-200 tabular-nums">$${expBudgeted.toFixed(2)}</div>
+                        </div>
                     </div>
-                    <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
-                        <div class="h-full rounded-full transition-all duration-700" style="width:${Math.min(100,grandUtil)}%;background:${summaryColor}"></div>
+                    <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-3">
+                        <div class="h-full rounded-full transition-all duration-700" style="width:${balPct}%;background:${balColor}"></div>
+                    </div>
+                    <div class="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-zinc-800/60">
+                        <div class="text-xs text-zinc-500">${balLabel}</div>
+                        <div class="${balBadgeCls} text-xs font-bold tabular-nums">${balSign}$${Math.abs(balance).toFixed(2)}</div>
                     </div>
                 </div>`;
             }
 
             let html = '';
             Object.keys(expenseCategories).forEach(main => {
+                const isIncome = main === 'Income';
                 const subs = expenseCategories[main];
-                let mainSpent = calculateSpentInMonth(selectedBudgetMonth, main);
+                const mainActual = isIncome
+                    ? calculateIncomeInMonth(selectedBudgetMonth)
+                    : calculateSpentInMonth(selectedBudgetMonth, main);
                 let mainBudgetTotal = 0;
                 let subHTML = '';
 
@@ -1922,15 +1979,30 @@
                     monthBudgets[main] = monthBudgets[main] || {};
                     const budget = monthBudgets[main][sub] || 0;
                     mainBudgetTotal += budget;
-                    const spent = calculateSpentInMonth(selectedBudgetMonth, main, sub);
-                    const subPct      = budget > 0 ? Math.round(spent / budget * 100) : 0;
-                    const subOver     = subPct > 100;
-                    const subBarColor = subOver ? '#ef4444' : subPct > 80 ? '#f59e0b' : '#10b981';
-                    const subBarWidth = Math.min(100, subPct); // bar stays 0-100% wide
-                    const subOverCls  = subOver ? ' budget-bar-over' : '';
-                    const subBadge    = subOver
-                        ? `<span class="text-[9px] font-bold text-rose-400 bg-rose-500/15 px-1.5 py-0.5 rounded-full">${subPct}%</span>`
-                        : '';
+                    const actual = isIncome
+                        ? calculateIncomeInMonth(selectedBudgetMonth, sub)
+                        : calculateSpentInMonth(selectedBudgetMonth, main, sub);
+                    const subPct  = budget > 0 ? Math.round(actual / budget * 100) : 0;
+                    let subBarColor, subOverCls, subBadge;
+                    if (isIncome) {
+                        // For income: reaching 100% = goal (emerald). Under = amber/rose.
+                        subBarColor = subPct >= 100 ? '#10b981' : subPct >= 50 ? '#f59e0b' : '#ef4444';
+                        subOverCls  = '';
+                        subBadge    = subPct >= 100
+                            ? `<span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full">${subPct}%</span>`
+                            : '';
+                    } else {
+                        const subOver = subPct > 100;
+                        subBarColor = subOver ? '#ef4444' : subPct > 80 ? '#f59e0b' : '#10b981';
+                        subOverCls  = subOver ? ' budget-bar-over' : '';
+                        subBadge    = subOver
+                            ? `<span class="text-[9px] font-bold text-rose-400 bg-rose-500/15 px-1.5 py-0.5 rounded-full">${subPct}%</span>`
+                            : '';
+                    }
+                    const subBarWidth = Math.min(100, subPct);
+                    const amtLabel = isIncome
+                        ? `$${actual.toFixed(2)} earned / $${budget.toFixed(2)} planned`
+                        : `$${actual.toFixed(2)} / $${budget.toFixed(2)}`;
 
                     subHTML += `<div class="budget-item-row py-3.5 border-b border-zinc-800/60 last:border-none" data-main="${main.replace(/"/g,'&quot;')}" data-sub="${sub.replace(/"/g,'&quot;')}">
                         <div class="flex justify-between items-center mb-2">
@@ -1939,7 +2011,7 @@
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
                                 ${subBadge}
-                                <div class="budget-item-amount text-xs cursor-pointer hover:text-emerald-400 transition-colors tabular-nums text-zinc-400">$${spent.toFixed(2)} / $${budget.toFixed(2)}</div>
+                                <div class="budget-item-amount text-xs cursor-pointer hover:text-emerald-400 transition-colors tabular-nums text-zinc-400">${amtLabel}</div>
                                 <button class="budget-item-delete text-zinc-700 hover:text-rose-400 transition-colors w-5 h-5 flex items-center justify-center shrink-0 text-lg">×</button>
                             </div>
                         </div>
@@ -1949,22 +2021,32 @@
                     </div>`;
                 });
 
-                const mainPercent = mainBudgetTotal > 0 ? Math.round(mainSpent / mainBudgetTotal * 100) : 0;
-                const mainOver     = mainPercent > 100;
-                const mainBarColor = mainOver ? '#ef4444' : mainPercent > 80 ? '#f59e0b' : '#10b981';
-                const mainOverCls  = mainOver ? ' budget-bar-over' : '';
-                const mainStatusCls = mainOver ? 'text-rose-400' : mainPercent > 80 ? 'text-amber-400' : 'text-emerald-400';
-                const mainBadgeBg = mainOver ? 'bg-rose-500/15 text-rose-400' : mainPercent > 80 ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400';
+                const mainPercent = mainBudgetTotal > 0 ? Math.round(mainActual / mainBudgetTotal * 100) : 0;
+                let mainBarColor, mainOverCls, mainBadgeBg;
+                if (isIncome) {
+                    mainBarColor = mainPercent >= 100 ? '#10b981' : mainPercent >= 50 ? '#f59e0b' : '#ef4444';
+                    mainOverCls  = '';
+                    mainBadgeBg  = mainPercent >= 100 ? 'bg-emerald-500/15 text-emerald-400' : mainPercent >= 50 ? 'bg-amber-500/15 text-amber-400' : 'bg-rose-500/15 text-rose-400';
+                } else {
+                    const mainOver = mainPercent > 100;
+                    mainBarColor = mainOver ? '#ef4444' : mainPercent > 80 ? '#f59e0b' : '#10b981';
+                    mainOverCls  = mainOver ? ' budget-bar-over' : '';
+                    mainBadgeBg  = mainOver ? 'bg-rose-500/15 text-rose-400' : mainPercent > 80 ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400';
+                }
+                const mainAmtLabel = isIncome
+                    ? `$${mainActual.toFixed(2)}<span class="text-zinc-700"> / $${mainBudgetTotal.toFixed(2)}</span>`
+                    : `$${mainActual.toFixed(2)}<span class="text-zinc-700"> / $${mainBudgetTotal.toFixed(2)}</span>`;
 
                 html += `<div class="bg-zinc-900 rounded-3xl overflow-hidden">
                     <div class="px-5 pt-5 pb-4">
                         <div class="flex justify-between items-center mb-1">
                             <div class="flex items-center gap-3">
-                                <span class="text-2xl">${mainEmojis[main]}</span>
+                                <span class="text-2xl">${mainEmojis[main] || '📂'}</span>
                                 <div class="font-semibold">${main}</div>
+                                ${isIncome ? '<span class="text-[9px] font-black tracking-widest text-emerald-600 uppercase">Income</span>' : ''}
                             </div>
                             <div class="flex items-center gap-2">
-                                <div class="text-sm tabular-nums text-zinc-400">$${mainSpent.toFixed(2)}<span class="text-zinc-700"> / $${mainBudgetTotal.toFixed(2)}</span></div>
+                                <div class="text-sm tabular-nums text-zinc-400">${mainAmtLabel}</div>
                                 <div class="${mainBadgeBg} text-[10px] font-bold px-2 py-0.5 rounded-full">${mainPercent}%</div>
                             </div>
                         </div>
@@ -1976,7 +2058,7 @@
                         ${subHTML}
                     </div>
                     <div class="px-5 pb-5">
-                        <button class="add-budget-item-btn w-full text-emerald-500 text-xs font-semibold py-2.5 border border-dashed border-zinc-800 hover:border-emerald-500/50 rounded-2xl transition-colors" data-main="${main.replace(/"/g,'&quot;')}">+ Add budget item</button>
+                        <button class="add-budget-item-btn w-full text-emerald-500 text-xs font-semibold py-2.5 border border-dashed border-zinc-800 hover:border-emerald-500/50 rounded-2xl transition-colors" data-main="${main.replace(/"/g,'&quot;')}">+ Add ${isIncome ? 'income source' : 'budget item'}</button>
                     </div>
                 </div>`;
             });
@@ -2869,7 +2951,7 @@ Transactions using it will stay.`)) {
                     saveBtn.textContent = 'Save Income';
                 }
                 incSelect.innerHTML = '';
-                incomeCats.forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; incSelect.appendChild(opt); });
+                (expenseCategories['Income'] || incomeCats).forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; incSelect.appendChild(opt); });
             }
         }
 
@@ -3042,7 +3124,7 @@ Transactions using it will stay.`)) {
         function showDataModal() {
             document.getElementById('data-modal').classList.remove('hidden');
             renderSettingsStats();
-            renderIncomeTypesList();
+            renderCategoryEditorCount();
             loadNotifSettings();
             _updateThemePills();
             _updateHomeDot();
@@ -3093,107 +3175,234 @@ Transactions using it will stay.`)) {
                 </div>`).join('');
         }
 
-        /* ── Income types (inline editing, no prompt/confirm) ── */
-        function renderIncomeTypesList() {
-            setTimeout(renderIncomeTypeCount, 0);
-            const list = document.getElementById('income-types-list');
+        /* ── Budget Categories editor ─────────────────────────────────── */
+        function _syncIncomeCats() { incomeCats = expenseCategories['Income'] || incomeCats; }
+
+        function renderCategoryEditorCount() {
+            const el = document.getElementById('cat-editor-count');
+            const n  = Object.keys(expenseCategories).length;
+            if (el) el.textContent = `${n} categor${n !== 1 ? 'ies' : 'y'}`;
+        }
+
+        function renderCategoryEditor() {
+            renderCategoryEditorCount();
+            const list = document.getElementById('category-editor-list');
             if (!list) return;
-            list.innerHTML = incomeCats.map((cat, i) => {
-                const isLast = i === incomeCats.length - 1;
-                return `<div class="income-type-row" data-idx="${i}">
-                    <div class="flex items-center gap-4 px-5 py-4 ${!isLast ? 'border-b border-zinc-800' : ''}">
-                        <div class="w-9 h-9 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 text-base">💰</div>
-                        <div class="income-type-label flex-1 font-medium text-sm cursor-pointer hover:text-emerald-400 transition-colors" onclick="inlineRenameIncomeType(${i})">${cat}</div>
-                        <button onclick="deleteIncomeType(${i})" class="w-8 h-8 rounded-full flex items-center justify-center text-zinc-700 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0" title="Delete">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+            const cats = Object.keys(expenseCategories);
+            list.innerHTML = cats.map((cat, ci) => {
+                const items = expenseCategories[cat];
+                const isFirst = ci === 0, isLast = ci === cats.length - 1;
+                const itemsHTML = items.map((item, ii) => `
+                    <div class="cat-item-row flex items-center gap-2 pl-14 pr-4 py-2.5 border-t border-zinc-800/60" data-cat="${cat.replace(/"/g,'&quot;')}" data-idx="${ii}">
+                        <div class="cat-item-label flex-1 text-sm text-zinc-400 cursor-pointer hover:text-emerald-400 transition-colors truncate" onclick="inlineRenameCatItem('${cat.replace(/'/g,"\\'")}',${ii})">${item}</div>
+                        <button onclick="moveCatItemUp('${cat.replace(/'/g,"\\'")}',${ii})" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${ii===0?'opacity-20 pointer-events-none':''}" title="Move up">
+                            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+                        </button>
+                        <button onclick="moveCatItemDown('${cat.replace(/'/g,"\\'")}',${ii})" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${ii===items.length-1?'opacity-20 pointer-events-none':''}" title="Move down">
+                            <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <button onclick="deleteCatItem('${cat.replace(/'/g,"\\'")}',${ii})" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-rose-400 hover:bg-rose-500/10 rounded-full transition-colors" title="Delete">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>`).join('');
+                return `<div class="cat-editor-section" data-cat="${cat.replace(/"/g,'&quot;')}">
+                    <div class="flex items-center gap-2 px-5 py-3.5 border-t border-zinc-800">
+                        <span class="text-lg shrink-0">${mainEmojis[cat] || '📂'}</span>
+                        <div class="cat-label flex-1 font-medium text-sm cursor-pointer hover:text-emerald-400 transition-colors truncate" onclick="inlineRenameCategory('${cat.replace(/'/g,"\\'")}' )">${cat}</div>
+                        <button onclick="moveCategoryUp('${cat.replace(/'/g,"\\'")}' )" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isFirst?'opacity-20 pointer-events-none':''}" title="Move up">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+                        </button>
+                        <button onclick="moveCategoryDown('${cat.replace(/'/g,"\\'")}' )" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isLast?'opacity-20 pointer-events-none':''}" title="Move down">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <button onclick="deleteCategory('${cat.replace(/'/g,"\\'")}' )" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-rose-400 hover:bg-rose-500/10 rounded-full transition-colors" title="Delete category">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                         </button>
                     </div>
+                    ${itemsHTML}
+                    <button onclick="addCatItemInline('${cat.replace(/'/g,"\\'")}' )" class="w-full flex items-center gap-3 pl-14 pr-4 py-2.5 border-t border-zinc-800/60 hover:bg-zinc-800/40 transition-colors group">
+                        <svg class="w-3.5 h-3.5 text-zinc-700 group-hover:text-emerald-500 transition-colors shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                        <span class="text-xs text-zinc-700 group-hover:text-emerald-500 transition-colors">Add item</span>
+                    </button>
                 </div>`;
             }).join('');
         }
 
-        function inlineRenameIncomeType(i) {
-            const row = document.querySelector(`.income-type-row[data-idx="${i}"]`);
-            if (!row) return;
-            const labelDiv = row.querySelector('.income-type-label');
-            if (labelDiv.querySelector('input')) return;
-            const oldName = incomeCats[i];
+        function toggleCategoryEditorAccordion() {
+            const body    = document.getElementById('cat-editor-body');
+            const chevron = document.getElementById('cat-editor-chevron');
+            if (!body) return;
+            const open = body.classList.toggle('open');
+            if (chevron) chevron.classList.toggle('open', open);
+            if (open) renderCategoryEditor();
+        }
 
+        function moveCategoryUp(cat) {
+            const keys = Object.keys(expenseCategories);
+            const i = keys.indexOf(cat); if (i <= 0) return;
+            [keys[i-1], keys[i]] = [keys[i], keys[i-1]];
+            const r = {}; keys.forEach(k => r[k] = expenseCategories[k]);
+            expenseCategories = r;
+            saveData(); renderCategoryEditor();
+        }
+        function moveCategoryDown(cat) {
+            const keys = Object.keys(expenseCategories);
+            const i = keys.indexOf(cat); if (i < 0 || i >= keys.length-1) return;
+            [keys[i], keys[i+1]] = [keys[i+1], keys[i]];
+            const r = {}; keys.forEach(k => r[k] = expenseCategories[k]);
+            expenseCategories = r;
+            saveData(); renderCategoryEditor();
+        }
+
+        function moveCatItemUp(cat, idx) {
+            const arr = expenseCategories[cat]; if (!arr || idx <= 0) return;
+            [arr[idx-1], arr[idx]] = [arr[idx], arr[idx-1]];
+            saveData(); renderCategoryEditor();
+        }
+        function moveCatItemDown(cat, idx) {
+            const arr = expenseCategories[cat]; if (!arr || idx >= arr.length-1) return;
+            [arr[idx], arr[idx+1]] = [arr[idx+1], arr[idx]];
+            saveData(); renderCategoryEditor();
+        }
+
+        function inlineRenameCategory(cat) {
+            const sec = document.querySelector(`.cat-editor-section[data-cat="${CSS.escape(cat)}"]`);
+            if (!sec) return;
+            const labelDiv = sec.querySelector('.cat-label');
+            if (!labelDiv || labelDiv.querySelector('input')) return;
             const input = document.createElement('input');
-            input.type = 'text';
-            input.value = oldName;
-            input.className = 'flex-1 bg-zinc-800 border border-emerald-500 rounded-lg px-3 py-1.5 text-sm focus:outline-none w-full';
-            labelDiv.replaceChildren(input);
-            input.focus();
-            input.select();
-
+            input.type = 'text'; input.value = cat;
+            input.className = 'flex-1 bg-zinc-800 border border-emerald-500 rounded-lg px-2 py-1 text-sm focus:outline-none w-full min-w-0';
+            labelDiv.replaceChildren(input); input.focus(); input.select();
             let done = false;
             function save() {
                 if (done) return; done = true;
                 const newName = input.value.trim();
-                if (!newName || newName === oldName) { renderIncomeTypesList(); return; }
-                if (incomeCats.includes(newName)) { renderIncomeTypesList(); return; }
-                incomeCats[i] = newName;
-                transactions.forEach(t => { if (t.type === 'income' && t.mainCategory === oldName) t.mainCategory = newName; });
-                saveData();
-                renderIncomeTypesList();
+                if (!newName || newName === cat || expenseCategories[newName]) { renderCategoryEditor(); return; }
+                const r = {};
+                Object.keys(expenseCategories).forEach(k => r[k === cat ? newName : k] = expenseCategories[k]);
+                expenseCategories = r;
+                Object.keys(monthlyBudgets).forEach(m => {
+                    if (monthlyBudgets[m][cat]) { monthlyBudgets[m][newName] = monthlyBudgets[m][cat]; delete monthlyBudgets[m][cat]; }
+                });
+                transactions.forEach(t => { if (t.mainCategory === cat) t.mainCategory = newName; });
+                _syncIncomeCats(); saveData(); renderCategoryEditor(); renderCategoryEditorCount();
             }
-            function cancel() { if (done) return; done = true; renderIncomeTypesList(); }
-            input.addEventListener('blur',    save);
-            input.addEventListener('keydown', e => {
-                if (e.key === 'Enter')  { e.preventDefault(); save();   }
-                if (e.key === 'Escape') { e.preventDefault(); cancel(); }
-            });
+            function cancel() { if (done) return; done = true; renderCategoryEditor(); }
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', e => { if (e.key==='Enter'){e.preventDefault();save();} if (e.key==='Escape'){e.preventDefault();cancel();} });
         }
 
-        function addIncomeTypeInline() {
-            // Temporarily add an empty row at the end for inline input
-            const list = document.getElementById('income-types-list');
+        function inlineRenameCatItem(cat, idx) {
+            const rows = document.querySelectorAll(`.cat-item-row[data-cat="${CSS.escape(cat)}"][data-idx="${idx}"]`);
+            const row = rows[0]; if (!row) return;
+            const labelDiv = row.querySelector('.cat-item-label');
+            if (!labelDiv || labelDiv.querySelector('input')) return;
+            const oldName = expenseCategories[cat][idx];
+            const input = document.createElement('input');
+            input.type = 'text'; input.value = oldName;
+            input.className = 'flex-1 bg-zinc-800 border border-emerald-500 rounded-lg px-2 py-1 text-xs focus:outline-none w-full min-w-0';
+            labelDiv.replaceChildren(input); input.focus(); input.select();
+            let done = false;
+            function save() {
+                if (done) return; done = true;
+                const newName = input.value.trim();
+                if (!newName || newName === oldName || expenseCategories[cat].includes(newName)) { renderCategoryEditor(); return; }
+                expenseCategories[cat][idx] = newName;
+                Object.keys(monthlyBudgets).forEach(m => {
+                    if (monthlyBudgets[m][cat] && monthlyBudgets[m][cat][oldName] !== undefined) {
+                        monthlyBudgets[m][cat][newName] = monthlyBudgets[m][cat][oldName];
+                        delete monthlyBudgets[m][cat][oldName];
+                    }
+                });
+                transactions.forEach(t => {
+                    if (t.mainCategory === cat && t.subCategory === oldName) t.subCategory = newName;
+                    if (cat === 'Income' && t.type === 'income' && t.mainCategory === oldName) t.mainCategory = newName;
+                });
+                _syncIncomeCats(); saveData(); renderCategoryEditor();
+            }
+            function cancel() { if (done) return; done = true; renderCategoryEditor(); }
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', e => { if (e.key==='Enter'){e.preventDefault();save();} if (e.key==='Escape'){e.preventDefault();cancel();} });
+        }
+
+        function deleteCategory(cat) {
+            if (Object.keys(expenseCategories).length <= 1) return;
+            delete expenseCategories[cat];
+            Object.keys(monthlyBudgets).forEach(m => { delete monthlyBudgets[m][cat]; });
+            _syncIncomeCats(); saveData(); renderCategoryEditor(); renderCategoryEditorCount();
+        }
+
+        function deleteCatItem(cat, idx) {
+            const arr = expenseCategories[cat]; if (!arr || arr.length <= 1) return;
+            const oldName = arr[idx];
+            arr.splice(idx, 1);
+            Object.keys(monthlyBudgets).forEach(m => { if (monthlyBudgets[m][cat]) delete monthlyBudgets[m][cat][oldName]; });
+            _syncIncomeCats(); saveData(); renderCategoryEditor();
+        }
+
+        function addCategoryInline() {
+            const list = document.getElementById('category-editor-list');
             if (!list) return;
-            // Append a temp input row
             const tempRow = document.createElement('div');
-            tempRow.className = 'flex items-center gap-4 px-5 py-4 border-t border-zinc-800';
-            tempRow.innerHTML = `
-                <div class="w-9 h-9 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 text-base">💰</div>
-                <input id="new-income-type-input" type="text" placeholder="Type name…"
-                       class="flex-1 bg-zinc-800 border border-emerald-500 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
-                <button onclick="confirmAddIncomeType()" class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/30 transition-colors shrink-0">
+            tempRow.className = 'flex items-center gap-3 px-5 py-3.5 border-t border-zinc-800';
+            tempRow.innerHTML = `<span class="text-lg">📂</span>
+                <input id="new-cat-input" type="text" placeholder="Category name…" class="flex-1 bg-zinc-800 border border-emerald-500 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
+                <button onclick="confirmAddCategory()" class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/30 transition-colors shrink-0">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                 </button>`;
             list.appendChild(tempRow);
-            const inp = document.getElementById('new-income-type-input');
+            const inp = document.getElementById('new-cat-input');
             inp.focus();
             inp.addEventListener('keydown', e => {
-                if (e.key === 'Enter')  { e.preventDefault(); confirmAddIncomeType(); }
-                if (e.key === 'Escape') { e.preventDefault(); renderIncomeTypesList(); }
+                if (e.key === 'Enter')  { e.preventDefault(); confirmAddCategory(); }
+                if (e.key === 'Escape') { e.preventDefault(); renderCategoryEditor(); }
             });
         }
 
-        function confirmAddIncomeType() {
-            const inp = document.getElementById('new-income-type-input');
+        function confirmAddCategory() {
+            const inp = document.getElementById('new-cat-input'); if (!inp) return;
+            const name = inp.value.trim();
+            if (!name || expenseCategories[name]) { renderCategoryEditor(); return; }
+            expenseCategories[name] = [];
+            saveData(); renderCategoryEditor(); renderCategoryEditorCount();
+        }
+
+        function addCatItemInline(cat) {
+            const secs = document.querySelectorAll(`.cat-editor-section[data-cat="${CSS.escape(cat)}"]`);
+            const sec = secs[0]; if (!sec) return;
+            const addBtn = sec.querySelector('button:last-child');
+            const tempRow = document.createElement('div');
+            tempRow.className = 'flex items-center gap-3 pl-14 pr-4 py-2.5 border-t border-zinc-800/60';
+            tempRow.innerHTML = `<input id="new-item-input-${CSS.escape(cat)}" type="text" placeholder="Item name…" class="flex-1 bg-zinc-800 border border-emerald-500 rounded-lg px-2 py-1 text-xs focus:outline-none">
+                <button onclick="confirmAddCatItem('${cat.replace(/'/g,"\\'")}' )" class="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/30 transition-colors shrink-0">
+                    <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>`;
+            sec.insertBefore(tempRow, addBtn);
+            const inp = tempRow.querySelector('input');
+            inp.focus();
+            inp.addEventListener('keydown', e => {
+                if (e.key === 'Enter')  { e.preventDefault(); confirmAddCatItem(cat); }
+                if (e.key === 'Escape') { e.preventDefault(); renderCategoryEditor(); }
+            });
+        }
+
+        function confirmAddCatItem(cat) {
+            const inp = document.querySelector(`.cat-editor-section[data-cat="${CSS.escape(cat)}"] input`);
             if (!inp) return;
             const name = inp.value.trim();
-            if (!name) { renderIncomeTypesList(); return; }
-            if (incomeCats.includes(name)) { renderIncomeTypesList(); return; }
-            incomeCats.push(name);
-            saveData();
-            renderIncomeTypesList();
-            renderIncomeTypeCount();
+            if (!name || (expenseCategories[cat] || []).includes(name)) { renderCategoryEditor(); return; }
+            if (!expenseCategories[cat]) expenseCategories[cat] = [];
+            expenseCategories[cat].push(name);
+            _syncIncomeCats(); saveData(); renderCategoryEditor();
         }
 
-        // Keep old name for backward compat (called by nothing now, but harmless)
-        function addIncomeType() { addIncomeTypeInline(); }
-
-        function renameIncomeType(i) { inlineRenameIncomeType(i); }
-
-        function deleteIncomeType(i) {
-            if (incomeCats.length <= 1) return;
-            incomeCats.splice(i, 1);
-            saveData();
-            renderIncomeTypesList();
-            renderIncomeTypeCount();
-            renderSettingsStats();
-        }
+        // Legacy stubs (called from nothing — kept to avoid any stray onclick errors)
+        function toggleIncomeAccordion() { toggleCategoryEditorAccordion(); }
+        function renderIncomeTypesList() { renderCategoryEditor(); }
+        function renderIncomeTypeCount() { renderCategoryEditorCount(); }
+        function addIncomeTypeInline()   { addCatItemInline('Income'); }
+        function deleteIncomeType(i)     { deleteCatItem('Income', i); }
 
         function clearAllData() {
             if (!confirm('Reset app to factory defaults?\nThis clears ALL transactions, goals, budgets and categories — and restores the default category list.\nThis cannot be undone.')) return;
@@ -3202,7 +3411,7 @@ Transactions using it will stay.`)) {
             goals             = [];
             monthlyBudgets    = {};
             expenseCategories = {...defaultCategories};
-            incomeCats        = ["Salary","Freelance","Investments","Gifts","Other"];
+            _syncIncomeCats();
             // Wipe localStorage completely for this app
             ['transactions','goals','monthlyBudgets','expenseCategories','incomeCats','tutDone']
                 .forEach(function(k) { localStorage.removeItem(k); });
@@ -3257,19 +3466,6 @@ Transactions using it will stay.`)) {
         }
 
 
-        /* ── Income accordion ──────────────────────────── */
-        function toggleIncomeAccordion() {
-            const body    = document.getElementById('income-acc-body');
-            const chevron = document.getElementById('income-acc-chevron');
-            if (!body) return;
-            const open = body.classList.toggle('open');
-            if (chevron) chevron.classList.toggle('open', open);
-        }
-
-        function renderIncomeTypeCount() {
-            const el = document.getElementById('income-type-count');
-            if (el) el.textContent = `${incomeCats.length} type${incomeCats.length !== 1 ? 's' : ''} configured`;
-        }
 
         /* ── Notifications ──────────────────────────────── */
         function loadNotifSettings() {
@@ -4190,7 +4386,7 @@ Transactions using it will stay.`)) {
                     var selRow = '';
                     if (!t.isDup) {
                         var subOptsNew = _subOptHtmlWithNew(t._main);
-                        var incOpts = incomeCats.map(function(ic) {
+                        var incOpts = (expenseCategories['Income'] || incomeCats).map(function(ic) {
                             return '<option value="' + ic + '">' + ic + '</option>';
                         }).join('');
                         selRow = '<div class="px-5 pb-3 pt-1 flex flex-wrap gap-2">'
