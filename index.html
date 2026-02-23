@@ -5791,4 +5791,18 @@ Transactions using it will stay.`)) {
 
             <!-- Hint -->
             <div class="px-5 py-2 shrink-0">
-                <p class="text-[10px] text-zinc-600">Assign a type and category to each transaction before importing. Strikethrough rows are already in your history.
+                <p class="text-[10px] text-zinc-600">Assign a type and category to each transaction before importing. Strikethrough rows are already in your history.</p>
+            </div>
+
+            <!-- Transaction review list -->
+            <div id="import-review-list" class="flex-1 overflow-y-auto px-5 py-3"></div>
+
+            <!-- Footer: confirm button -->
+            <div class="px-5 pb-8 pt-3 shrink-0 border-t border-zinc-800">
+                <button id="import-confirm-btn" onclick="confirmBankImport()"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl transition-all text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
+                </button>
+            </div>
+
+        </div>
+    </div>
