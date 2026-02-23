@@ -184,6 +184,11 @@
         html.light canvas { filter: none; }
         /* Auth card */
         html.light #auth-screen .bg-zinc-900 { background-color: #ffffff !important; }
+        /* Account modal */
+        html.light #net-worth-card { background-color: #ffffff !important; }
+        /* Goal/Account type grid buttons */
+        html.light #acct-type-grid button,
+        html.light #goal-modal .grid button { background-color: #f1f5f9; border-color: #d4d4d8; }
     </style>
 
     <!--
@@ -299,14 +304,14 @@
                     <!-- home dot — visible when this is the launch tab -->
                     <span id="home-dot-3" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
                 </button>
-                <!-- Goals -->
+                <!-- Accounts -->
                 <button
                     onclick="_tabTap(4)"
                     onmousedown="_tabHoldStart(4, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
                     ontouchstart="_tabHoldStart(4, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
                     id="tab-4" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
-                    <span>Goals</span>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+                    <span>Accounts</span>
                     <!-- home dot — visible when this is the launch tab -->
                     <span id="home-dot-4" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
                 </button>
@@ -648,18 +653,41 @@
             </div>
         </div>
         <!-- GOALS -->
-        <div id="screen-4" class="hidden pb-12">
-            <div class="px-5 pt-5 pb-4 flex justify-between items-center">
+        <div id="screen-4" class="hidden pb-16 overflow-y-auto">
+
+            <!-- ── Accounts Header ── -->
+            <div class="px-5 pt-5 pb-2 flex justify-between items-center">
                 <div>
-                    <h2 class="font-semibold text-lg">Savings Goals</h2>
-                    <p class="text-[10px] text-zinc-600 mt-0.5 uppercase tracking-widest font-bold">Track your progress</p>
+                    <h2 class="font-semibold text-lg">Accounts</h2>
+                    <p class="text-[10px] text-zinc-600 mt-0.5 uppercase tracking-widest font-bold">Net Worth &amp; Goals</p>
                 </div>
-                <button onclick="showAddGoalModal()" class="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-full transition-colors">
+                <button onclick="showAddAccountModal()" class="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-full transition-colors">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                    Add Account
+                </button>
+            </div>
+
+            <!-- ── Net Worth Summary Card ── -->
+            <div id="net-worth-card" class="mx-5 mt-3 mb-5 bg-zinc-900 rounded-3xl p-5"></div>
+
+            <!-- ── Accounts List ── -->
+            <div id="accounts-list" class="px-5 space-y-2.5 mb-6"></div>
+
+            <!-- ── Goals Section Header ── -->
+            <div class="px-5 pt-2 pb-3 flex justify-between items-center border-t border-zinc-800/60 mt-2">
+                <div>
+                    <h3 class="font-semibold text-base">Goals</h3>
+                    <p class="text-[10px] text-zinc-600 mt-0.5 uppercase tracking-widest font-bold">Track your targets</p>
+                </div>
+                <button onclick="showAddGoalModal()" class="flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold px-3.5 py-2 rounded-full transition-colors">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                     New Goal
                 </button>
             </div>
-            <div id="goals-list" class="px-5 space-y-4"></div>
+
+            <!-- ── Goals List ── -->
+            <div id="goals-list" class="px-5 space-y-4 pb-6"></div>
+
         </div>
 
         <!-- Floating Add -->
@@ -728,12 +756,21 @@
                 </div>
             </div>
 
-            <!-- Note -->
+            <!-- Note & Account -->
             <div class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-6">
                 <div class="px-5 pt-4 pb-3">
                     <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Note</div>
                     <input id="desc" type="text" placeholder="Optional description"
                            class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
+                </div>
+                <div id="tx-account-row" class="border-t border-zinc-700/50 px-5 pt-4 pb-3 hidden">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">
+                        Account <span class="text-zinc-700 normal-case font-normal ml-1">— optional</span>
+                    </div>
+                    <select id="tx-account"
+                            class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer">
+                        <option value="">None</option>
+                    </select>
                 </div>
             </div>
 
@@ -766,9 +803,9 @@
         </div>
     </div>
 
-    <!-- NEW GOAL MODAL -->
+    <!-- GOAL MODAL (redesigned) -->
     <div id="goal-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50">
-        <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl">
+        <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
 
             <!-- Drag handle -->
             <div class="flex justify-center pt-3 pb-0">
@@ -776,22 +813,51 @@
             </div>
 
             <!-- Header -->
-            <div class="text-center pt-7 pb-5">
-                <div class="text-5xl mb-3 leading-none">🏦</div>
-                <h2 class="text-2xl font-semibold tracking-tight">New Savings Goal</h2>
-                <p class="text-zinc-500 text-sm mt-1">Set a target and track your progress</p>
+            <div class="px-5 pt-6 pb-4 flex items-center gap-3">
+                <button id="goal-modal-emoji-btn" onclick="_pickGoalEmoji()" class="text-4xl leading-none w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center shrink-0 active:scale-95 transition-all">🎯</button>
+                <div class="flex-1 min-w-0">
+                    <h2 id="goal-modal-title" class="text-xl font-semibold tracking-tight">New Goal</h2>
+                    <p id="goal-modal-subtitle" class="text-zinc-500 text-xs mt-0.5">Set a target and track your progress</p>
+                </div>
             </div>
 
-            <!-- Fields card -->
-            <div class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-6">
+            <!-- Goal Emoji Picker (hidden by default) -->
+            <div id="goal-emoji-picker" class="hidden mx-5 mb-4 bg-zinc-800/60 rounded-3xl p-4">
+                <div class="text-[10px] font-bold tracking-widest text-zinc-500 uppercase mb-3">Choose an emoji</div>
+                <div id="goal-emoji-grid" class="grid grid-cols-8 gap-1 text-xl"></div>
+            </div>
 
+            <!-- Goal Type Selector -->
+            <div class="mx-5 mb-4">
+                <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-2">Goal Type</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="_setGoalType('savings')" id="goal-type-savings"
+                            class="flex flex-col items-start gap-1 px-4 py-3 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 transition-all">
+                        <span class="text-base">💰</span>
+                        <span class="text-xs font-bold text-zinc-200">Save Up</span>
+                        <span class="text-[10px] text-zinc-500 leading-tight">Build savings toward a target amount</span>
+                    </button>
+                    <button onclick="_setGoalType('debt')" id="goal-type-debt"
+                            class="flex flex-col items-start gap-1 px-4 py-3 rounded-2xl border-2 border-zinc-700 bg-zinc-800/50 transition-all">
+                        <span class="text-base">📉</span>
+                        <span class="text-xs font-bold text-zinc-200">Pay Off Debt</span>
+                        <span class="text-[10px] text-zinc-500 leading-tight">Track paying down a debt account</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fields -->
+            <div class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-4">
+
+                <!-- Goal Name -->
                 <div class="px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Savings Item</div>
-                    <select id="goal-sub"
-                            class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Goal Name</div>
+                    <input id="goal-name" type="text" placeholder="e.g. Emergency Fund, Europe Trip"
+                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
                 </div>
 
-                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                <!-- Target Amount (savings type only) -->
+                <div id="goal-target-row" class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
                     <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Target Amount</div>
                     <div class="flex items-baseline gap-1">
                         <span class="text-emerald-400 font-semibold">$</span>
@@ -800,19 +866,157 @@
                     </div>
                 </div>
 
+                <!-- Link to Account (optional for savings, required for debt) -->
+                <div id="goal-account-row" class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">
+                        <span id="goal-account-label">Link to Account</span>
+                        <span id="goal-account-optional" class="text-zinc-700 normal-case font-normal ml-1">— optional</span>
+                    </div>
+                    <select id="goal-account"
+                            class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer">
+                        <option value="">None (track manually)</option>
+                    </select>
+                </div>
+
+                <!-- Link to Category (savings type only, shown when no account) -->
+                <div id="goal-category-row" class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">
+                        Or Link to Budget Category
+                        <span class="text-zinc-700 normal-case font-normal ml-1">— optional</span>
+                    </div>
+                    <select id="goal-sub"
+                            class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer">
+                        <option value="">None</option>
+                    </select>
+                </div>
+
+                <!-- Deadline (optional for all types) -->
                 <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Target Date</div>
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">
+                        Target Date
+                        <span class="text-zinc-700 normal-case font-normal ml-1">— optional</span>
+                    </div>
                     <input id="goal-deadline" type="date"
                            class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none">
                 </div>
             </div>
 
+            <!-- Current Amount (savings type, no account/category linked) -->
+            <div id="goal-current-row" class="hidden mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-4">
+                <div class="px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">
+                        Amount Saved So Far
+                        <span class="text-zinc-700 normal-case font-normal ml-1">— optional</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-emerald-400 font-semibold">$</span>
+                        <input id="goal-current" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
+                               class="flex-1 bg-transparent text-sm font-semibold text-zinc-100 focus:outline-none placeholder-zinc-600">
+                    </div>
+                </div>
+            </div>
+
             <!-- Actions -->
             <div class="px-5 pb-10 space-y-2">
-                <button onclick="addGoal()"
+                <button onclick="saveGoal()" id="goal-save-btn"
                         class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-3xl font-semibold text-base transition-colors">
                     Create Goal
                 </button>
+                <button onclick="hideModal()"
+                        class="w-full py-3 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACCOUNT MODAL -->
+    <div id="account-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50">
+        <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
+
+            <!-- Drag handle -->
+            <div class="flex justify-center pt-3 pb-0">
+                <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
+            </div>
+
+            <!-- Header -->
+            <div class="px-5 pt-6 pb-4 flex items-center gap-3">
+                <button id="acct-emoji-btn" onclick="_pickAccountEmoji()" class="text-4xl leading-none w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center shrink-0 active:scale-95 transition-all">🏦</button>
+                <div class="flex-1 min-w-0">
+                    <h2 id="account-modal-title" class="text-xl font-semibold tracking-tight">New Account</h2>
+                    <p class="text-zinc-500 text-xs mt-0.5">Track your balance and net worth</p>
+                </div>
+            </div>
+
+            <!-- Emoji picker (hidden by default) -->
+            <div id="acct-emoji-picker" class="hidden mx-5 mb-4 bg-zinc-800/60 rounded-3xl p-4">
+                <div class="text-[10px] font-bold tracking-widest text-zinc-500 uppercase mb-3">Choose an emoji</div>
+                <div id="acct-emoji-grid" class="grid grid-cols-8 gap-1 text-xl"></div>
+            </div>
+
+            <!-- Account Type -->
+            <div class="mx-5 mb-4">
+                <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-2">Account Type</div>
+                <div id="acct-type-grid" class="grid grid-cols-2 gap-2"></div>
+            </div>
+
+            <!-- Fields -->
+            <div class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-4">
+
+                <!-- Account Name -->
+                <div class="px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account Name</div>
+                    <input id="acct-name" type="text" placeholder="e.g. Chase Checking, Vanguard IRA"
+                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
+                </div>
+
+                <!-- Current Balance -->
+                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div id="acct-balance-label" class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Current Balance</div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-emerald-400 font-semibold">$</span>
+                        <input id="acct-balance" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
+                               class="flex-1 bg-transparent text-sm font-semibold text-zinc-100 focus:outline-none placeholder-zinc-600">
+                    </div>
+                </div>
+
+                <!-- Note (optional) -->
+                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">
+                        Note <span class="text-zinc-700 normal-case font-normal ml-1">— optional</span>
+                    </div>
+                    <input id="acct-note" type="text" placeholder="e.g. Last 4 digits, institution"
+                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
+                </div>
+            </div>
+
+            <!-- Include in Net Worth toggle -->
+            <div class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-6">
+                <label class="flex items-center justify-between px-5 py-4 cursor-pointer">
+                    <div>
+                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-0.5">Include in Net Worth</div>
+                        <div class="text-[11px] text-zinc-600">Count this account toward your total net worth</div>
+                    </div>
+                    <div class="relative flex-none ml-3">
+                        <input type="checkbox" id="acct-networth" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-zinc-700 rounded-full peer peer-checked:bg-emerald-500 transition-colors"></div>
+                        <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Actions -->
+            <div class="px-5 pb-10 space-y-2">
+                <button onclick="saveAccount()" id="acct-save-btn"
+                        class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-3xl font-semibold text-base transition-colors">
+                    Add Account
+                </button>
+                <div id="acct-delete-row" class="hidden">
+                    <button onclick="deleteAccount(_editingAccountId)"
+                            class="w-full py-3 text-sm text-rose-400 hover:text-rose-300 transition-colors font-semibold">
+                        Delete Account
+                    </button>
+                </div>
                 <button onclick="hideModal()"
                         class="w-full py-3 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
                     Cancel
@@ -1207,6 +1411,8 @@
         let _undoData = null, _undoTimer = null;
         let _editingTxIdx = null;
         let _editingGoalIdx = null;
+        let accounts = [];
+        let _editingAccountId = null;
 
         let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Debt":"💳","Savings":"🏦","Banking":"🏛️" };
         let itemIcons = {}; // keyed "main:sub", e.g. "Food:Groceries" → "🛒"
@@ -1265,7 +1471,7 @@
         function saveData() {
             if (_demoMode) return; // never persist demo data
             const snap = {
-                transactions, expenseCategories, monthlyBudgets, goals, itemIcons
+                transactions, expenseCategories, monthlyBudgets, goals, itemIcons, accounts
                 // incomeCats is now derived from expenseCategories['Income'] — not saved separately
             };
             // Always write to localStorage as offline cache
@@ -1289,6 +1495,7 @@
             goals             = d.goals             || [];
             transactions      = d.transactions      || [];
             itemIcons         = d.itemIcons         || {};
+            accounts          = d.accounts          || [];
             incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
             selectedBudgetMonth = getCurrentMonthKey();
 
@@ -1330,6 +1537,7 @@
                 goals:             JSON.parse(localStorage.getItem('goals')),
                 transactions:      JSON.parse(localStorage.getItem('transactions')),
                 itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
+                accounts:          JSON.parse(localStorage.getItem('accounts')),
                 incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
             });
         }
@@ -1412,9 +1620,325 @@
                 .reduce((s, t) => s + parseFloat(t.amount), 0);
         }
 
-        function calculateGoalProgress(linkedSub) {
-            return transactions.filter(t => t.type === 'expense' && t.mainCategory === 'Savings' && t.subCategory === linkedSub)
-                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        /* ─── Account type definitions ──────────────────────────────────── */
+        const ACCOUNT_TYPES = {
+            checking:   { label: 'Checking',     emoji: '🏦', isLiability: false, color: '#3b82f6' },
+            savings:    { label: 'Savings',      emoji: '💰', isLiability: false, color: '#10b981' },
+            investment: { label: 'Investment',   emoji: '📈', isLiability: false, color: '#8b5cf6' },
+            cash:       { label: 'Cash',         emoji: '💵', isLiability: false, color: '#eab308' },
+            property:   { label: 'Property',     emoji: '🏠', isLiability: false, color: '#f97316' },
+            credit:     { label: 'Credit Card',  emoji: '💳', isLiability: true,  color: '#ef4444' },
+            loan:       { label: 'Loan / Debt',  emoji: '📋', isLiability: true,  color: '#f43f5e' },
+            other:      { label: 'Other',        emoji: '📂', isLiability: false, color: '#71717a' },
+        };
+
+        const ACCOUNT_EMOJIS = ['🏦','💰','💵','💳','📈','🏠','🚗','💼','📋','🎓','💊','🌍','✈️','🎯','🔐','🛡️','📱','🖥️','⛽','🎬','🛒','🎸','🏋️','🌱','📂','💎','🏖️','🚀','🎁','🏅'];
+        const GOAL_EMOJIS   = ['🎯','🏆','💰','🛡️','✈️','🏠','🚗','📚','🎓','💊','🏖️','🌍','💎','🚀','🎁','🎸','🏋️','🌱','🔐','📈','💼','🎬','🛒','🏅','⭐','🌟','🎪','🏄','🎨','🌺'];
+
+        let _acctSelectedEmoji = '🏦';
+        let _goalSelectedEmoji = '🎯';
+        let _goalType = 'savings'; // 'savings' | 'debt'
+
+        function calculateGoalProgress(goal) {
+            // Legacy support: if passed a string (linkedSub), wrap in old-style call
+            if (typeof goal === 'string') {
+                const linkedSub = goal;
+                return { current: transactions.filter(t => t.type === 'expense' && t.mainCategory === 'Savings' && t.subCategory === linkedSub)
+                    .reduce((sum, t) => sum + parseFloat(t.amount), 0), target: 0, percent: 0 };
+            }
+            if (goal.type === 'debt') {
+                const acct = accounts.find(a => a.id === goal.linkedAccountId);
+                const startBal = goal.startBalance || 0;
+                if (!acct || startBal <= 0) return { current: 0, target: startBal, percent: 0 };
+                const paidOff = Math.max(0, startBal - acct.balance);
+                const percent = Math.min(100, Math.round(paidOff / startBal * 100));
+                return { current: paidOff, target: startBal, percent };
+            } else {
+                let current = 0;
+                if (goal.linkedAccountId) {
+                    const acct = accounts.find(a => a.id === goal.linkedAccountId);
+                    current = acct ? acct.balance : 0;
+                } else if (goal.linkedSub) {
+                    current = transactions
+                        .filter(t => t.type === 'expense' && t.mainCategory === 'Savings' && t.subCategory === goal.linkedSub)
+                        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                } else {
+                    current = goal.currentAmount || 0;
+                }
+                const target = goal.target || 0;
+                const percent = target > 0 ? Math.min(100, Math.round(current / target * 100)) : 0;
+                return { current, target, percent };
+            }
+        }
+
+        /* ─── Accounts: render ────────────────────────────────────────── */
+        function renderAccounts() {
+            // Net worth card
+            const nwEl = document.getElementById('net-worth-card');
+            if (nwEl) {
+                let totalAssets = 0, totalLiabilities = 0;
+                accounts.forEach(a => {
+                    if (!a.includeInNetWorth) return;
+                    const def = ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other;
+                    if (def.isLiability) totalLiabilities += (a.balance || 0);
+                    else totalAssets += (a.balance || 0);
+                });
+                const netWorth = totalAssets - totalLiabilities;
+                const nwColor  = netWorth >= 0 ? '#10b981' : '#ef4444';
+                const nwSign   = netWorth >= 0 ? '' : '−';
+                nwEl.innerHTML = accounts.length === 0
+                    ? `<div class="text-center py-4">
+                           <div class="text-3xl mb-2">🏦</div>
+                           <div class="font-semibold text-zinc-400 mb-1">No accounts yet</div>
+                           <div class="text-xs text-zinc-600">Tap "Add Account" to get started</div>
+                       </div>`
+                    : `<div class="flex items-start justify-between mb-3">
+                           <div>
+                               <p class="text-[9px] font-black tracking-[.18em] text-zinc-600 uppercase">Net Worth</p>
+                               <div class="text-3xl font-semibold tracking-tighter mt-0.5" style="color:${nwColor}">${nwSign}${_fmtCurrency(Math.abs(netWorth))}</div>
+                           </div>
+                           <div class="text-right pt-1 space-y-1.5">
+                               <div class="flex items-center justify-end gap-2">
+                                   <span class="text-[11px] text-zinc-500">Assets</span>
+                                   <span class="text-[11px] font-semibold text-emerald-400">${_fmtCurrency(totalAssets)}</span>
+                               </div>
+                               <div class="flex items-center justify-end gap-2">
+                                   <span class="text-[11px] text-zinc-500">Liabilities</span>
+                                   <span class="text-[11px] font-semibold text-rose-400">${_fmtCurrency(totalLiabilities)}</span>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                           ${totalAssets > 0 ? `<div class="h-full rounded-full bg-emerald-500 progress-bar" style="width:${Math.min(100, Math.round(totalAssets / (totalAssets + totalLiabilities) * 100))}%"></div>` : ''}
+                       </div>
+                       <div class="flex justify-between mt-1.5">
+                           <span class="text-[10px] text-zinc-600">${accounts.length} account${accounts.length !== 1 ? 's' : ''}</span>
+                           <span class="text-[10px] text-zinc-600">${Math.min(100, totalAssets > 0 ? Math.round(totalAssets / (totalAssets + totalLiabilities) * 100) : 0)}% assets</span>
+                       </div>`;
+            }
+
+            // Account cards
+            const listEl = document.getElementById('accounts-list');
+            if (!listEl) return;
+            if (accounts.length === 0) { listEl.innerHTML = ''; return; }
+
+            // Group: assets first, then liabilities
+            const assets = accounts.filter(a => !(ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other).isLiability);
+            const liabs  = accounts.filter(a => (ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other).isLiability);
+
+            let html = '';
+            if (assets.length > 0) {
+                html += `<div class="text-[9px] font-black tracking-[.18em] text-zinc-600 uppercase mb-1.5 px-1">Assets</div>`;
+                assets.forEach(a => { html += _renderAccountCard(a); });
+            }
+            if (liabs.length > 0) {
+                html += `<div class="text-[9px] font-black tracking-[.18em] text-zinc-600 uppercase mb-1.5 px-1 mt-4">Liabilities</div>`;
+                liabs.forEach(a => { html += _renderAccountCard(a); });
+            }
+            listEl.innerHTML = html;
+
+            // Render goals on the same screen
+            renderGoals();
+        }
+
+        function _renderAccountCard(a) {
+            const def  = ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other;
+            const bal  = a.balance || 0;
+            const isLiab = def.isLiability;
+            const balColor = isLiab ? '#f87171' : '#d4d4d8';
+            const balStr   = isLiab ? `-${_fmtCurrency(bal)}` : _fmtCurrency(bal);
+            return `<div class="bg-zinc-900 rounded-2xl p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all" onclick="editAccount('${a.id}')">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0" style="background:${def.color}22">${a.emoji || def.emoji}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-semibold text-sm truncate text-zinc-100">${a.name}</div>
+                    <div class="text-[11px] text-zinc-500 mt-0.5">${def.label}${a.note ? ' · ' + a.note : ''}</div>
+                </div>
+                <div class="text-right shrink-0">
+                    <div class="font-semibold text-sm tabular-nums" style="color:${balColor}">${balStr}</div>
+                    <div class="text-[10px] text-zinc-600 mt-0.5">${isLiab ? 'owed' : 'balance'}</div>
+                </div>
+            </div>`;
+        }
+
+        function _fmtCurrency(n) {
+            const abs = Math.abs(n);
+            if (abs >= 1000000) return '$' + (abs / 1000000).toFixed(2) + 'M';
+            if (abs >= 1000) return '$' + abs.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+            return '$' + abs.toFixed(2);
+        }
+
+        /* ─── Accounts: CRUD ──────────────────────────────────────────── */
+        function showAddAccountModal() {
+            _editingAccountId = null;
+            _acctSelectedEmoji = '🏦';
+
+            document.getElementById('account-modal-title').textContent = 'New Account';
+            document.getElementById('acct-save-btn').textContent = 'Add Account';
+            document.getElementById('acct-delete-row').classList.add('hidden');
+            document.getElementById('acct-name').value = '';
+            document.getElementById('acct-balance').value = '';
+            document.getElementById('acct-note').value = '';
+            document.getElementById('acct-networth').checked = true;
+            document.getElementById('acct-emoji-btn').textContent = _acctSelectedEmoji;
+            document.getElementById('acct-emoji-picker').classList.add('hidden');
+            document.getElementById('acct-balance-label').textContent = 'Current Balance';
+
+            // Build type grid
+            _renderAccountTypeGrid('checking');
+            // Build emoji grid
+            _renderEmojiGrid('acct-emoji-grid', ACCOUNT_EMOJIS, (em) => {
+                _acctSelectedEmoji = em;
+                document.getElementById('acct-emoji-btn').textContent = em;
+                document.getElementById('acct-emoji-picker').classList.add('hidden');
+            });
+
+            document.getElementById('account-modal').classList.remove('hidden');
+        }
+
+        function editAccount(id) {
+            const a = accounts.find(x => x.id === id);
+            if (!a) return;
+            _editingAccountId = id;
+            _acctSelectedEmoji = a.emoji || (ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other).emoji;
+
+            document.getElementById('account-modal-title').textContent = 'Edit Account';
+            document.getElementById('acct-save-btn').textContent = 'Save Changes';
+            document.getElementById('acct-delete-row').classList.remove('hidden');
+            document.getElementById('acct-name').value = a.name;
+            document.getElementById('acct-balance').value = a.balance;
+            document.getElementById('acct-note').value = a.note || '';
+            document.getElementById('acct-networth').checked = a.includeInNetWorth !== false;
+            document.getElementById('acct-emoji-btn').textContent = _acctSelectedEmoji;
+            document.getElementById('acct-emoji-picker').classList.add('hidden');
+
+            const def = ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other;
+            document.getElementById('acct-balance-label').textContent = def.isLiability ? 'Amount Owed' : 'Current Balance';
+
+            _renderAccountTypeGrid(a.type);
+            _renderEmojiGrid('acct-emoji-grid', ACCOUNT_EMOJIS, (em) => {
+                _acctSelectedEmoji = em;
+                document.getElementById('acct-emoji-btn').textContent = em;
+                document.getElementById('acct-emoji-picker').classList.add('hidden');
+            });
+
+            document.getElementById('account-modal').classList.remove('hidden');
+        }
+
+        let _selectedAccountType = 'checking';
+        function _renderAccountTypeGrid(selected) {
+            _selectedAccountType = selected;
+            const grid = document.getElementById('acct-type-grid');
+            if (!grid) return;
+            grid.innerHTML = Object.entries(ACCOUNT_TYPES).map(([key, def]) => {
+                const isActive = key === selected;
+                return `<button onclick="_selectAccountType('${key}')" id="acct-type-${key}"
+                    class="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left ${isActive ? 'border-emerald-500 bg-emerald-500/10' : 'border-zinc-700 bg-zinc-800/50'}">
+                    <span class="text-base shrink-0">${def.emoji}</span>
+                    <span class="text-xs font-semibold ${isActive ? 'text-zinc-100' : 'text-zinc-400'}">${def.label}</span>
+                </button>`;
+            }).join('');
+            const isLiab = (ACCOUNT_TYPES[selected] || ACCOUNT_TYPES.other).isLiability;
+            const balLabel = document.getElementById('acct-balance-label');
+            if (balLabel) balLabel.textContent = isLiab ? 'Amount Owed' : 'Current Balance';
+        }
+
+        function _selectAccountType(key) {
+            _selectedAccountType = key;
+            _renderAccountTypeGrid(key);
+        }
+
+        function _pickAccountEmoji() {
+            const picker = document.getElementById('acct-emoji-picker');
+            picker.classList.toggle('hidden');
+        }
+
+        function _pickGoalEmoji() {
+            const picker = document.getElementById('goal-emoji-picker');
+            if (picker) picker.classList.toggle('hidden');
+        }
+
+        function _renderEmojiGrid(gridId, emojis, onSelect) {
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            grid.innerHTML = emojis.map(em =>
+                `<button onclick="_emojiGridPick(this, '${em}')" class="text-xl w-9 h-9 flex items-center justify-center rounded-xl hover:bg-zinc-700 active:scale-90 transition-all">${em}</button>`
+            ).join('');
+            // Store the callback
+            grid._onSelect = onSelect;
+        }
+
+        function _emojiGridPick(btn, em) {
+            const grid = btn.closest('[id$="-grid"]');
+            if (grid && grid._onSelect) grid._onSelect(em);
+        }
+
+        function saveAccount() {
+            const name    = document.getElementById('acct-name').value.trim();
+            const balance = parseFloat(document.getElementById('acct-balance').value) || 0;
+            const note    = document.getElementById('acct-note').value.trim();
+            const inclNW  = document.getElementById('acct-networth').checked;
+            const type    = _selectedAccountType;
+            const emoji   = _acctSelectedEmoji;
+
+            if (!name) return alert('Enter an account name');
+
+            if (_editingAccountId !== null) {
+                const idx = accounts.findIndex(a => a.id === _editingAccountId);
+                if (idx !== -1) {
+                    accounts[idx] = { ...accounts[idx], name, balance, note, type, emoji, includeInNetWorth: inclNW };
+                }
+            } else {
+                accounts.push({ id: Date.now(), name, balance, note, type, emoji, includeInNetWorth: inclNW, createdAt: Date.now() });
+            }
+
+            saveData();
+            hideModal();
+            renderAccounts();
+            _refreshGoalAccountDropdown();
+            _refreshTxAccountDropdown();
+        }
+
+        function deleteAccount(id) {
+            const a = accounts.find(x => x.id === id);
+            if (!a) return;
+            if (!confirm(`Delete "${a.name}"? Goals linked to this account will lose their progress tracking.`)) return;
+            accounts = accounts.filter(x => x.id !== id);
+            // Unlink goals that referenced this account
+            goals.forEach(g => { if (g.linkedAccountId === id) g.linkedAccountId = null; });
+            saveData();
+            hideModal();
+            renderAccounts();
+            renderGoals();
+        }
+
+        function _refreshGoalAccountDropdown() {
+            const sel = document.getElementById('goal-account');
+            if (!sel) return;
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">None (track manually)</option>';
+            accounts.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.id;
+                opt.textContent = `${a.emoji || ''} ${a.name}`;
+                if (a.id == cur) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        function _refreshTxAccountDropdown() {
+            const sel = document.getElementById('tx-account');
+            if (!sel) return;
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">None</option>';
+            accounts.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.id;
+                opt.textContent = `${a.emoji || ''} ${a.name}`;
+                if (a.id == cur) opt.selected = true;
+                sel.appendChild(opt);
+            });
+            const row = document.getElementById('tx-account-row');
+            if (row) row.classList.toggle('hidden', accounts.length === 0);
         }
 
         function renderOverview() {
@@ -2335,7 +2859,7 @@
                     if (mb[main] && sub in mb[main]) { mb[main][newName] = mb[main][sub]; delete mb[main][sub]; }
                 });
                 transactions.forEach(t => { if (t.mainCategory === main && t.subCategory === sub) t.subCategory = newName; });
-                goals.forEach(g => { if (g.linkedSub === sub) { g.linkedSub = newName; g.name = newName; } });
+                goals.forEach(g => { if (g.linkedSub === sub) { g.linkedSub = newName; } });
                 saveData();
                 renderBudgets();
             }
@@ -2969,67 +3493,113 @@
         }
 
         function renderGoals() {
-            const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳', Savings:'🏦' };
+            const listEl = document.getElementById('goals-list');
+            if (!listEl) return;
+            if (goals.length === 0) {
+                listEl.innerHTML = `<div class="text-center py-12">
+                    <div class="text-5xl mb-3">🎯</div>
+                    <div class="font-semibold text-zinc-400 mb-1">No goals yet</div>
+                    <div class="text-xs text-zinc-600">Tap "New Goal" to start tracking</div>
+                </div>`;
+                return;
+            }
+
             let html = '';
             goals.forEach((g, i) => {
-                const saved   = calculateGoalProgress(g.linkedSub);
-                const percent = g.target > 0 ? Math.min(100, Math.round(saved / g.target * 100)) : 0;
-                const done    = percent >= 100;
-                const daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
+                const prog = calculateGoalProgress(g);
+                const { current, target, percent } = prog;
+                const done = percent >= 100;
 
-                // SVG arc
-                const R = 28, CX = 34, CY = 34;
-                const circ = 2 * Math.PI * R;
-                const offset = circ * (1 - percent / 100);
-                const arcColor  = done ? '#10b981' : percent > 80 ? '#f59e0b' : '#10b981';
-                const trackColor = '#27272a';
+                // Progress bar color
+                const barColor = done ? '#10b981' : percent >= 75 ? '#f59e0b' : percent >= 40 ? '#3b82f6' : '#10b981';
+                const glowCls  = done ? 'ring-1 ring-emerald-500/30 shadow-emerald-500/10 shadow-lg' : '';
 
-                // Days badge
-                let daysBadge;
-                if (done) {
-                    daysBadge = `<span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full">Complete 🎉</span>`;
-                } else if (daysLeft <= 0) {
-                    daysBadge = `<span class="bg-rose-500/20 text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full">Past due</span>`;
-                } else if (daysLeft <= 30) {
-                    daysBadge = `<span class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full">${daysLeft}d left</span>`;
-                } else {
-                    const months = Math.round(daysLeft / 30);
-                    daysBadge = `<span class="bg-zinc-800 text-zinc-400 text-[10px] font-bold px-2.5 py-1 rounded-full">~${months}mo left</span>`;
+                // Deadline badge
+                let deadlineBadge = '';
+                if (g.deadline) {
+                    const daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
+                    if (done) {
+                        deadlineBadge = `<span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full">Complete 🎉</span>`;
+                    } else if (daysLeft <= 0) {
+                        deadlineBadge = `<span class="bg-rose-500/20 text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full">Past due</span>`;
+                    } else if (daysLeft <= 30) {
+                        deadlineBadge = `<span class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full">${daysLeft}d left</span>`;
+                    } else {
+                        const mo = Math.round(daysLeft / 30.5);
+                        deadlineBadge = `<span class="bg-zinc-800 text-zinc-400 text-[10px] font-bold px-2.5 py-1 rounded-full">~${mo}mo left</span>`;
+                    }
                 }
 
-                const glowCls = done ? 'ring-1 ring-emerald-500/30' : '';
+                // Monthly contribution needed
+                let moNeeded = '';
+                if (!done && g.deadline && target > current) {
+                    const daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
+                    if (daysLeft > 0) {
+                        const remaining = target - current;
+                        const moLeft = Math.max(1, daysLeft / 30.5);
+                        const perMo = remaining / moLeft;
+                        moNeeded = `<span class="text-[10px] text-zinc-600">${_fmtCurrency(perMo)}/mo needed</span>`;
+                    }
+                }
+
+                // Type badge
+                const typeBadge = g.type === 'debt'
+                    ? `<span class="text-[9px] font-bold tracking-widest uppercase text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full">Pay Off</span>`
+                    : `<span class="text-[9px] font-bold tracking-widest uppercase text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Save Up</span>`;
+
+                // Progress label
+                let progressLabel = '';
+                if (g.type === 'debt') {
+                    const acct = accounts.find(a => a.id === g.linkedAccountId);
+                    const startBal = g.startBalance || 0;
+                    progressLabel = `<span class="text-emerald-400 font-semibold">${_fmtCurrency(current)} paid</span> <span class="text-zinc-600">of ${_fmtCurrency(startBal)}</span>`;
+                } else {
+                    progressLabel = `<span class="text-emerald-400 font-semibold">${_fmtCurrency(current)}</span> <span class="text-zinc-600">of ${_fmtCurrency(target)}</span>`;
+                }
+
+                // Linked badge
+                let linkedBadge = '';
+                if (g.linkedAccountId) {
+                    const acct = accounts.find(a => a.id === g.linkedAccountId);
+                    if (acct) linkedBadge = `<span class="text-[10px] text-zinc-600">${acct.emoji || '🏦'} ${acct.name}</span>`;
+                } else if (g.linkedSub) {
+                    linkedBadge = `<span class="text-[10px] text-zinc-600">📂 ${g.linkedSub}</span>`;
+                } else if (g.type === 'savings') {
+                    linkedBadge = `<span class="text-[10px] text-zinc-600">✏️ Manual</span>`;
+                }
 
                 html += `<div class="bg-zinc-900 rounded-3xl p-5 ${glowCls}">
-                    <div class="flex items-center gap-4">
-                        <!-- Arc progress -->
-                        <div class="shrink-0">
-                            <svg width="68" height="68" viewBox="0 0 68 68">
-                                <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${trackColor}" stroke-width="5"/>
-                                <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${arcColor}" stroke-width="5"
-                                        stroke-linecap="round"
-                                        stroke-dasharray="${circ.toFixed(1)}"
-                                        stroke-dashoffset="${offset.toFixed(1)}"
-                                        transform="rotate(-90 ${CX} ${CY})"/>
-                                <text x="${CX}" y="${CY}" text-anchor="middle" dominant-baseline="central"
-                                      font-size="11" font-weight="700" fill="${arcColor}">${percent}%</text>
-                            </svg>
+                    <!-- Goal Header -->
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <div class="text-2xl leading-none shrink-0">${g.emoji || '🎯'}</div>
+                            <div class="min-w-0">
+                                <div class="font-semibold text-base leading-tight truncate text-zinc-100">${g.name}</div>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    ${typeBadge}
+                                    ${linkedBadge}
+                                </div>
+                            </div>
                         </div>
-                        <!-- Info -->
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between mb-1">
-                                <div class="font-semibold text-base leading-tight truncate">${g.name}</div>
-                                ${daysBadge}
-                            </div>
-                            <div class="text-emerald-400 font-semibold text-sm tabular-nums mb-2">
-                                $${Math.round(saved)} <span class="text-zinc-600 font-normal">/ $${Math.round(g.target)}</span>
-                            </div>
-                            <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                                <div class="progress-bar h-full rounded-full" style="width:${percent}%;background:${arcColor}"></div>
-                            </div>
+                        ${deadlineBadge ? `<div class="ml-2 shrink-0">${deadlineBadge}</div>` : ''}
+                    </div>
+
+                    <!-- Progress -->
+                    <div class="mb-2">
+                        <div class="flex justify-between items-baseline mb-1.5">
+                            <div class="text-sm tabular-nums">${progressLabel}</div>
+                            <div class="text-sm font-bold tabular-nums" style="color:${barColor}">${percent}%</div>
+                        </div>
+                        <div class="h-2.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div class="progress-bar h-full rounded-full" style="width:${percent}%;background:${barColor}"></div>
                         </div>
                     </div>
-                    <div class="mt-4 pt-3.5 border-t border-zinc-800 flex justify-between items-center">
-                        <div class="text-[10px] text-zinc-600 uppercase font-bold tracking-widest">Target: ${g.deadline}</div>
+
+                    <!-- Footer -->
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-zinc-800">
+                        <div class="flex items-center gap-3">
+                            ${moNeeded}
+                        </div>
                         <div class="flex items-center gap-4">
                             <button onclick="editGoal(${i})" class="text-zinc-400 hover:text-emerald-400 text-xs font-semibold transition-colors">Edit</button>
                             <button onclick="deleteGoal(${i})" class="text-zinc-700 hover:text-rose-400 text-xs font-semibold transition-colors">Delete</button>
@@ -3037,12 +3607,7 @@
                     </div>
                 </div>`;
             });
-            document.getElementById('goals-list').innerHTML = html ||
-                `<div class="text-center py-16">
-                    <div class="text-5xl mb-4">🏦</div>
-                    <div class="font-semibold text-zinc-400 mb-1">No savings goals yet</div>
-                    <div class="text-xs text-zinc-600">Tap "New Goal" to get started</div>
-                </div>`;
+            listEl.innerHTML = html;
         }
 
         // ── Tab long-press: set home screen ─────────────────
@@ -3087,7 +3652,7 @@
             active.classList.add('tab-active');
             active.classList.remove('text-zinc-500');
             active.classList.add('text-white');
-            [renderOverview, renderTransactions, renderBudgets, renderReports, renderGoals][n]?.();
+            [renderOverview, renderTransactions, renderBudgets, renderReports, renderAccounts][n]?.();
         }
 
         function prevBudgetMonth() {
@@ -3380,7 +3945,7 @@ Transactions using it will stay.`)) {
                             if (t.mainCategory === _bimMain && t.subCategory === _bimSub) t.subCategory = newName;
                         });
                         goals.forEach(g => {
-                            if (g.linkedSub === _bimSub) { g.linkedSub = newName; g.name = newName; }
+                            if (g.linkedSub === _bimSub) { g.linkedSub = newName; }
                         });
                         if (itemIcons[`${_bimMain}:${_bimSub}`]) {
                             itemIcons[`${_bimMain}:${newName}`] = itemIcons[`${_bimMain}:${_bimSub}`];
@@ -3526,8 +4091,11 @@ Transactions using it will stay.`)) {
             document.getElementById('desc').value = '';
             const excl = document.getElementById('tx-exclude');
             if (excl) excl.checked = false;
+            const txAcct = document.getElementById('tx-account');
+            if (txAcct) txAcct.value = '';
             setType('expense');
             updateExcludeUI();
+            _refreshTxAccountDropdown();
         }
 
         function updateExcludeUI() {
@@ -3546,8 +4114,10 @@ Transactions using it will stay.`)) {
         function hideModal() {
             document.getElementById('add-modal').classList.add('hidden');
             document.getElementById('goal-modal').classList.add('hidden');
+            document.getElementById('account-modal').classList.add('hidden');
             _editingTxIdx = null;
             _editingGoalIdx = null;
+            _editingAccountId = null;
         }
 
         function setType(type) {
@@ -3622,7 +4192,7 @@ Transactions using it will stay.`)) {
             renderTransactions();
             renderBudgets();
             renderAllReports();
-            renderGoals();
+            renderAccounts();
         }
 
         function openEditTx(idx) {
@@ -3650,6 +4220,9 @@ Transactions using it will stay.`)) {
             }
             const saveBtn = document.getElementById('save-transaction-btn');
             if (saveBtn) saveBtn.textContent = t.type === 'income' ? 'Update Income' : 'Update Expense';
+            _refreshTxAccountDropdown();
+            const txAcct = document.getElementById('tx-account');
+            if (txAcct) txAcct.value = t.accountId || '';
         }
 
         function addTransaction() {
@@ -3658,8 +4231,10 @@ Transactions using it will stay.`)) {
             const date    = document.getElementById('date').value;
             const desc    = document.getElementById('desc').value.trim();
             const exclude = !!(document.getElementById('tx-exclude')?.checked);
+            const accountId = document.getElementById('tx-account')?.value || null;
 
             let trans = { type: currentType, amount, date, desc };
+            if (accountId) trans.accountId = accountId;
             if (exclude) {
                 trans.excluded     = true;
                 trans.mainCategory = '';
@@ -3689,18 +4264,87 @@ Transactions using it will stay.`)) {
             _showUndo(index);
         }
 
-        function showAddGoalModal() {
-            const usedSubs = new Set(goals.map(g => g.linkedSub));
-            const available = (expenseCategories["Savings"] || []).filter(s => !usedSubs.has(s));
-            if (available.length === 0) {
-                return alert("All savings budget items already have a goal. Delete an existing goal or add a new savings budget item first.");
-            }
-            const sel = document.getElementById('goal-sub'); sel.innerHTML = '';
-            available.forEach(sub => {
-                const opt = document.createElement('option'); opt.value = sub; opt.textContent = sub; sel.appendChild(opt);
+        function _setGoalType(type) {
+            _goalType = type;
+            const savBtn = document.getElementById('goal-type-savings');
+            const dbtBtn = document.getElementById('goal-type-debt');
+
+            // Style active / inactive buttons via inline style (avoids Tailwind JIT issues)
+            [savBtn, dbtBtn].forEach(function(btn) {
+                if (!btn) return;
+                btn.style.borderColor = '';
+                btn.style.backgroundColor = '';
             });
+            const activeBtn = type === 'savings' ? savBtn : dbtBtn;
+            const inactiveBtn = type === 'savings' ? dbtBtn : savBtn;
+            if (activeBtn) { activeBtn.style.borderColor = '#10b981'; activeBtn.style.backgroundColor = 'rgba(16,185,129,0.10)'; }
+            if (inactiveBtn) { inactiveBtn.style.borderColor = '#3f3f46'; inactiveBtn.style.backgroundColor = 'rgba(39,39,42,0.5)'; }
+
+            const targetRow   = document.getElementById('goal-target-row');
+            const categoryRow = document.getElementById('goal-category-row');
+            const lbl = document.getElementById('goal-account-label');
+            const opt = document.getElementById('goal-account-optional');
+
+            if (type === 'savings') {
+                if (targetRow)   targetRow.classList.remove('hidden');
+                if (categoryRow) categoryRow.classList.remove('hidden');
+                if (lbl) lbl.textContent = 'Link to Account';
+                if (opt) opt.classList.remove('hidden');
+            } else {
+                if (targetRow)   targetRow.classList.add('hidden');
+                if (categoryRow) categoryRow.classList.add('hidden');
+                if (lbl) lbl.textContent = 'Debt Account';
+                if (opt) opt.classList.add('hidden');
+            }
+            _updateGoalCurrentRow();
+        }
+
+        function _updateGoalCurrentRow() {
+            const row = document.getElementById('goal-current-row');
+            if (!row) return;
+            const acctVal = document.getElementById('goal-account')?.value || '';
+            const catVal  = document.getElementById('goal-sub')?.value || '';
+            const show = _goalType === 'savings' && !acctVal && !catVal;
+            row.classList.toggle('hidden', !show);
+        }
+
+        function showAddGoalModal() {
+            _editingGoalIdx = null;
+            _goalSelectedEmoji = '🎯';
+            _goalType = 'savings';
+
+            document.getElementById('goal-modal-title').textContent = 'New Goal';
+            document.getElementById('goal-modal-subtitle').textContent = 'Set a target and track your progress';
+            document.getElementById('goal-save-btn').textContent = 'Create Goal';
+            document.getElementById('goal-modal-emoji-btn').textContent = '🎯';
+            document.getElementById('goal-name').value = '';
             document.getElementById('goal-target').value = '';
             document.getElementById('goal-deadline').value = '';
+            const curEl = document.getElementById('goal-current');
+            if (curEl) curEl.value = '';
+
+            // Populate savings category dropdown
+            const subSel = document.getElementById('goal-sub');
+            subSel.innerHTML = '<option value="">None</option>';
+            (expenseCategories['Savings'] || []).forEach(s => {
+                const opt = document.createElement('option'); opt.value = s; opt.textContent = s; subSel.appendChild(opt);
+            });
+            subSel.onchange = _updateGoalCurrentRow;
+
+            // Populate account dropdown
+            _refreshGoalAccountDropdown();
+            const acctSel = document.getElementById('goal-account');
+            if (acctSel) acctSel.onchange = _updateGoalCurrentRow;
+
+            // Populate emoji grid
+            _renderEmojiGrid('goal-emoji-grid', GOAL_EMOJIS, (em) => {
+                _goalSelectedEmoji = em;
+                document.getElementById('goal-modal-emoji-btn').textContent = em;
+                document.getElementById('goal-emoji-picker').classList.add('hidden');
+            });
+
+            _setGoalType('savings');
+            document.getElementById('goal-emoji-picker').classList.add('hidden');
             document.getElementById('goal-modal').classList.remove('hidden');
         }
 
@@ -3708,50 +4352,87 @@ Transactions using it will stay.`)) {
             const g = goals[i];
             if (!g) return;
             _editingGoalIdx = i;
-            // Populate the goal modal for editing
-            const sel = document.getElementById('goal-sub');
-            sel.innerHTML = `<option value="${g.linkedSub}">${g.linkedSub}</option>`;
-            sel.disabled = true;
-            document.getElementById('goal-target').value = Math.round(g.target);
-            document.getElementById('goal-deadline').value = g.deadline;
-            // Update modal header
-            const hdr = document.querySelector('#goal-modal h2');
-            if (hdr) hdr.textContent = 'Edit Goal';
-            const sub = document.querySelector('#goal-modal p');
-            if (sub) sub.textContent = 'Update your target or deadline';
-            const btn = document.querySelector('#goal-modal button[onclick="addGoal()"]');
-            if (btn) btn.textContent = 'Save Changes';
+            _goalSelectedEmoji = g.emoji || '🎯';
+            _goalType = g.type || 'savings';
+
+            document.getElementById('goal-modal-title').textContent = 'Edit Goal';
+            document.getElementById('goal-modal-subtitle').textContent = 'Update your target or deadline';
+            document.getElementById('goal-save-btn').textContent = 'Save Changes';
+            document.getElementById('goal-modal-emoji-btn').textContent = _goalSelectedEmoji;
+            document.getElementById('goal-name').value = g.name || '';
+            document.getElementById('goal-target').value = g.target || '';
+            document.getElementById('goal-deadline').value = g.deadline || '';
+            const curEl = document.getElementById('goal-current');
+            if (curEl) curEl.value = g.currentAmount || '';
+
+            // Populate dropdowns
+            const subSel = document.getElementById('goal-sub');
+            subSel.innerHTML = '<option value="">None</option>';
+            (expenseCategories['Savings'] || []).forEach(s => {
+                const opt = document.createElement('option'); opt.value = s; opt.textContent = s;
+                if (s === g.linkedSub) opt.selected = true;
+                subSel.appendChild(opt);
+            });
+            subSel.onchange = _updateGoalCurrentRow;
+
+            _refreshGoalAccountDropdown();
+            const acctSel = document.getElementById('goal-account');
+            if (acctSel) {
+                acctSel.value = g.linkedAccountId || '';
+                acctSel.onchange = _updateGoalCurrentRow;
+            }
+
+            _renderEmojiGrid('goal-emoji-grid', GOAL_EMOJIS, (em) => {
+                _goalSelectedEmoji = em;
+                document.getElementById('goal-modal-emoji-btn').textContent = em;
+                document.getElementById('goal-emoji-picker').classList.add('hidden');
+            });
+
+            _setGoalType(_goalType);
+            document.getElementById('goal-emoji-picker').classList.add('hidden');
             document.getElementById('goal-modal').classList.remove('hidden');
         }
 
-        function addGoal() {
-            const linkedSub = document.getElementById('goal-sub').value;
-            const target = parseFloat(document.getElementById('goal-target').value);
-            const deadline = document.getElementById('goal-deadline').value;
-            if (!linkedSub || !target || !deadline) return alert("Fill all fields");
+        function saveGoal() {
+            const name     = document.getElementById('goal-name').value.trim();
+            const target   = parseFloat(document.getElementById('goal-target').value) || 0;
+            const deadline = document.getElementById('goal-deadline').value || null;
+            const linkedAccountId = document.getElementById('goal-account')?.value || null;
+            const linkedSub = document.getElementById('goal-sub')?.value || null;
+            const currentAmount = parseFloat(document.getElementById('goal-current')?.value) || 0;
+            const emoji    = _goalSelectedEmoji;
+            const type     = _goalType;
+
+            if (!name) return alert('Enter a goal name');
+            if (type === 'savings' && !target) return alert('Enter a target amount');
+            if (type === 'debt' && !linkedAccountId) return alert('Select a debt account to track');
+
+            const goalData = {
+                name, emoji, type,
+                target: type === 'savings' ? target : 0,
+                deadline,
+                linkedAccountId: linkedAccountId || null,
+                linkedSub: linkedSub || null,
+                currentAmount,
+            };
 
             if (_editingGoalIdx !== null) {
-                // Editing existing goal
-                goals[_editingGoalIdx].target   = target;
-                goals[_editingGoalIdx].deadline = deadline;
+                goals[_editingGoalIdx] = { ...goals[_editingGoalIdx], ...goalData };
             } else {
-                // New goal
-                if (goals.some(g => g.linkedSub === linkedSub)) return alert(`A goal for "${linkedSub}" already exists.`);
-                goals.push({ id: Date.now(), name: linkedSub, linkedSub, target, deadline });
+                const acct = accounts.find(a => a.id == linkedAccountId);
+                goalData.id = Date.now();
+                goalData.createdAt = Date.now();
+                if (type === 'debt' && acct) goalData.startBalance = acct.balance;
+                goals.push(goalData);
             }
+
             saveData();
             hideModal();
-            // Reset goal modal to "New" state for next time
-            const sel = document.getElementById('goal-sub');
-            if (sel) sel.disabled = false;
-            const hdr = document.querySelector('#goal-modal h2');
-            if (hdr) hdr.textContent = 'New Savings Goal';
-            const sub = document.querySelector('#goal-modal p');
-            if (sub) sub.textContent = 'Set a target and track your progress';
-            const btn = document.querySelector('#goal-modal button[onclick="addGoal()"]');
-            if (btn) btn.textContent = 'Create Goal';
             renderGoals();
         }
+
+        // Legacy compatibility: addGoal() now calls saveGoal()
+        function addGoal() { saveGoal(); }
 
         function deleteGoal(index) {
             if (confirm("Delete this goal?")) {
@@ -3806,8 +4487,8 @@ Transactions using it will stay.`)) {
             const catCount = Object.values(expenseCategories).reduce((s, arr) => s + arr.length, 0);
             const stats = [
                 ['Transactions', transactions.length,  '#10b981'],
+                ['Accounts',     accounts.length,       '#10b981'],
                 ['Goals',        goals.length,          '#10b981'],
-                ['Budget Items', catCount,              '#10b981'],
             ];
             el.innerHTML = stats.map(([label, val, color]) => `
                 <div class="bg-zinc-900 rounded-2xl py-3 px-3 text-center">
@@ -4048,15 +4729,16 @@ Transactions using it will stay.`)) {
         function deleteIncomeType(i)     { deleteCatItem('Income', i); }
 
         function clearAllData() {
-            if (!confirm('Reset app to factory defaults?\nThis clears ALL transactions, goals, budgets and categories — and restores the default category list.\nThis cannot be undone.')) return;
+            if (!confirm('Reset app to factory defaults?\nThis clears ALL transactions, goals, accounts, budgets and categories — and restores the default category list.\nThis cannot be undone.')) return;
             // Full factory reset: wipe everything and restore defaults
             transactions      = [];
             goals             = [];
+            accounts          = [];
             monthlyBudgets    = {};
             expenseCategories = {...defaultCategories};
             _syncIncomeCats();
             // Wipe localStorage completely for this app
-            ['transactions','goals','monthlyBudgets','expenseCategories','incomeCats','tutDone']
+            ['transactions','goals','accounts','monthlyBudgets','expenseCategories','incomeCats','tutDone']
                 .forEach(function(k) { localStorage.removeItem(k); });
             // Delete from Firestore if signed in
             const user = _fbAuth ? _fbAuth.currentUser : null;
@@ -4075,6 +4757,7 @@ Transactions using it will stay.`)) {
                 expenseCategories,
                 monthlyBudgets,
                 goals,
+                accounts,
                 exportedAt: new Date().toISOString()
             };
             const filename = `Minimal-Budget-Backup-${new Date().toISOString().slice(0,10)}.json`;
@@ -4097,6 +4780,7 @@ Transactions using it will stay.`)) {
                     if (imported.expenseCategories) expenseCategories = imported.expenseCategories;
                     if (imported.monthlyBudgets) monthlyBudgets = imported.monthlyBudgets;
                     if (imported.goals) goals = imported.goals;
+                    if (imported.accounts) accounts = imported.accounts;
                     saveData();
                     alert("Backup restored successfully!");
                     hideDataModal();
@@ -4175,8 +4859,7 @@ Transactions using it will stay.`)) {
             // Goal milestones
             if (prefs.goals !== false) {
                 goals.forEach(g => {
-                    const saved   = calculateGoalProgress(g.linkedSub);
-                    const percent = g.target > 0 ? Math.round(saved / g.target * 100) : 0;
+                    const { percent } = calculateGoalProgress(g);
                     const key50   = `milestone_50_${g.id}`;
                     const key100  = `milestone_100_${g.id}`;
                     if (percent >= 100 && !sessionStorage.getItem(key100)) {
@@ -4207,7 +4890,7 @@ Transactions using it will stay.`)) {
         }
 
         /* ── Launch screen preference ───────────────────── */
-        const LAUNCH_TABS = ['Overview', 'Transactions', 'Budgets', 'Reports', 'Goals'];
+        const LAUNCH_TABS = ['Overview', 'Transactions', 'Budgets', 'Reports', 'Accounts'];
 
         function getLaunchTab() {
             return parseInt(localStorage.getItem('launchTab') || '0', 10);
@@ -5428,6 +6111,7 @@ Transactions using it will stay.`)) {
             // Load fresh default state — no localStorage, no Firestore
             transactions      = [];
             goals             = [];
+            accounts          = [];
             monthlyBudgets    = {};
             expenseCategories = {...defaultCategories};
             incomeCats        = ["Salary","Freelance","Investments","Gifts","Other"];
@@ -5447,6 +6131,7 @@ Transactions using it will stay.`)) {
             // Clear any changes made in demo mode then go back to auth
             transactions      = [];
             goals             = [];
+            accounts          = [];
             monthlyBudgets    = {};
             expenseCategories = {...defaultCategories};
             incomeCats        = ["Salary","Freelance","Investments","Gifts","Other"];
