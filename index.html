@@ -1208,7 +1208,7 @@
         let _editingTxIdx = null;
         let _editingGoalIdx = null;
 
-        let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"🛍️","Health":"💊","Transportation":"🚗","Debt":"💳","Savings":"📈","Banking":"🏦" };
+        let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Debt":"💳","Savings":"🏦","Banking":"🏛️" };
         let itemIcons = {}; // keyed "main:sub", e.g. "Food:Groceries" → "🛒"
         let _bimMain = null, _bimSub = null, _bimSelectedIcon = null;
         let _balLegendOpen = false;
@@ -1225,6 +1225,37 @@
             "Banking":        ["Bank Fees", "Transfers", "Cash Withdrawal"],
             "Debt":           ["Student Loans"],
             "Savings":        ["Emergency Fund", "Tuition"],
+        };
+
+        const defaultItemIcons = {
+            "Income:Salary":              "💼",
+            "Income:Freelance":           "💻",
+            "Income:Investments":         "📈",
+            "Food:Groceries":             "🛒",
+            "Food:Restaurants/Coffee":    "☕",
+            "Personal:Phone Plan":        "📱",
+            "Personal:Subscriptions":     "📺",
+            "Personal:Entertainment":     "🎬",
+            "Personal:Education":         "📚",
+            "Personal:Grooming/Haircut":  "✂️",
+            "Personal:Laundry":           "🧺",
+            "Household:Rent/Mortgage":    "🏠",
+            "Household:Utilities":        "💡",
+            "Household:Internet":         "🌐",
+            "Transportation:Car Payment": "🚗",
+            "Transportation:Auto Insurance": "🛡️",
+            "Transportation:Gas/Charging":"⛽",
+            "Transportation:Maintenance": "🔧",
+            "Transportation:Parking/Tolls": "🅿️",
+            "Health:Supplements":         "💊",
+            "Health:Medical":             "🏥",
+            "Health:Training":            "🏋️",
+            "Banking:Bank Fees":          "🏦",
+            "Banking:Transfers":          "💸",
+            "Banking:Cash Withdrawal":    "💵",
+            "Debt:Student Loans":         "🎓",
+            "Savings:Emergency Fund":     "🔐",
+            "Savings:Tuition":            "📖",
         };
 
         /* ── Persistence helpers ─────────────────────── */
@@ -2184,7 +2215,7 @@
                         : calculateSpentInMonth(selectedBudgetMonth, main, sub);
                     const pct = budget > 0 ? actual / budget * 100 : 0;
                     const donutColor = _budgetItemColor(pct, isIncome);
-                    const icon = itemIcons[`${main}:${sub}`] || (isIncome ? '💵' : '💸');
+                    const icon = itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || (isIncome ? '💵' : '💸');
                     const mEsc = main.replace(/'/g,"\\'");
                     const sEsc = sub.replace(/'/g,"\\'");
 
@@ -3217,7 +3248,7 @@ Transactions using it will stay.`)) {
             const isInc  = main === 'Income';
             const actual = isInc ? calculateIncomeInMonth(selectedBudgetMonth, sub)
                                  : calculateSpentInMonth(selectedBudgetMonth, main, sub);
-            const icon   = itemIcons[`${main}:${sub}`] || (isInc ? '💵' : '💸');
+            const icon   = itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || (isInc ? '💵' : '💸');
             const pct    = budget > 0 ? actual / budget * 100 : 0;
             const color  = _budgetItemColor(pct, isInc);
             const CIRC   = 175.93;
