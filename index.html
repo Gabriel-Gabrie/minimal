@@ -822,18 +822,16 @@
                 <button onclick="hideDataModal()" class="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors text-lg leading-none">×</button>
             </div>
 
-            <!-- ── PREFERENCES ──────────────────────────── -->
+            <!-- ── EDIT CATEGORIES ─────────────────────── -->
             <div class="px-5 mb-5">
-                <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Preferences</div>
+                <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Categories</div>
                 <div class="bg-zinc-900 rounded-3xl overflow-hidden">
-
-                    <!-- Budget Categories accordion -->
                     <button onclick="toggleCategoryEditorAccordion()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
-                        <div class="w-9 h-9 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0">
-                            <svg width="16" height="16" fill="none" stroke="#a1a1aa" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                        <div class="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
+                            <svg width="17" height="17" fill="none" stroke="#a78bfa" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                         </div>
                         <div class="flex-1 text-left">
-                            <div class="font-semibold text-sm">Budget Categories</div>
+                            <div class="font-semibold text-sm">Edit Categories</div>
                             <div id="cat-editor-count" class="text-[11px] text-zinc-500 mt-0.5"></div>
                         </div>
                         <svg id="cat-editor-chevron" class="acc-chevron w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
@@ -849,8 +847,13 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <div class="h-px bg-zinc-800 mx-5"></div>
+            <!-- ── PREFERENCES ──────────────────────────── -->
+            <div class="px-5 mb-5">
+                <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Preferences</div>
+                <div class="bg-zinc-900 rounded-3xl overflow-hidden">
 
                     <!-- Appearance (light / dark / system) -->
                     <div class="flex items-center gap-4 px-5 py-4">
@@ -1943,25 +1946,76 @@
 
             const summaryEl = document.getElementById('budget-summary');
             if (summaryEl) {
+                // ── Donut chart category colors ────────────────────────────────
+                const catColors = {
+                    "Food":"#f97316","Household":"#3b82f6","Personal":"#a855f7",
+                    "Health":"#22c55e","Transportation":"#06b6d4","Debt":"#f43f5e",
+                    "Savings":"#14b8a6","Banking":"#eab308"
+                };
+                const r = 65, cxD = 85, cyD = 85, sw = 18;
+                const circ = 2 * Math.PI * r; // ≈ 408.41
+
+                // Build arc segments
+                let offsetArc = 0;
+                let segs = '';
+                let legendItems = [];
+                Object.keys(expenseCategories).filter(k => k !== 'Income').forEach(cat => {
+                    const catBudget = expenseCategories[cat].reduce((s, item) => s + ((monthBudgets[cat]||{})[item]||0), 0);
+                    if (catBudget <= 0 || incomePlanned <= 0) return;
+                    const color = catColors[cat] || '#6366f1';
+                    const arcLen = Math.min((catBudget / incomePlanned) * circ, circ - offsetArc);
+                    if (arcLen <= 0) return;
+                    segs += `<circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-dasharray="${arcLen.toFixed(3)} ${(circ-arcLen).toFixed(3)}" stroke-dashoffset="${(circ-offsetArc).toFixed(3)}" transform="rotate(-90,${cxD},${cyD})"/>`;
+                    const pctLbl = Math.round(catBudget / incomePlanned * 100);
+                    legendItems.push(`<div class="flex items-center gap-1.5"><span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0"></span><span style="font-size:10px;color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cat}</span><span style="font-size:10px;color:#52525b;margin-left:auto">${pctLbl}%</span></div>`);
+                    offsetArc += arcLen;
+                });
+
+                // Unallocated amber arc (thinner, ghosted)
+                if (balance > 0 && incomePlanned > 0) {
+                    const unallocArc = Math.min((balance / incomePlanned) * circ, circ - offsetArc);
+                    if (unallocArc > 0.5) {
+                        segs += `<circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="#f59e0b" stroke-width="10" opacity="0.35" stroke-dasharray="${unallocArc.toFixed(3)} ${(circ-unallocArc).toFixed(3)}" stroke-dashoffset="${(circ-offsetArc).toFixed(3)}" transform="rotate(-90,${cxD},${cyD})"/>`;
+                    }
+                }
+
+                // Center label values
+                const cAmt  = incomePlanned === 0 ? '' : `${balSign}$${Math.abs(balance).toFixed(0)}`;
+                const cLbl  = incomePlanned === 0 ? 'no income set' : balLabel.toUpperCase();
+                const cAmtFill = balance === 0 ? '#10b981' : balance > 0 ? '#f59e0b' : '#ef4444';
+                const cLblFill = balance === 0 ? '#34d399' : balance > 0 ? '#d97706' : '#f87171';
+
+                const centerSVG = incomePlanned === 0
+                    ? `<text x="${cxD}" y="${cyD+4}" text-anchor="middle" fill="#52525b" font-size="10" font-family="system-ui,sans-serif">No income set</text>`
+                    : `<text x="${cxD}" y="${cyD-7}" text-anchor="middle" fill="${cAmtFill}" font-size="22" font-weight="700" font-family="system-ui,sans-serif">${cAmt}</text><text x="${cxD}" y="${cyD+12}" text-anchor="middle" fill="${cLblFill}" font-size="9" font-family="system-ui,sans-serif" letter-spacing="0.08em">${cLbl}</text>`;
+
+                // Right-side stats
+                const statsHTML = incomePlanned === 0
+                    ? `<p style="font-size:11px;color:#52525b;line-height:1.6">Set a planned<br>income amount<br>to get started.</p>`
+                    : `<div style="display:flex;flex-direction:column;gap:12px">
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Income</div><div style="font-size:14px;font-weight:700;color:#34d399;font-variant-numeric:tabular-nums">$${incomePlanned.toFixed(2)}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Budgeted</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${expBudgeted.toFixed(2)}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${balance >= 0 ? 'Remaining' : 'Over By'}</div><div style="font-size:14px;font-weight:700;color:${cAmtFill};font-variant-numeric:tabular-nums">${balSign}$${Math.abs(balance).toFixed(2)}</div></div>
+                       </div>`;
+
+                // Category legend (only if there are segments)
+                const legendHTML = legendItems.length
+                    ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;padding-top:14px;border-top:1px solid #27272a;margin-top:4px">${legendItems.join('')}</div>`
+                    : '';
+
                 summaryEl.innerHTML = `<div class="bg-zinc-900 rounded-3xl p-5">
-                    <div class="text-[9px] font-black tracking-[.12em] text-zinc-500 uppercase mb-4">Budget Balance</div>
-                    <div class="flex justify-between items-end mb-4">
-                        <div>
-                            <div class="text-[10px] text-zinc-500 mb-1">Planned Income</div>
-                            <div class="text-xl font-semibold text-emerald-400 tabular-nums">$${incomePlanned.toFixed(2)}</div>
+                    <div class="text-[9px] font-black tracking-[.12em] text-zinc-500 uppercase mb-3">Budget Balance</div>
+                    <div style="display:flex;align-items:center;gap:16px">
+                        <div style="flex-shrink:0">
+                            <svg width="170" height="170" viewBox="0 0 170 170">
+                                <circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="#27272a" stroke-width="${sw}"/>
+                                ${segs}
+                                ${centerSVG}
+                            </svg>
                         </div>
-                        <div class="text-right">
-                            <div class="text-[10px] text-zinc-500 mb-1">Expenses Budgeted</div>
-                            <div class="text-xl font-semibold text-zinc-200 tabular-nums">$${expBudgeted.toFixed(2)}</div>
-                        </div>
+                        <div style="flex:1;min-width:0">${statsHTML}</div>
                     </div>
-                    <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-3">
-                        <div class="h-full rounded-full transition-all duration-700" style="width:${balPct}%;background:${balColor}"></div>
-                    </div>
-                    <div class="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-zinc-800/60">
-                        <div class="text-xs text-zinc-500">${balLabel}</div>
-                        <div class="${balBadgeCls} text-xs font-bold tabular-nums">${balSign}$${Math.abs(balance).toFixed(2)}</div>
-                    </div>
+                    ${legendHTML}
                 </div>`;
             }
 
@@ -2000,9 +2054,7 @@
                             : '';
                     }
                     const subBarWidth = Math.min(100, subPct);
-                    const amtLabel = isIncome
-                        ? `$${actual.toFixed(2)} earned / $${budget.toFixed(2)} planned`
-                        : `$${actual.toFixed(2)} / $${budget.toFixed(2)}`;
+                    const amtLabel = `$${actual.toFixed(2)} / $${budget.toFixed(2)}`;
 
                     subHTML += `<div class="budget-item-row py-3.5 border-b border-zinc-800/60 last:border-none" data-main="${main.replace(/"/g,'&quot;')}" data-sub="${sub.replace(/"/g,'&quot;')}">
                         <div class="flex justify-between items-center mb-2">
