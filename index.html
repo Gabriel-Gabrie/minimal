@@ -811,6 +811,79 @@
         </div>
     </div>
 
+    <!-- BUDGET ITEM EDIT MODAL -->
+    <div id="budget-item-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-50" onclick="_bimBackdrop(event)">
+        <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
+            <!-- drag handle -->
+            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10">
+                <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
+            </div>
+            <div class="px-5 pt-3 pb-6">
+                <!-- Live preview -->
+                <div class="flex items-center gap-4 mb-6 bg-zinc-900 rounded-3xl px-4 py-4">
+                    <div class="relative flex-shrink-0" style="width:72px;height:72px">
+                        <svg id="bim-preview-svg" width="72" height="72" viewBox="0 0 72 72">
+                            <circle cx="36" cy="36" r="28" fill="none" stroke="#27272a" stroke-width="8"/>
+                            <circle id="bim-preview-arc" cx="36" cy="36" r="28" fill="none" stroke="#10b981" stroke-width="8"
+                                    stroke-dasharray="0 175.93" stroke-linecap="round"
+                                    transform="rotate(-90 36 36)"/>
+                        </svg>
+                        <div id="bim-preview-icon" class="absolute inset-0 flex items-center justify-center text-[26px]">💸</div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div id="bim-preview-name" class="text-lg font-bold truncate text-zinc-100">Item Name</div>
+                        <div id="bim-preview-cat" class="text-xs text-zinc-500 mt-0.5 uppercase tracking-widest font-semibold"></div>
+                        <div id="bim-preview-status" class="text-sm mt-1 font-medium"></div>
+                    </div>
+                </div>
+
+                <!-- Icon picker -->
+                <div class="mb-5">
+                    <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Icon</div>
+                    <div class="bg-zinc-900 rounded-2xl p-3">
+                        <div id="bim-icon-grid" class="grid grid-cols-8 gap-1"></div>
+                    </div>
+                </div>
+
+                <!-- Name -->
+                <div class="mb-4">
+                    <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Name</div>
+                    <input id="bim-name" type="text" autocomplete="off"
+                           class="w-full bg-zinc-900 rounded-2xl px-4 py-3.5 text-base font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all placeholder-zinc-700"
+                           placeholder="Item name"
+                           oninput="document.getElementById('bim-preview-name').textContent=this.value.trim()||'Item Name'"/>
+                </div>
+
+                <!-- Budget Amount -->
+                <div class="mb-7">
+                    <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Budget Amount</div>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-semibold text-base pointer-events-none">$</span>
+                        <input id="bim-amount" type="number" inputmode="numeric" step="1" min="0"
+                               class="w-full bg-zinc-900 rounded-2xl pl-9 pr-4 py-3.5 text-base font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                               placeholder="0"/>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-3">
+                    <button id="bim-delete-btn" onclick="deleteBudgetItemFromModal()"
+                            class="py-3.5 px-5 rounded-2xl text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all">
+                        Delete
+                    </button>
+                    <button onclick="closeBudgetItemModal()"
+                            class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-zinc-400 bg-zinc-900 hover:bg-zinc-800 active:scale-95 transition-all">
+                        Cancel
+                    </button>
+                    <button onclick="saveBudgetItemModal()"
+                            class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- SETTINGS MODAL -->
     <div id="data-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50" onclick="handleSettingsBackdrop(event)">
         <div id="settings-panel" class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
@@ -1101,6 +1174,9 @@
         let _editingGoalIdx = null;
 
         let mainEmojis = { "Income":"💵","Food":"🍔","Household":"🏠","Personal":"👤","Health":"🩺","Transportation":"🚗","Debt":"💳","Savings":"🏦","Banking":"🏛️" };
+        let itemIcons = {}; // keyed "main:sub", e.g. "Food:Groceries" → "🛒"
+        let _bimMain = null, _bimSub = null, _bimSelectedIcon = null;
+        let _balLegendOpen = false;
         let incomeCats = ["Salary","Freelance","Investments","Gifts","Other"]; // legacy — now derived from expenseCategories['Income']
 
         const defaultCategories = {
@@ -1122,7 +1198,7 @@
         function saveData() {
             if (_demoMode) return; // never persist demo data
             const snap = {
-                transactions, expenseCategories, monthlyBudgets, goals
+                transactions, expenseCategories, monthlyBudgets, goals, itemIcons
                 // incomeCats is now derived from expenseCategories['Income'] — not saved separately
             };
             // Always write to localStorage as offline cache
@@ -1145,6 +1221,7 @@
             monthlyBudgets    = d.monthlyBudgets    || {};
             goals             = d.goals             || [];
             transactions      = d.transactions      || [];
+            itemIcons         = d.itemIcons         || {};
             incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
             selectedBudgetMonth = getCurrentMonthKey();
 
@@ -1185,6 +1262,7 @@
                 monthlyBudgets:    JSON.parse(localStorage.getItem('monthlyBudgets')),
                 goals:             JSON.parse(localStorage.getItem('goals')),
                 transactions:      JSON.parse(localStorage.getItem('transactions')),
+                itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
                 incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
             });
         }
@@ -1291,10 +1369,13 @@
             const allInc = transactions.filter(t => t.type === 'income' && !t.excluded)
                 .reduce((s, t) => s + parseFloat(t.amount), 0);
 
-            // Budget this month
+            // Budget this month — exclude Income category from expense pace
             const mb = monthlyBudgets[monthKey] || {};
             let totalBudget = 0;
-            Object.values(mb).forEach(cat => Object.values(cat || {}).forEach(v => totalBudget += v));
+            Object.entries(mb).forEach(([cat, items]) => {
+                if (cat === 'Income') return;
+                Object.values(items || {}).forEach(v => totalBudget += v);
+            });
             const hasBudget = totalBudget > 0;
 
             // ── Header ────────────────────────────────────────────────
@@ -1941,7 +2022,7 @@
                               : balance > 0   ? 'bg-amber-500/20 text-amber-400'
                               :                 'bg-rose-500/20 text-rose-400';
             const balLabel    = isBalanced ? 'Balanced ✓'
-                              : balance > 0   ? `Left to Spend`
+                              : balance > 0   ? `Left to Budget`
                               :                 `Over Income`;
             const balSign     = !isBalanced && balance > 0 ? '+' : '';
 
@@ -2017,13 +2098,18 @@
                     : `<div style="display:flex;flex-direction:column;gap:12px">
                         <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Expected Income</div><div style="font-size:14px;font-weight:700;color:#34d399;font-variant-numeric:tabular-nums">$${Math.round(incomePlanned)}</div></div>
                         <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Planned Expenses</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${Math.round(expBudgeted)}</div></div>
-                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${isBalanced ? 'Balanced' : balance >= 0 ? 'Left to Spend' : 'Over Income'}</div><div style="font-size:14px;font-weight:700;color:${cAmtFill};font-variant-numeric:tabular-nums">$${Math.round(Math.abs(balance))}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${isBalanced ? 'Balanced' : balance >= 0 ? 'Left to Budget' : 'Over Income'}</div><div style="font-size:14px;font-weight:700;color:${cAmtFill};font-variant-numeric:tabular-nums">$${Math.round(Math.abs(balance))}</div></div>
                        </div>`;
 
-                // Category legend — single column
-                const legendHTML = legendItems.length
-                    ? `<div style="display:flex;flex-direction:column;gap:0;padding-top:14px;border-top:1px solid #27272a;margin-top:4px">${legendItems.join('')}</div>`
-                    : '';
+                // Category legend — collapsible single column
+                const legendHTML = legendItems.length ? `
+                    <button onclick="_toggleBalLegend()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 0 4px;border-top:1px solid #27272a;margin-top:8px;background:none;border-left:none;border-right:none;border-bottom:none;cursor:pointer">
+                        <span style="font-size:10px;font-weight:800;letter-spacing:.12em;color:#52525b;text-transform:uppercase">Categories</span>
+                        <svg id="bal-leg-chev" style="width:14px;height:14px;color:#52525b;transition:transform .2s;transform:${_balLegendOpen?'':'rotate(-90deg)'}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div id="bal-leg-panel" style="display:${_balLegendOpen?'flex':'none'};flex-direction:column;gap:0;padding-bottom:4px">
+                        ${legendItems.join('')}
+                    </div>` : '';
 
                 summaryEl.innerHTML = `<div class="bg-zinc-900 rounded-3xl p-5">
                     <div style="display:flex;align-items:center;gap:16px">
@@ -2044,96 +2130,93 @@
             Object.keys(expenseCategories).forEach(main => {
                 const isIncome = main === 'Income';
                 const subs = expenseCategories[main];
-                const mainActual = isIncome
-                    ? calculateIncomeInMonth(selectedBudgetMonth)
-                    : calculateSpentInMonth(selectedBudgetMonth, main);
-                let mainBudgetTotal = 0;
-                let subHTML = '';
+                // ── Donut card grid per category ──────────────────────────────
+                const R = 28, CX = 36, CY = 36;
+                const CIRC = 2 * Math.PI * R; // ≈ 175.93
 
+                html += `<div class="mb-5">`;
+                // Category header (subdued — totals live in the balancer above)
+                html += `<div class="flex items-center gap-2 px-1 mb-3">
+                    <span class="text-lg">${mainEmojis[main] || '📂'}</span>
+                    <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase">${main}</span>
+                    ${isIncome ? '<span class="text-[9px] font-black tracking-widest text-emerald-600 uppercase ml-1">Income</span>' : ''}
+                </div>`;
+
+                // Grid: item donut cards + add button
+                html += `<div class="grid grid-cols-3 gap-3">`;
                 subs.forEach(sub => {
                     monthBudgets[main] = monthBudgets[main] || {};
                     const budget = monthBudgets[main][sub] || 0;
-                    mainBudgetTotal += budget;
                     const actual = isIncome
                         ? calculateIncomeInMonth(selectedBudgetMonth, sub)
                         : calculateSpentInMonth(selectedBudgetMonth, main, sub);
-                    const subPct  = budget > 0 ? Math.round(actual / budget * 100) : 0;
-                    let subBarColor, subOverCls, subBadge;
-                    if (isIncome) {
-                        // For income: reaching 100% = goal (emerald). Under = amber/rose.
-                        subBarColor = subPct >= 100 ? '#10b981' : subPct >= 50 ? '#f59e0b' : '#ef4444';
-                        subOverCls  = '';
-                        subBadge    = subPct >= 100
-                            ? `<span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full">${subPct}%</span>`
-                            : '';
-                    } else {
-                        const subOver = subPct > 100;
-                        subBarColor = subOver ? '#ef4444' : subPct > 80 ? '#f59e0b' : '#10b981';
-                        subOverCls  = subOver ? ' budget-bar-over' : '';
-                        subBadge    = subOver
-                            ? `<span class="text-[9px] font-bold text-rose-400 bg-rose-500/15 px-1.5 py-0.5 rounded-full">${subPct}%</span>`
-                            : '';
-                    }
-                    const subBarWidth = Math.min(100, subPct);
-                    const amtLabel = `$${Math.round(actual)} / $${Math.round(budget)}`;
+                    const pct = budget > 0 ? actual / budget * 100 : 0;
 
-                    subHTML += `<div class="budget-item-row py-3.5 border-b border-zinc-800/60 last:border-none" data-main="${main.replace(/"/g,'&quot;')}" data-sub="${sub.replace(/"/g,'&quot;')}">
-                        <div class="flex justify-between items-center mb-2">
-                            <div class="budget-item-name flex-1 cursor-pointer min-w-0 pr-2">
-                                <div class="font-medium text-sm hover:text-emerald-400 transition-colors truncate">${sub}</div>
-                            </div>
-                            <div class="flex items-center gap-2 shrink-0">
-                                ${subBadge}
-                                <div class="budget-item-amount text-xs cursor-pointer hover:text-emerald-400 transition-colors tabular-nums text-zinc-400">${amtLabel}</div>
-                                <button class="budget-item-delete text-zinc-700 hover:text-rose-400 transition-colors w-5 h-5 flex items-center justify-center shrink-0 text-lg">×</button>
-                            </div>
+                    // Color: income inverted (higher = better), expense: ≤60% emerald, ≤100% amber, >100% rose
+                    let donutColor;
+                    if (isIncome) {
+                        donutColor = pct >= 100 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
+                    } else {
+                        donutColor = pct <= 60 ? '#10b981' : pct < 100 ? '#f59e0b' : '#ef4444';
+                    }
+
+                    // Donut arc
+                    const dashFill = Math.min(pct / 100, 1) * CIRC;
+                    const arcSVG = dashFill > 0
+                        ? `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${donutColor}" stroke-width="8"
+                            stroke-dasharray="${dashFill.toFixed(2)} ${(CIRC - dashFill).toFixed(2)}"
+                            stroke-linecap="round" transform="rotate(-90 ${CX} ${CY})"/>`
+                        : '';
+
+                    // Amount label
+                    let amtLabel, amtCls;
+                    if (budget === 0) {
+                        amtLabel = 'No budget'; amtCls = 'text-zinc-600';
+                    } else if (isIncome) {
+                        const diff = actual - budget;
+                        amtLabel = diff >= 0 ? `+$${Math.round(diff)} over` : `$${Math.round(budget - actual)} to go`;
+                        amtCls   = diff >= 0 ? 'text-emerald-400' : 'text-zinc-500';
+                    } else {
+                        const left = budget - actual;
+                        if (left >= 0) {
+                            amtLabel = `$${Math.round(left)} left`;
+                            amtCls   = pct <= 60 ? 'text-emerald-400' : 'text-amber-400';
+                        } else {
+                            amtLabel = `$${Math.round(-left)} over`;
+                            amtCls   = 'text-rose-400';
+                        }
+                    }
+
+                    const icon = itemIcons[`${main}:${sub}`] || (isIncome ? '💵' : '💸');
+                    const mEsc = main.replace(/'/g,"\\'");
+                    const sEsc = sub.replace(/'/g,"\\'");
+
+                    html += `<div class="bg-zinc-900 rounded-3xl p-3 flex flex-col items-center cursor-pointer active:scale-95 transition-transform select-none"
+                                 onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
+                        <div class="relative mb-2" style="width:72px;height:72px">
+                            <svg width="72" height="72" viewBox="0 0 72 72">
+                                <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#27272a" stroke-width="8"/>
+                                ${arcSVG}
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center text-[22px]">${icon}</div>
                         </div>
-                        <div class="h-1 bg-zinc-800 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full transition-all duration-500${subOverCls}" style="width:${subBarWidth}%;background:${subBarColor}"></div>
-                        </div>
+                        <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-0.5 w-full truncate px-1">${sub}</div>
+                        <div class="text-[11px] text-center ${amtCls} w-full truncate px-1">${amtLabel}</div>
                     </div>`;
                 });
 
-                const mainPercent = mainBudgetTotal > 0 ? Math.round(mainActual / mainBudgetTotal * 100) : 0;
-                let mainBarColor, mainOverCls, mainBadgeBg;
-                if (isIncome) {
-                    mainBarColor = mainPercent >= 100 ? '#10b981' : mainPercent >= 50 ? '#f59e0b' : '#ef4444';
-                    mainOverCls  = '';
-                    mainBadgeBg  = mainPercent >= 100 ? 'bg-emerald-500/15 text-emerald-400' : mainPercent >= 50 ? 'bg-amber-500/15 text-amber-400' : 'bg-rose-500/15 text-rose-400';
-                } else {
-                    const mainOver = mainPercent > 100;
-                    mainBarColor = mainOver ? '#ef4444' : mainPercent > 80 ? '#f59e0b' : '#10b981';
-                    mainOverCls  = mainOver ? ' budget-bar-over' : '';
-                    mainBadgeBg  = mainOver ? 'bg-rose-500/15 text-rose-400' : mainPercent > 80 ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400';
-                }
-                const mainAmtLabel = isIncome
-                    ? `$${Math.round(mainActual)}<span class="text-zinc-700"> / $${Math.round(mainBudgetTotal)}</span>`
-                    : `$${Math.round(mainActual)}<span class="text-zinc-700"> / $${Math.round(mainBudgetTotal)}</span>`;
+                // Add item card
+                const mEscQ = main.replace(/"/g,'&quot;');
+                html += `<button class="add-budget-item-btn bg-zinc-900/40 border border-dashed border-zinc-800 hover:border-emerald-500/40 rounded-3xl p-3 flex flex-col items-center justify-center active:scale-95 transition-all"
+                             data-main="${mEscQ}">
+                    <div class="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center mb-1.5">
+                        <svg class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                    </div>
+                    <div class="text-[11px] text-zinc-600">Add</div>
+                </button>`;
 
-                html += `<div class="bg-zinc-900 rounded-3xl overflow-hidden">
-                    <div class="px-5 pt-5 pb-4">
-                        <div class="flex justify-between items-center mb-1">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">${mainEmojis[main] || '📂'}</span>
-                                <div class="font-semibold">${main}</div>
-                                ${isIncome ? '<span class="text-[9px] font-black tracking-widest text-emerald-600 uppercase">Income</span>' : ''}
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <div class="text-sm tabular-nums text-zinc-400">${mainAmtLabel}</div>
-                                <div class="${mainBadgeBg} text-[10px] font-bold px-2 py-0.5 rounded-full">${mainPercent}%</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="h-0.5 bg-zinc-800 mx-5">
-                        <div class="h-full rounded-full${mainOverCls}" style="width:${Math.min(100,mainPercent)}%;background:${mainBarColor}"></div>
-                    </div>
-                    <div class="px-5 pb-2">
-                        ${subHTML}
-                    </div>
-                    <div class="px-5 pb-5">
-                        <button class="add-budget-item-btn w-full text-emerald-500 text-xs font-semibold py-2.5 border border-dashed border-zinc-800 hover:border-emerald-500/50 rounded-2xl transition-colors" data-main="${main.replace(/"/g,'&quot;')}">+ Add ${isIncome ? 'income source' : 'budget item'}</button>
-                    </div>
-                </div>`;
+                html += `</div>`; // end grid
+                html += `</div>`; // end category section
             });
 
             document.getElementById('budgets-list').innerHTML = html || '<p class="text-center text-zinc-600 text-sm py-10">No categories yet</p>';
@@ -2145,16 +2228,6 @@
         }
 
         function attachBudgetItemListeners() {
-            document.querySelectorAll('.budget-item-row').forEach(row => {
-                const main = row.dataset.main;
-                const sub = row.dataset.sub;
-                row.querySelector('.budget-item-name').addEventListener('click', () => inlineEditName(row, main, sub));
-                row.querySelector('.budget-item-amount').addEventListener('click', () => inlineEditAmount(row, main, sub));
-                row.querySelector('.budget-item-delete').addEventListener('click', e => {
-                    e.stopImmediatePropagation();
-                    deleteBudgetItem(main, sub);
-                });
-            });
             document.querySelectorAll('.add-budget-item-btn').forEach(btn => {
                 btn.addEventListener('click', () => addBudgetItemToMain(btn.dataset.main));
             });
@@ -2242,6 +2315,14 @@
                 if (e.key === 'Enter') { e.preventDefault(); save(); }
                 if (e.key === 'Escape') { e.preventDefault(); cancel(); }
             });
+        }
+
+        function _toggleBalLegend() {
+            _balLegendOpen = !_balLegendOpen;
+            const panel = document.getElementById('bal-leg-panel');
+            const chev  = document.getElementById('bal-leg-chev');
+            if (panel) panel.style.display = _balLegendOpen ? 'flex' : 'none';
+            if (chev)  chev.style.transform = _balLegendOpen ? '' : 'rotate(-90deg)';
         }
 
         function attachBudgetSwipe() {
@@ -2945,10 +3026,169 @@ Transactions using it will stay.`)) {
                 Object.keys(monthlyBudgets).forEach(k => {
                     if (monthlyBudgets[k] && monthlyBudgets[k][main]) delete monthlyBudgets[k][main][sub];
                 });
+                delete itemIcons[`${main}:${sub}`];
                 saveData();
                 renderBudgets();
                 renderGoals();
             }
+        }
+
+        /* ── Budget Item Edit Modal ──────────────────────────────────── */
+        const BUDGET_ICONS = [
+            '🛒','🍔','🍕','🌮','🥑','☕','🍜','🍷','🧃','🍰',
+            '🏠','🛋️','💡','🔧','🧹','🌿','📦','🔑','🛁','🖥️',
+            '👔','✂️','💄','🎮','📱','🎵','📚','🏋️','🎨','🧴',
+            '🚗','✈️','⛽','🚌','🚲','🅿️','🛵','🚆','🛳️','🚁',
+            '💊','🏥','🧘','🏃','🦷','👓','🩺','💉','🥗','🌡️',
+            '💳','🏦','💰','📊','💸','🎯','🏆','💼','📈','🤝',
+            '🎬','🎭','🎪','🎡','🎢','🎳','🎲','🃏','🎤','🏖️',
+            '🌍','📅','🔔','⚡','🌟','❤️','🎁','✨','🐾','☂️',
+        ];
+
+        function openBudgetItemModal(main, sub) {
+            _bimMain = main;
+            _bimSub  = sub;
+            _bimSelectedIcon = null;
+
+            const mb     = monthlyBudgets[selectedBudgetMonth] || {};
+            const budget = (mb[main] || {})[sub] || 0;
+            const isInc  = main === 'Income';
+            const actual = isInc ? calculateIncomeInMonth(selectedBudgetMonth, sub)
+                                 : calculateSpentInMonth(selectedBudgetMonth, main, sub);
+            const icon   = itemIcons[`${main}:${sub}`] || (isInc ? '💵' : '💸');
+            const pct    = budget > 0 ? actual / budget * 100 : 0;
+
+            // Populate icon grid
+            const grid = document.getElementById('bim-icon-grid');
+            if (grid) {
+                grid.innerHTML = BUDGET_ICONS.map(e =>
+                    `<button type="button" onclick="_bimSelectIcon('${e}')"
+                        class="text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all ${e === icon ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700'}">${e}</button>`
+                ).join('');
+            }
+
+            // Populate fields
+            document.getElementById('bim-name').value   = sub;
+            document.getElementById('bim-amount').value = budget > 0 ? budget : '';
+
+            // Preview
+            document.getElementById('bim-preview-icon').textContent = icon;
+            document.getElementById('bim-preview-name').textContent = sub;
+            document.getElementById('bim-preview-cat').textContent  = main;
+            _bimUpdatePreview(pct, isInc);
+
+            // Show/hide delete (hide only if it's the last item in category)
+            const arr = expenseCategories[main] || [];
+            const del = document.getElementById('bim-delete-btn');
+            if (del) del.classList.toggle('hidden', arr.length <= 1);
+
+            document.getElementById('budget-item-modal').classList.remove('hidden');
+        }
+
+        function _bimSelectIcon(emoji) {
+            _bimSelectedIcon = emoji;
+            document.getElementById('bim-preview-icon').textContent = emoji;
+            document.querySelectorAll('#bim-icon-grid button').forEach(btn => {
+                const sel = btn.textContent.trim() === emoji;
+                btn.className = 'text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all '
+                    + (sel ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700');
+            });
+        }
+
+        function _bimUpdatePreview(pct, isInc) {
+            const arc  = document.getElementById('bim-preview-arc');
+            const stat = document.getElementById('bim-preview-status');
+            const CIRC = 175.93;
+            let color, fill, statusTxt, statusCls;
+            if (isInc) {
+                color = pct >= 100 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
+                fill  = Math.min(pct / 100, 1) * CIRC;
+                statusTxt = pct >= 100 ? 'Target reached' : `${Math.round(pct)}% received`;
+                statusCls = pct >= 100 ? 'text-emerald-400' : 'text-zinc-500';
+            } else {
+                color = pct <= 60 ? '#10b981' : pct < 100 ? '#f59e0b' : '#ef4444';
+                fill  = Math.min(pct / 100, 1) * CIRC;
+                statusTxt = pct === 0 ? 'No spending yet'
+                          : pct > 100 ? `${Math.round(pct)}% — over budget`
+                          : `${Math.round(pct)}% spent`;
+                statusCls = pct <= 60 ? 'text-emerald-400' : pct < 100 ? 'text-amber-400' : 'text-rose-400';
+            }
+            if (arc) {
+                arc.setAttribute('stroke', color);
+                arc.setAttribute('stroke-dasharray', `${fill.toFixed(2)} ${(CIRC - fill).toFixed(2)}`);
+            }
+            if (stat) { stat.textContent = statusTxt; stat.className = 'text-sm mt-1 font-medium ' + statusCls; }
+        }
+
+        function closeBudgetItemModal() {
+            document.getElementById('budget-item-modal').classList.add('hidden');
+            _bimMain = null; _bimSub = null; _bimSelectedIcon = null;
+        }
+
+        function _bimBackdrop(e) {
+            if (e.target === document.getElementById('budget-item-modal')) closeBudgetItemModal();
+        }
+
+        function saveBudgetItemModal() {
+            if (!_bimMain || !_bimSub) return;
+            const newName = document.getElementById('bim-name').value.trim();
+            const newAmt  = Math.round(parseFloat(document.getElementById('bim-amount').value) || 0);
+            if (!newName) { document.getElementById('bim-name').focus(); return; }
+
+            // Save icon
+            const iconToSave = _bimSelectedIcon || itemIcons[`${_bimMain}:${_bimSub}`];
+            if (iconToSave) itemIcons[`${_bimMain}:${_bimSub}`] = iconToSave;
+
+            // Save budget amount for current month
+            monthlyBudgets[selectedBudgetMonth] = monthlyBudgets[selectedBudgetMonth] || {};
+            monthlyBudgets[selectedBudgetMonth][_bimMain] = monthlyBudgets[selectedBudgetMonth][_bimMain] || {};
+            monthlyBudgets[selectedBudgetMonth][_bimMain][_bimSub] = newAmt;
+
+            // Rename if needed
+            if (newName !== _bimSub) {
+                if ((expenseCategories[_bimMain] || []).includes(newName)) {
+                    alert(`"${newName}" already exists in ${_bimMain}.`);
+                    return;
+                }
+                const idx = (expenseCategories[_bimMain] || []).indexOf(_bimSub);
+                if (idx !== -1) expenseCategories[_bimMain][idx] = newName;
+                Object.keys(monthlyBudgets).forEach(mo => {
+                    const mb = monthlyBudgets[mo];
+                    if (mb[_bimMain] && _bimSub in mb[_bimMain]) {
+                        mb[_bimMain][newName] = mb[_bimMain][_bimSub];
+                        delete mb[_bimMain][_bimSub];
+                    }
+                });
+                transactions.forEach(t => {
+                    if (t.mainCategory === _bimMain && t.subCategory === _bimSub) t.subCategory = newName;
+                });
+                goals.forEach(g => {
+                    if (g.linkedSub === _bimSub) { g.linkedSub = newName; g.name = newName; }
+                });
+                // Move icon key
+                if (itemIcons[`${_bimMain}:${_bimSub}`]) {
+                    itemIcons[`${_bimMain}:${newName}`] = itemIcons[`${_bimMain}:${_bimSub}`];
+                    delete itemIcons[`${_bimMain}:${_bimSub}`];
+                }
+            }
+
+            saveData();
+            closeBudgetItemModal();
+            renderBudgets();
+        }
+
+        function deleteBudgetItemFromModal() {
+            if (!_bimMain || !_bimSub) return;
+            if (!confirm(`Delete "${_bimSub}" from ${_bimMain}?\nTransactions using it will stay.`)) return;
+            expenseCategories[_bimMain] = (expenseCategories[_bimMain] || []).filter(s => s !== _bimSub);
+            Object.keys(monthlyBudgets).forEach(k => {
+                if (monthlyBudgets[k]?.[_bimMain]) delete monthlyBudgets[k][_bimMain][_bimSub];
+            });
+            delete itemIcons[`${_bimMain}:${_bimSub}`];
+            saveData();
+            closeBudgetItemModal();
+            renderBudgets();
+            renderGoals();
         }
 
         function showAddModal() {
@@ -3401,6 +3641,7 @@ Transactions using it will stay.`)) {
 
         function deleteCategory(cat) {
             if (Object.keys(expenseCategories).length <= 1) return;
+            if (!confirm(`Delete category "${cat}" and all its items?\nBudget data will be removed. Transactions are kept.`)) return;
             delete expenseCategories[cat];
             Object.keys(monthlyBudgets).forEach(m => { delete monthlyBudgets[m][cat]; });
             _syncIncomeCats(); saveData(); renderCategoryEditor(); renderCategoryEditorCount();
@@ -3409,6 +3650,7 @@ Transactions using it will stay.`)) {
         function deleteCatItem(cat, idx) {
             const arr = expenseCategories[cat]; if (!arr || arr.length <= 1) return;
             const oldName = arr[idx];
+            if (!confirm(`Delete "${oldName}" from ${cat}?\nBudget data will be removed. Transactions are kept.`)) return;
             arr.splice(idx, 1);
             Object.keys(monthlyBudgets).forEach(m => { if (monthlyBudgets[m][cat]) delete monthlyBudgets[m][cat][oldName]; });
             _syncIncomeCats(); saveData(); renderCategoryEditor();
