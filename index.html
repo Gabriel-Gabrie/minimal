@@ -1303,15 +1303,15 @@
             if (balEl) {
                 balEl.className = 'text-3xl font-semibold tracking-tighter mt-0.5 ' +
                     (netBal >= 0 ? 'text-emerald-400' : 'text-rose-400');
-                balEl.textContent = (netBal < 0 ? '-' : '') + '$' + Math.abs(netBal).toFixed(2);
+                balEl.textContent = (netBal < 0 ? '-' : '') + '$' + Math.round(Math.abs(netBal));
             }
             const lbl = document.getElementById('ov-month-label');
             if (lbl) lbl.textContent = new Date(yr, mo - 1)
                 .toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
             const incEl = document.getElementById('total-income');
             const expEl = document.getElementById('total-expense');
-            if (incEl) incEl.textContent = '$' + mInc.toFixed(2);
-            if (expEl) expEl.textContent = '$' + mExp.toFixed(2);
+            if (incEl) incEl.textContent = '$' + Math.round(mInc);
+            if (expEl) expEl.textContent = '$' + Math.round(mExp);
 
             // ── Build cumulative daily spending array ──────────────────
             const cumActual = [];
@@ -1374,10 +1374,10 @@
             const sDays   = document.getElementById('ov-s-days');
             const sDaily  = document.getElementById('ov-s-daily');
 
-            if (sSpent)  sSpent.textContent  = '$' + mExp.toFixed(2);
-            if (sBudget) sBudget.textContent  = hasBudget ? 'of $' + totalBudget.toFixed(0) : 'no budget';
+            if (sSpent)  sSpent.textContent  = '$' + Math.round(mExp);
+            if (sBudget) sBudget.textContent  = hasBudget ? 'of $' + Math.round(totalBudget) : 'no budget';
             if (sLeft) {
-                sLeft.textContent = remaining !== null ? '$' + remaining.toFixed(2) : '\u2014';
+                sLeft.textContent = remaining !== null ? '$' + Math.round(remaining) : '\u2014';
                 sLeft.className   = 'text-[15px] font-semibold tracking-tight leading-none ' +
                     (remaining !== null
                         ? (remaining > 0 ? 'text-emerald-400' : 'text-rose-400')
@@ -1385,7 +1385,7 @@
             }
             if (sDays)  sDays.textContent  = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
             if (sDaily) {
-                sDaily.textContent = dailyAllow !== null ? '$' + dailyAllow.toFixed(2) : '\u2014';
+                sDaily.textContent = dailyAllow !== null ? '$' + Math.round(dailyAllow) : '\u2014';
                 sDaily.className   = 'text-[15px] font-semibold tracking-tight leading-none ' +
                     (dailyAllow !== null && dailyAllow > 0 ? 'text-emerald-400' : 'text-zinc-400');
             }
@@ -1400,7 +1400,7 @@
                 if (todayDay > 0 && (hasBudget || mExp > 0)) {
                     const dailyRate = mExp / todayDay;
                     const projected = dailyRate * daysInMo;
-                    const pFmt      = '$' + projected.toFixed(2);
+                    const pFmt      = '$' + Math.round(projected);
                     let icon, title, sub, cls;
 
                     if (!hasBudget) {
@@ -1410,15 +1410,15 @@
                     } else if (projected <= totalBudget * 0.95) {
                         icon  = '\uD83D\uDFE2'; cls = 'bg-emerald-500/10 border border-emerald-500/20';
                         title = 'On track \u2014 great pacing!';
-                        sub   = `Projected ${pFmt}  \u00B7  $${(totalBudget - projected).toFixed(2)} under budget`;
+                        sub   = `Projected ${pFmt}  \u00B7  $${Math.round(totalBudget - projected)} under budget`;
                     } else if (projected <= totalBudget * 1.08) {
                         icon  = '\uD83D\uDFE1'; cls = 'bg-amber-500/10 border border-amber-500/20';
                         title = 'Close to budget \u2014 watch your pace';
-                        sub   = `Projected ${pFmt}  \u00B7  $${(projected - totalBudget).toFixed(2)} over budget`;
+                        sub   = `Projected ${pFmt}  \u00B7  $${Math.round(projected - totalBudget)} over budget`;
                     } else {
                         icon  = '\uD83D\uDD34'; cls = 'bg-rose-500/10 border border-rose-500/20';
                         title = 'Over budget pace';
-                        sub   = `Projected ${pFmt}  \u00B7  $${(projected - totalBudget).toFixed(2)} over budget`;
+                        sub   = `Projected ${pFmt}  \u00B7  $${Math.round(projected - totalBudget)} over budget`;
                     }
                     projEl.className = `mx-5 mt-3 rounded-2xl px-4 py-3 flex items-center gap-3 ${cls}`;
                     projEl.classList.remove('hidden');
@@ -1532,7 +1532,7 @@
                                 title: (items) => 'Day ' + (items[0].dataIndex + 1),
                                 label: (item) => {
                                     if (item.raw === null) return null;
-                                    return '  ' + item.dataset.label + ': $' + item.raw.toFixed(2);
+                                    return '  ' + item.dataset.label + ': $' + Math.round(item.raw);
                                 },
                             },
                         },
@@ -1935,55 +1935,77 @@
             });
             const balance = incomePlanned - expBudgeted;
             const balPct  = incomePlanned > 0 ? Math.min(100, Math.round(expBudgeted / incomePlanned * 100)) : 0;
-            const balColor    = balance === 0 ? '#10b981' : balance > 0 ? '#f59e0b' : '#ef4444';
-            const balBadgeCls = balance === 0 ? 'bg-emerald-500/20 text-emerald-400'
+            const isBalanced  = Math.abs(balance) < 5;
+            const balColor    = isBalanced ? '#10b981' : balance > 0 ? '#f59e0b' : '#ef4444';
+            const balBadgeCls = isBalanced ? 'bg-emerald-500/20 text-emerald-400'
                               : balance > 0   ? 'bg-amber-500/20 text-amber-400'
                               :                 'bg-rose-500/20 text-rose-400';
-            const balLabel    = balance === 0 ? 'Balanced ✓'
-                              : balance > 0   ? `Unallocated`
-                              :                 `Over Budget`;
-            const balSign     = balance > 0 ? '+' : '';
+            const balLabel    = isBalanced ? 'Balanced ✓'
+                              : balance > 0   ? `Left to Spend`
+                              :                 `Over Income`;
+            const balSign     = !isBalanced && balance > 0 ? '+' : '';
 
             const summaryEl = document.getElementById('budget-summary');
             if (summaryEl) {
-                // ── Donut chart category colors ────────────────────────────────
-                const catColors = {
-                    "Food":"#f97316","Household":"#3b82f6","Personal":"#a855f7",
-                    "Health":"#22c55e","Transportation":"#06b6d4","Debt":"#f43f5e",
-                    "Savings":"#14b8a6","Banking":"#eab308"
-                };
                 const r = 65, cxD = 85, cyD = 85, sw = 18;
-                const circ = 2 * Math.PI * r; // ≈ 408.41
+                const circ = 2 * Math.PI * r;
 
-                // Build arc segments
+                // Color palettes: light → dark (largest category gets lightest shade)
+                const emeraldShades = ['#a7f3d0','#6ee7b7','#34d399','#10b981','#059669','#047857'];
+                const amberShades   = ['#fde68a','#fcd34d','#fbbf24','#f59e0b','#d97706','#b45309'];
+                const roseShades    = ['#fecdd3','#fda4af','#fb7185','#f43f5e','#e11d48','#be123c'];
+                const palette = isBalanced ? emeraldShades : (balance > 0 ? amberShades : roseShades);
+
+                // Collect and sort categories by budget amount (largest first)
+                const catEntries = Object.keys(expenseCategories)
+                    .filter(k => k !== 'Income')
+                    .map(cat => ({
+                        cat,
+                        catBudget: expenseCategories[cat].reduce((s, item) => s + ((monthBudgets[cat]||{})[item]||0), 0)
+                    }))
+                    .filter(x => x.catBudget > 0 && incomePlanned > 0)
+                    .sort((a, b) => b.catBudget - a.catBudget);
+
+                // Assign shades: rank 0 (largest) = lightest, rank N-1 (smallest) = darkest
+                const numCats = catEntries.length;
+                catEntries.forEach((entry, rank) => {
+                    const colorIdx = numCats <= 1 ? 2 : Math.round(rank / (numCats - 1) * 5);
+                    entry.color = palette[colorIdx];
+                });
+
+                // Build arc segments and legend items
                 let offsetArc = 0;
                 let segs = '';
                 let legendItems = [];
-                Object.keys(expenseCategories).filter(k => k !== 'Income').forEach(cat => {
-                    const catBudget = expenseCategories[cat].reduce((s, item) => s + ((monthBudgets[cat]||{})[item]||0), 0);
-                    if (catBudget <= 0 || incomePlanned <= 0) return;
-                    const color = catColors[cat] || '#6366f1';
+                catEntries.forEach(entry => {
+                    const { cat, catBudget, color } = entry;
                     const arcLen = Math.min((catBudget / incomePlanned) * circ, circ - offsetArc);
                     if (arcLen <= 0) return;
                     segs += `<circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-dasharray="${arcLen.toFixed(3)} ${(circ-arcLen).toFixed(3)}" stroke-dashoffset="${(circ-offsetArc).toFixed(3)}" transform="rotate(-90,${cxD},${cyD})"/>`;
                     const pctLbl = Math.round(catBudget / incomePlanned * 100);
-                    legendItems.push(`<div class="flex items-center gap-1.5"><span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0"></span><span style="font-size:10px;color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cat}</span><span style="font-size:10px;color:#52525b;margin-left:auto">${pctLbl}%</span></div>`);
+                    legendItems.push(
+                        `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">` +
+                        `<span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0"></span>` +
+                        `<span style="font-size:14px;color:#a1a1aa;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cat} <span style="color:#71717a;font-size:12px">${pctLbl}%</span></span>` +
+                        `<span style="font-size:14px;color:#a1a1aa;font-variant-numeric:tabular-nums">$${Math.round(catBudget)}</span>` +
+                        `</div>`
+                    );
                     offsetArc += arcLen;
                 });
 
-                // Unallocated amber arc (thinner, ghosted)
-                if (balance > 0 && incomePlanned > 0) {
+                // Unallocated arc when under budget (not balanced)
+                if (!isBalanced && balance > 0 && incomePlanned > 0) {
                     const unallocArc = Math.min((balance / incomePlanned) * circ, circ - offsetArc);
                     if (unallocArc > 0.5) {
-                        segs += `<circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="#f59e0b" stroke-width="10" opacity="0.35" stroke-dasharray="${unallocArc.toFixed(3)} ${(circ-unallocArc).toFixed(3)}" stroke-dashoffset="${(circ-offsetArc).toFixed(3)}" transform="rotate(-90,${cxD},${cyD})"/>`;
+                        segs += `<circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="${palette[0]}" stroke-width="10" opacity="0.35" stroke-dasharray="${unallocArc.toFixed(3)} ${(circ-unallocArc).toFixed(3)}" stroke-dashoffset="${(circ-offsetArc).toFixed(3)}" transform="rotate(-90,${cxD},${cyD})"/>`;
                     }
                 }
 
                 // Center label values
-                const cAmt  = incomePlanned === 0 ? '' : `${balSign}$${Math.abs(balance).toFixed(0)}`;
+                const cAmt  = incomePlanned === 0 ? '' : `${balSign}$${Math.round(Math.abs(balance))}`;
                 const cLbl  = incomePlanned === 0 ? 'no income set' : balLabel.toUpperCase();
-                const cAmtFill = balance === 0 ? '#10b981' : balance > 0 ? '#f59e0b' : '#ef4444';
-                const cLblFill = balance === 0 ? '#34d399' : balance > 0 ? '#d97706' : '#f87171';
+                const cAmtFill = isBalanced ? '#10b981' : balance > 0 ? '#f59e0b' : '#ef4444';
+                const cLblFill = isBalanced ? '#34d399' : balance > 0 ? '#d97706' : '#f87171';
 
                 const centerSVG = incomePlanned === 0
                     ? `<text x="${cxD}" y="${cyD+4}" text-anchor="middle" fill="#52525b" font-size="10" font-family="system-ui,sans-serif">No income set</text>`
@@ -1993,18 +2015,17 @@
                 const statsHTML = incomePlanned === 0
                     ? `<p style="font-size:11px;color:#52525b;line-height:1.6">Set a planned<br>income amount<br>to get started.</p>`
                     : `<div style="display:flex;flex-direction:column;gap:12px">
-                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Income</div><div style="font-size:14px;font-weight:700;color:#34d399;font-variant-numeric:tabular-nums">$${incomePlanned.toFixed(2)}</div></div>
-                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Budgeted</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${expBudgeted.toFixed(2)}</div></div>
-                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${balance >= 0 ? 'Remaining' : 'Over By'}</div><div style="font-size:14px;font-weight:700;color:${cAmtFill};font-variant-numeric:tabular-nums">${balSign}$${Math.abs(balance).toFixed(2)}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Expected Income</div><div style="font-size:14px;font-weight:700;color:#34d399;font-variant-numeric:tabular-nums">$${Math.round(incomePlanned)}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Planned Expenses</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${Math.round(expBudgeted)}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${isBalanced ? 'Balanced' : balance >= 0 ? 'Left to Spend' : 'Over Income'}</div><div style="font-size:14px;font-weight:700;color:${cAmtFill};font-variant-numeric:tabular-nums">$${Math.round(Math.abs(balance))}</div></div>
                        </div>`;
 
-                // Category legend (only if there are segments)
+                // Category legend — single column
                 const legendHTML = legendItems.length
-                    ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;padding-top:14px;border-top:1px solid #27272a;margin-top:4px">${legendItems.join('')}</div>`
+                    ? `<div style="display:flex;flex-direction:column;gap:0;padding-top:14px;border-top:1px solid #27272a;margin-top:4px">${legendItems.join('')}</div>`
                     : '';
 
                 summaryEl.innerHTML = `<div class="bg-zinc-900 rounded-3xl p-5">
-                    <div class="text-[9px] font-black tracking-[.12em] text-zinc-500 uppercase mb-3">Budget Balance</div>
                     <div style="display:flex;align-items:center;gap:16px">
                         <div style="flex-shrink:0">
                             <svg width="170" height="170" viewBox="0 0 170 170">
@@ -2054,7 +2075,7 @@
                             : '';
                     }
                     const subBarWidth = Math.min(100, subPct);
-                    const amtLabel = `$${actual.toFixed(2)} / $${budget.toFixed(2)}`;
+                    const amtLabel = `$${Math.round(actual)} / $${Math.round(budget)}`;
 
                     subHTML += `<div class="budget-item-row py-3.5 border-b border-zinc-800/60 last:border-none" data-main="${main.replace(/"/g,'&quot;')}" data-sub="${sub.replace(/"/g,'&quot;')}">
                         <div class="flex justify-between items-center mb-2">
@@ -2086,8 +2107,8 @@
                     mainBadgeBg  = mainOver ? 'bg-rose-500/15 text-rose-400' : mainPercent > 80 ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400';
                 }
                 const mainAmtLabel = isIncome
-                    ? `$${mainActual.toFixed(2)}<span class="text-zinc-700"> / $${mainBudgetTotal.toFixed(2)}</span>`
-                    : `$${mainActual.toFixed(2)}<span class="text-zinc-700"> / $${mainBudgetTotal.toFixed(2)}</span>`;
+                    ? `$${Math.round(mainActual)}<span class="text-zinc-700"> / $${Math.round(mainBudgetTotal)}</span>`
+                    : `$${Math.round(mainActual)}<span class="text-zinc-700"> / $${Math.round(mainBudgetTotal)}</span>`;
 
                 html += `<div class="bg-zinc-900 rounded-3xl overflow-hidden">
                     <div class="px-5 pt-5 pb-4">
@@ -2193,13 +2214,13 @@
             wrapper.className = 'flex items-center gap-1';
             const spentLabel = document.createElement('span');
             spentLabel.className = 'text-sm text-zinc-400';
-            spentLabel.textContent = `$${spent.toFixed(2)} / $`;
+            spentLabel.textContent = `$${Math.round(spent)} / $`;
             const input = document.createElement('input');
             input.type = 'number';
-            input.inputMode = 'decimal';
-            input.step = '0.01';
-            input.value = current > 0 ? current.toFixed(2) : '';
-            input.placeholder = '0.00';
+            input.inputMode = 'numeric';
+            input.step = '1';
+            input.value = current > 0 ? Math.round(current) : '';
+            input.placeholder = '0';
             input.className = 'w-20 bg-zinc-950 border border-emerald-500 rounded-lg px-2 py-0.5 text-sm text-center focus:outline-none';
             wrapper.appendChild(spentLabel);
             wrapper.appendChild(input);
@@ -2210,7 +2231,7 @@
             let done = false;
             function save() {
                 if (done) return; done = true;
-                const amt = parseFloat(input.value) || 0;
+                const amt = Math.round(parseFloat(input.value) || 0);
                 monthlyBudgets[selectedBudgetMonth][main][sub] = amt;
                 saveData();
                 renderBudgets();
@@ -2418,7 +2439,7 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: { callbacks: {
-                            label: ctx => ' ' + ctx.label + '  $' + ctx.parsed.toFixed(2)
+                            label: ctx => ' ' + ctx.label + '  $' + Math.round(ctx.parsed)
                                 + '  (' + (total > 0 ? (ctx.parsed/total*100).toFixed(1) : 0) + '%)'
                         }}
                     }
@@ -2471,17 +2492,17 @@
 
                 let val, sub, barColor, valColor;
                 if (mode === 'expense') {
-                    val = '$' + exp.toFixed(2);
+                    val = '$' + Math.round(exp);
                     sub = totalBud > 0 ? util + '% of budget' : 'No budget set';
                     barColor = util > 100 ? '#ef4444' : util > 80 ? '#f59e0b' : '#10b981';
                     valColor = util > 100 ? 'text-rose-400' : util > 80 ? 'text-amber-400' : 'text-zinc-200';
                 } else if (mode === 'income') {
-                    val = '$' + inc.toFixed(2);
-                    sub = exp > 0 ? 'Spent $' + exp.toFixed(2) : 'No expenses';
+                    val = '$' + Math.round(inc);
+                    sub = exp > 0 ? 'Spent $' + Math.round(exp) : 'No expenses';
                     barColor = '#10b981'; valColor = 'text-emerald-400';
                 } else {
-                    val = (surplus >= 0 ? '+' : '−') + '$' + Math.abs(surplus).toFixed(2);
-                    sub = '↑$' + inc.toFixed(2) + '  ↓$' + exp.toFixed(2);
+                    val = (surplus >= 0 ? '+' : '−') + '$' + Math.round(Math.abs(surplus));
+                    sub = '↑$' + Math.round(inc) + '  ↓$' + Math.round(exp);
                     barColor = surplus >= 0 ? '#10b981' : '#ef4444';
                     valColor = surplus >= 0 ? 'text-emerald-400' : 'text-rose-400';
                 }
@@ -2590,7 +2611,7 @@
             const total = (values || []).reduce((s,v) => s+v, 0);
             el.innerHTML = labels.map((l, i) => {
                 const pct  = (total > 0 && values) ? (values[i]/total*100).toFixed(1) + '%' : '';
-                const amt  = values ? '$' + values[i].toFixed(2) : '';
+                const amt  = values ? '$' + Math.round(values[i]) : '';
                 return `<div class="flex items-center gap-2 py-0.5">
                     <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${colors[i]}"></div>
                     <span class="text-xs text-zinc-400 flex-1 truncate">${l}</span>
@@ -2729,18 +2750,18 @@
                 let rightVal, rightSub, barColor, rowVal;
                 if (selectedReport === 'spending' || selectedReport === 'expense') {
                     rowVal = exp;
-                    rightVal = `$${exp.toFixed(2)}`;
+                    rightVal = `$${Math.round(exp)}`;
                     rightSub = totalBudget > 0 ? `${util}% of budget` : 'No budget set';
                     barColor = util > 100 ? '#ef4444' : util > 80 ? '#f59e0b' : '#10b981';
                 } else if (selectedReport === 'income') {
                     rowVal = inc;
-                    rightVal = `$${inc.toFixed(2)}`;
-                    rightSub = exp > 0 ? `Spent $${exp.toFixed(2)}` : 'No expenses';
+                    rightVal = `$${Math.round(inc)}`;
+                    rightSub = exp > 0 ? `Spent $${Math.round(exp)}` : 'No expenses';
                     barColor = '#10b981';
                 } else {
                     rowVal = surplus;
-                    rightVal = `${surplus >= 0 ? '+' : '−'}$${Math.abs(surplus).toFixed(2)}`;
-                    rightSub = `↑$${inc.toFixed(2)}  ↓$${exp.toFixed(2)}`;
+                    rightVal = `${surplus >= 0 ? '+' : '−'}$${Math.round(Math.abs(surplus))}`;
+                    rightSub = `↑$${Math.round(inc)}  ↓$${Math.round(exp)}`;
                     barColor = surplus >= 0 ? '#10b981' : '#ef4444';
                 }
 
@@ -2816,7 +2837,7 @@
                                 ${daysBadge}
                             </div>
                             <div class="text-emerald-400 font-semibold text-sm tabular-nums mb-2">
-                                $${saved.toFixed(2)} <span class="text-zinc-600 font-normal">/ $${g.target.toFixed(2)}</span>
+                                $${Math.round(saved)} <span class="text-zinc-600 font-normal">/ $${Math.round(g.target)}</span>
                             </div>
                             <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                                 <div class="progress-bar h-full rounded-full" style="width:${percent}%;background:${arcColor}"></div>
@@ -3123,7 +3144,7 @@ Transactions using it will stay.`)) {
             const sel = document.getElementById('goal-sub');
             sel.innerHTML = `<option value="${g.linkedSub}">${g.linkedSub}</option>`;
             sel.disabled = true;
-            document.getElementById('goal-target').value = g.target.toFixed(2);
+            document.getElementById('goal-target').value = Math.round(g.target);
             document.getElementById('goal-deadline').value = g.deadline;
             // Update modal header
             const hdr = document.querySelector('#goal-modal h2');
