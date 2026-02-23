@@ -495,9 +495,9 @@
             <div id="budget-view-toggle" class="hidden mx-5 mb-4">
                 <div class="flex bg-zinc-900 rounded-2xl p-1 gap-1">
                     <button id="bview-btn-plan" onclick="_setBudgetViewMode('plan')"
-                        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all text-zinc-500">Plan</button>
+                        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-zinc-800 text-white">Plan</button>
                     <button id="bview-btn-remaining" onclick="_setBudgetViewMode('remaining')"
-                        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-zinc-800 text-white">Remaining</button>
+                        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all text-zinc-500">Remaining</button>
                 </div>
             </div>
 
@@ -873,6 +873,52 @@
         </div>
     </div>
 
+    <!-- ADD BUDGET ITEM MODAL -->
+    <div id="add-budget-item-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-50" onclick="_aimBackdrop(event)">
+        <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
+            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10">
+                <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
+            </div>
+            <div class="px-5 pt-3 pb-8">
+                <!-- Header: plan-mode style card with icon picker -->
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="relative flex-shrink-0 cursor-pointer bg-zinc-900 rounded-3xl p-3 flex flex-col items-center" style="width:80px;height:80px" onclick="_aimToggleIconPicker()">
+                        <div id="aim-hdr-icon" class="text-[36px] leading-none flex items-center justify-center w-full h-full">📂</div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-[10px] text-zinc-600 uppercase tracking-widest font-semibold mb-1" id="aim-cat-label"></div>
+                        <input id="aim-name-input" type="text" placeholder="Item name…"
+                            class="w-full bg-zinc-900 border border-emerald-500 rounded-xl px-3 py-2 text-sm font-semibold text-zinc-100 focus:outline-none mb-2">
+                        <div class="flex items-baseline gap-1 cursor-pointer" onclick="_aimFocusAmount()">
+                            <span class="text-[11px] text-zinc-600">Planned:</span>
+                            <span class="text-[11px] text-zinc-600">$</span>
+                            <input id="aim-amount-input" type="number" min="0" step="1" placeholder="0"
+                                class="w-20 bg-transparent border-b border-zinc-700 text-sm font-bold text-zinc-300 focus:outline-none focus:border-emerald-500 pb-0.5">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Icon picker (hidden by default) -->
+                <div id="aim-icon-picker" class="hidden mb-5">
+                    <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Choose icon</div>
+                    <div class="bg-zinc-900 rounded-2xl p-3">
+                        <div id="aim-icon-grid" class="grid grid-cols-8 gap-1"></div>
+                    </div>
+                </div>
+
+                <!-- Add button -->
+                <button onclick="_aimConfirm()"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all">
+                    Add Item
+                </button>
+                <button onclick="closeAddItemModal()"
+                    class="mt-3 w-full py-2.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- SETTINGS MODAL -->
     <div id="data-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50" onclick="handleSettingsBackdrop(event)">
         <div id="settings-panel" class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
@@ -1162,11 +1208,11 @@
         let _editingTxIdx = null;
         let _editingGoalIdx = null;
 
-        let mainEmojis = { "Income":"💵","Food":"🍔","Household":"🏠","Personal":"👤","Health":"🩺","Transportation":"🚗","Debt":"💳","Savings":"🏦","Banking":"🏛️" };
+        let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"🛍️","Health":"💊","Transportation":"🚗","Debt":"💳","Savings":"📈","Banking":"🏦" };
         let itemIcons = {}; // keyed "main:sub", e.g. "Food:Groceries" → "🛒"
         let _bimMain = null, _bimSub = null, _bimSelectedIcon = null;
         let _balLegendOpen = false;
-        let _budgetViewMode = 'remaining'; // 'plan' | 'remaining'
+        let _budgetViewMode = 'plan'; // 'plan' | 'remaining'
         let incomeCats = ["Salary","Freelance","Investments","Gifts","Other"]; // legacy — now derived from expenseCategories['Income']
 
         const defaultCategories = {
@@ -1971,7 +2017,7 @@
                     : 'Hey there! You don\'t have a budget set up for <strong>' + monthName + '</strong> yet \u2014 let\'s create one.';
 
                 const btnLabel  = closest
-                    ? 'Copy ' + closestName + ' budget \u2192 ' + monthName
+                    ? 'Copy ' + closestName + ' budget'
                     : 'Create ' + monthName + ' Budget';
                 const btnAction = closest
                     ? '_copyBudgetMonth(\'' + closest + '\',\'' + selectedBudgetMonth + '\')'
@@ -2127,7 +2173,6 @@
                 html += `<div class="flex items-center gap-2 px-1 mb-3">
                     <span class="text-lg">${mainEmojis[main] || '📂'}</span>
                     <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase">${main}</span>
-                    ${isIncome ? '<span class="text-[9px] font-black tracking-widest text-emerald-600 uppercase ml-1">Income</span>' : ''}
                 </div>`;
 
                 html += `<div class="grid grid-cols-3 gap-3">`;
@@ -3035,15 +3080,105 @@
             } else alert("No previous month budgets to copy.");
         }
 
+        let _aimMain = null, _aimSelectedIcon = null;
+
         function addBudgetItemToMain(main) {
-            const name = prompt(`New budget item for ${main}:`);
-            if (!name || !name.trim()) return;
-            const trimmed = name.trim();
-            if (!expenseCategories[main].includes(trimmed)) {
-                expenseCategories[main].push(trimmed);
-                saveData();
-                renderBudgets();
+            openAddItemModal(main);
+        }
+
+        function openAddItemModal(main) {
+            _aimMain = main;
+            _aimSelectedIcon = null;
+
+            const catEl = document.getElementById('aim-cat-label');
+            if (catEl) catEl.textContent = main;
+
+            const iconEl = document.getElementById('aim-hdr-icon');
+            const defaultIcon = main === 'Income' ? '💵' : '💸';
+            if (iconEl) iconEl.textContent = defaultIcon;
+
+            const nameEl = document.getElementById('aim-name-input');
+            if (nameEl) { nameEl.value = ''; }
+
+            const amtEl = document.getElementById('aim-amount-input');
+            if (amtEl) { amtEl.value = ''; }
+
+            const pickerEl = document.getElementById('aim-icon-picker');
+            if (pickerEl) pickerEl.classList.add('hidden');
+
+            const grid = document.getElementById('aim-icon-grid');
+            if (grid) {
+                grid.innerHTML = BUDGET_ICONS.map(e =>
+                    `<button type="button" onclick="_aimSelectIcon('${e}')"
+                        class="text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all hover:bg-zinc-700">${e}</button>`
+                ).join('');
             }
+
+            document.getElementById('add-budget-item-modal').classList.remove('hidden');
+            setTimeout(() => { const n = document.getElementById('aim-name-input'); if (n) n.focus(); }, 80);
+        }
+
+        function closeAddItemModal() {
+            document.getElementById('add-budget-item-modal').classList.add('hidden');
+            _aimMain = null; _aimSelectedIcon = null;
+        }
+
+        function _aimBackdrop(e) {
+            if (e.target === document.getElementById('add-budget-item-modal')) closeAddItemModal();
+        }
+
+        function _aimToggleIconPicker() {
+            const picker = document.getElementById('aim-icon-picker');
+            if (picker) picker.classList.toggle('hidden');
+        }
+
+        function _aimSelectIcon(emoji) {
+            _aimSelectedIcon = emoji;
+            const iconEl = document.getElementById('aim-hdr-icon');
+            if (iconEl) iconEl.textContent = emoji;
+            document.querySelectorAll('#aim-icon-grid button').forEach(btn => {
+                const isSelected = btn.textContent === emoji;
+                btn.className = 'text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all '
+                    + (isSelected ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700');
+            });
+            const picker = document.getElementById('aim-icon-picker');
+            if (picker) picker.classList.add('hidden');
+        }
+
+        function _aimFocusAmount() {
+            const el = document.getElementById('aim-amount-input');
+            if (el) el.focus();
+        }
+
+        function _aimConfirm() {
+            if (!_aimMain) return;
+            const nameEl = document.getElementById('aim-name-input');
+            const name = nameEl ? nameEl.value.trim() : '';
+            if (!name) { if (nameEl) nameEl.focus(); return; }
+            if ((expenseCategories[_aimMain] || []).includes(name)) {
+                if (nameEl) { nameEl.focus(); nameEl.select(); }
+                return;
+            }
+
+            if (!expenseCategories[_aimMain]) expenseCategories[_aimMain] = [];
+            expenseCategories[_aimMain].push(name);
+
+            if (_aimSelectedIcon) {
+                itemIcons[`${_aimMain}:${name}`] = _aimSelectedIcon;
+            }
+
+            const amtEl = document.getElementById('aim-amount-input');
+            const planned = amtEl ? parseFloat(amtEl.value) : 0;
+            if (planned > 0) {
+                if (!monthlyBudgets[selectedBudgetMonth]) monthlyBudgets[selectedBudgetMonth] = {};
+                if (!monthlyBudgets[selectedBudgetMonth][_aimMain]) monthlyBudgets[selectedBudgetMonth][_aimMain] = {};
+                monthlyBudgets[selectedBudgetMonth][_aimMain][name] = planned;
+            }
+
+            _syncIncomeCats();
+            saveData();
+            closeAddItemModal();
+            renderBudgets();
         }
 
         function deleteBudgetItem(main, sub) {
