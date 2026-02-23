@@ -491,6 +491,16 @@
             <!-- Month health summary -->
             <div id="budget-summary" class="mx-5 mb-5"></div>
 
+            <!-- Plan / Remaining toggle -->
+            <div id="budget-view-toggle" class="hidden mx-5 mb-4">
+                <div class="flex bg-zinc-900 rounded-2xl p-1 gap-1">
+                    <button id="bview-btn-plan" onclick="_setBudgetViewMode('plan')"
+                        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all text-zinc-500">Plan</button>
+                    <button id="bview-btn-remaining" onclick="_setBudgetViewMode('remaining')"
+                        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-zinc-800 text-white">Remaining</button>
+                </div>
+            </div>
+
             <!-- Category cards -->
             <div id="budgets-list" class="px-5 space-y-4"></div>
 
@@ -811,75 +821,54 @@
         </div>
     </div>
 
-    <!-- BUDGET ITEM EDIT MODAL -->
+    <!-- BUDGET ITEM MODAL (transaction summary + inline editing) -->
     <div id="budget-item-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-50" onclick="_bimBackdrop(event)">
         <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
             <!-- drag handle -->
             <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10">
                 <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
             </div>
-            <div class="px-5 pt-3 pb-6">
-                <!-- Live preview -->
-                <div class="flex items-center gap-4 mb-6 bg-zinc-900 rounded-3xl px-4 py-4">
-                    <div class="relative flex-shrink-0" style="width:72px;height:72px">
-                        <svg id="bim-preview-svg" width="72" height="72" viewBox="0 0 72 72">
+            <div class="px-5 pt-3 pb-8">
+                <!-- Header: donut + inline-editable name/amount (tap icon to show picker) -->
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="relative flex-shrink-0 cursor-pointer" style="width:72px;height:72px" onclick="_bimToggleIconPicker()">
+                        <svg width="72" height="72" viewBox="0 0 72 72">
                             <circle cx="36" cy="36" r="28" fill="none" stroke="#27272a" stroke-width="8"/>
-                            <circle id="bim-preview-arc" cx="36" cy="36" r="28" fill="none" stroke="#10b981" stroke-width="8"
-                                    stroke-dasharray="0 175.93" stroke-linecap="round"
-                                    transform="rotate(-90 36 36)"/>
+                            <circle id="bim-hdr-arc" cx="36" cy="36" r="28" fill="none" stroke="#10b981" stroke-width="8"
+                                    stroke-dasharray="0 175.93" stroke-linecap="round" transform="rotate(-90 36 36)"/>
                         </svg>
-                        <div id="bim-preview-icon" class="absolute inset-0 flex items-center justify-center text-[26px]">💸</div>
+                        <div id="bim-hdr-icon" class="absolute inset-0 flex items-center justify-center text-[26px]">💸</div>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <div id="bim-preview-name" class="text-lg font-bold truncate text-zinc-100">Item Name</div>
-                        <div id="bim-preview-cat" class="text-xs text-zinc-500 mt-0.5 uppercase tracking-widest font-semibold"></div>
-                        <div id="bim-preview-status" class="text-sm mt-1 font-medium"></div>
+                        <div id="bim-name-display" class="text-base font-bold text-zinc-100 mb-0.5 cursor-pointer truncate active:text-emerald-400 transition-colors" onclick="_bimInlineEditName(this)">Item Name</div>
+                        <div id="bim-cat-label" class="text-[10px] text-zinc-600 uppercase tracking-widest font-semibold mb-1"></div>
+                        <div class="flex items-baseline gap-1 cursor-pointer" onclick="_bimInlineEditAmount(this)">
+                            <span id="bim-amt-val" class="text-sm font-bold text-zinc-300"></span>
+                            <span class="text-[11px] text-zinc-600">planned</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Icon picker -->
-                <div class="mb-5">
-                    <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Icon</div>
+                <!-- Icon picker (hidden by default, revealed on tap of donut) -->
+                <div id="bim-icon-picker" class="hidden mb-5">
+                    <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Choose icon</div>
                     <div class="bg-zinc-900 rounded-2xl p-3">
                         <div id="bim-icon-grid" class="grid grid-cols-8 gap-1"></div>
                     </div>
                 </div>
 
-                <!-- Name -->
-                <div class="mb-4">
-                    <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Name</div>
-                    <input id="bim-name" type="text" autocomplete="off"
-                           class="w-full bg-zinc-900 rounded-2xl px-4 py-3.5 text-base font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all placeholder-zinc-700"
-                           placeholder="Item name"
-                           oninput="document.getElementById('bim-preview-name').textContent=this.value.trim()||'Item Name'"/>
+                <!-- Transactions this month -->
+                <div class="mb-5">
+                    <div id="bim-tx-header" class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Transactions this month</div>
+                    <div id="bim-tx-list" class="space-y-1.5"></div>
+                    <div id="bim-tx-empty" class="hidden text-xs text-zinc-600 text-center py-5">No transactions this month</div>
                 </div>
 
-                <!-- Budget Amount -->
-                <div class="mb-7">
-                    <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Budget Amount</div>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 font-semibold text-base pointer-events-none">$</span>
-                        <input id="bim-amount" type="number" inputmode="numeric" step="1" min="0"
-                               class="w-full bg-zinc-900 rounded-2xl pl-9 pr-4 py-3.5 text-base font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-                               placeholder="0"/>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex gap-3">
-                    <button id="bim-delete-btn" onclick="deleteBudgetItemFromModal()"
-                            class="py-3.5 px-5 rounded-2xl text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all">
-                        Delete
-                    </button>
-                    <button onclick="closeBudgetItemModal()"
-                            class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-zinc-400 bg-zinc-900 hover:bg-zinc-800 active:scale-95 transition-all">
-                        Cancel
-                    </button>
-                    <button onclick="saveBudgetItemModal()"
-                            class="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all">
-                        Save
-                    </button>
-                </div>
+                <!-- Delete -->
+                <button id="bim-delete-btn" onclick="deleteBudgetItemFromModal()"
+                        class="w-full py-3.5 rounded-2xl text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all">
+                    Delete Item
+                </button>
             </div>
         </div>
     </div>
@@ -1163,7 +1152,7 @@
         let _rCharts = {};  // report chart instances keyed by card id
         let _rCardOpen = { expenses: true, income: false, surplus: false, spendBreak: true, incBreak: false };
         let _rSectOpen = { trends: true, breakdowns: true };
-        let _trendMonthCount = 3;     // Trends section (default 3M)
+        let _trendMonthCount = 6;     // Trends section (default 6M)
         let _breakMonthCount = 1;     // Breakdowns section (1 = ring chart, default)
         let _breakdownMode = 'category'; // 'category' | 'item'
         let txFilter = 'all';
@@ -1177,6 +1166,7 @@
         let itemIcons = {}; // keyed "main:sub", e.g. "Food:Groceries" → "🛒"
         let _bimMain = null, _bimSub = null, _bimSelectedIcon = null;
         let _balLegendOpen = false;
+        let _budgetViewMode = 'remaining'; // 'plan' | 'remaining'
         let incomeCats = ["Salary","Freelance","Investments","Gifts","Other"]; // legacy — now derived from expenseCategories['Income']
 
         const defaultCategories = {
@@ -2104,7 +2094,7 @@
                 // Category legend — collapsible single column
                 const legendHTML = legendItems.length ? `
                     <button onclick="_toggleBalLegend()" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 0 4px;border-top:1px solid #27272a;margin-top:8px;background:none;border-left:none;border-right:none;border-bottom:none;cursor:pointer">
-                        <span style="font-size:10px;font-weight:800;letter-spacing:.12em;color:#52525b;text-transform:uppercase">Categories</span>
+                        <span style="font-size:10px;font-weight:800;letter-spacing:.12em;color:#52525b;text-transform:uppercase">Summary</span>
                         <svg id="bal-leg-chev" style="width:14px;height:14px;color:#52525b;transition:transform .2s;transform:${_balLegendOpen?'':'rotate(-90deg)'}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                     <div id="bal-leg-panel" style="display:${_balLegendOpen?'flex':'none'};flex-direction:column;gap:0;padding-bottom:4px">
@@ -2130,19 +2120,16 @@
             Object.keys(expenseCategories).forEach(main => {
                 const isIncome = main === 'Income';
                 const subs = expenseCategories[main];
-                // ── Donut card grid per category ──────────────────────────────
                 const R = 28, CX = 36, CY = 36;
                 const CIRC = 2 * Math.PI * R; // ≈ 175.93
 
                 html += `<div class="mb-5">`;
-                // Category header (subdued — totals live in the balancer above)
                 html += `<div class="flex items-center gap-2 px-1 mb-3">
                     <span class="text-lg">${mainEmojis[main] || '📂'}</span>
                     <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase">${main}</span>
                     ${isIncome ? '<span class="text-[9px] font-black tracking-widest text-emerald-600 uppercase ml-1">Income</span>' : ''}
                 </div>`;
 
-                // Grid: item donut cards + add button
                 html += `<div class="grid grid-cols-3 gap-3">`;
                 subs.forEach(sub => {
                     monthBudgets[main] = monthBudgets[main] || {};
@@ -2151,58 +2138,67 @@
                         ? calculateIncomeInMonth(selectedBudgetMonth, sub)
                         : calculateSpentInMonth(selectedBudgetMonth, main, sub);
                     const pct = budget > 0 ? actual / budget * 100 : 0;
-
-                    // Color: income inverted (higher = better), expense: ≤60% emerald, ≤100% amber, >100% rose
-                    let donutColor;
-                    if (isIncome) {
-                        donutColor = pct >= 100 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
-                    } else {
-                        donutColor = pct <= 60 ? '#10b981' : pct < 100 ? '#f59e0b' : '#ef4444';
-                    }
-
-                    // Donut arc
-                    const dashFill = Math.min(pct / 100, 1) * CIRC;
-                    const arcSVG = dashFill > 0
-                        ? `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${donutColor}" stroke-width="8"
-                            stroke-dasharray="${dashFill.toFixed(2)} ${(CIRC - dashFill).toFixed(2)}"
-                            stroke-linecap="round" transform="rotate(-90 ${CX} ${CY})"/>`
-                        : '';
-
-                    // Amount label
-                    let amtLabel, amtCls;
-                    if (budget === 0) {
-                        amtLabel = 'No budget'; amtCls = 'text-zinc-600';
-                    } else if (isIncome) {
-                        const diff = actual - budget;
-                        amtLabel = diff >= 0 ? `+$${Math.round(diff)} over` : `$${Math.round(budget - actual)} to go`;
-                        amtCls   = diff >= 0 ? 'text-emerald-400' : 'text-zinc-500';
-                    } else {
-                        const left = budget - actual;
-                        if (left >= 0) {
-                            amtLabel = `$${Math.round(left)} left`;
-                            amtCls   = pct <= 60 ? 'text-emerald-400' : 'text-amber-400';
-                        } else {
-                            amtLabel = `$${Math.round(-left)} over`;
-                            amtCls   = 'text-rose-400';
-                        }
-                    }
-
+                    const donutColor = _budgetItemColor(pct, isIncome);
                     const icon = itemIcons[`${main}:${sub}`] || (isIncome ? '💵' : '💸');
                     const mEsc = main.replace(/'/g,"\\'");
                     const sEsc = sub.replace(/'/g,"\\'");
 
-                    html += `<div class="bg-zinc-900 rounded-3xl p-3 flex flex-col items-center cursor-pointer active:scale-95 transition-transform select-none"
-                                 onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
-                        <div class="relative mb-2" style="width:72px;height:72px">
-                            <svg width="72" height="72" viewBox="0 0 72 72">
-                                <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#27272a" stroke-width="8"/>
-                                ${arcSVG}
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center text-[22px]">${icon}</div>
-                        </div>
-                        <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-0.5 w-full truncate px-1">${sub}</div>
-                        <div class="text-[11px] text-center ${amtCls} w-full truncate px-1">${amtLabel}</div>
-                    </div>`;
+                    if (_budgetViewMode === 'plan') {
+                        // Plan mode: large icon, no ring, tappable planned amount
+                        const planAmtText = budget === 0 ? 'Set amount' : `$${Math.round(budget)}`;
+                        const planAmtCls  = budget === 0 ? 'text-zinc-600' : 'text-zinc-300';
+                        html += `<div class="bg-zinc-900 rounded-3xl p-3 flex flex-col items-center cursor-pointer active:scale-95 transition-transform select-none"
+                                     onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
+                            <div class="text-[36px] leading-none mb-2 mt-1">${icon}</div>
+                            <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-1 w-full truncate px-1">${sub}</div>
+                            <div class="text-[12px] font-bold text-center ${planAmtCls} w-full truncate px-1"
+                                 onclick="event.stopPropagation();_bimInlinePlanAmount('${mEsc}','${sEsc}',this)">${planAmtText}</div>
+                        </div>`;
+                    } else {
+                        // Remaining mode: donut ring, remaining amount in center (SVG text), $spent/$planned below
+                        const dashFill = Math.min(pct / 100, 1) * CIRC;
+                        const arcSVG = dashFill > 0
+                            ? `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${donutColor}" stroke-width="8"
+                                stroke-dasharray="${dashFill.toFixed(2)} ${(CIRC - dashFill).toFixed(2)}"
+                                stroke-linecap="round" transform="rotate(-90 ${CX} ${CY})"/>`
+                            : '';
+
+                        // Center text: remaining / surplus
+                        let centerTxt, centerColor;
+                        if (budget === 0) {
+                            centerTxt = '—'; centerColor = '#52525b';
+                        } else if (isIncome) {
+                            const diff = actual - budget;
+                            centerTxt  = diff >= 0 ? `+$${Math.round(diff)}` : `$${Math.round(budget - actual)}`;
+                            centerColor = donutColor;
+                        } else {
+                            const left = budget - actual;
+                            centerTxt  = left >= 0 ? `$${Math.round(left)}` : `-$${Math.round(-left)}`;
+                            centerColor = donutColor;
+                        }
+
+                        // Below: $spent / $planned
+                        let amtLabel, amtCls;
+                        if (budget === 0) {
+                            amtLabel = 'No budget'; amtCls = 'text-zinc-600';
+                        } else {
+                            amtLabel = `$${Math.round(actual)} / $${Math.round(budget)}`;
+                            amtCls = 'text-zinc-500';
+                        }
+
+                        html += `<div class="bg-zinc-900 rounded-3xl p-3 flex flex-col items-center cursor-pointer active:scale-95 transition-transform select-none"
+                                     onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
+                            <div class="relative mb-2" style="width:72px;height:72px">
+                                <svg width="72" height="72" viewBox="0 0 72 72">
+                                    <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#27272a" stroke-width="8"/>
+                                    ${arcSVG}
+                                    <text x="${CX}" y="${CY+5}" text-anchor="middle" fill="${centerColor}" font-size="10" font-weight="700" font-family="system-ui,sans-serif">${centerTxt}</text>
+                                </svg>
+                            </div>
+                            <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-0.5 w-full truncate px-1">${sub}</div>
+                            <div class="text-[11px] text-center ${amtCls} w-full truncate px-1">${amtLabel}</div>
+                        </div>`;
+                    }
                 });
 
                 // Add item card
@@ -2215,16 +2211,17 @@
                     <div class="text-[11px] text-zinc-600">Add</div>
                 </button>`;
 
-                html += `</div>`; // end grid
-                html += `</div>`; // end category section
+                html += `</div></div>`;
             });
 
             document.getElementById('budgets-list').innerHTML = html || '<p class="text-center text-zinc-600 text-sm py-10">No categories yet</p>';
             attachBudgetItemListeners();
             attachBudgetSwipe();
-            // Show/hide footer buttons
+            // Show/hide footer and view toggle
             const footerEl = document.getElementById('budget-actions-footer');
             if (footerEl) footerEl.classList.toggle('hidden', !hasBudget);
+            const toggleEl = document.getElementById('budget-view-toggle');
+            if (toggleEl) toggleEl.classList.toggle('hidden', !hasBudget);
         }
 
         function attachBudgetItemListeners() {
@@ -2315,6 +2312,36 @@
                 if (e.key === 'Enter') { e.preventDefault(); save(); }
                 if (e.key === 'Escape') { e.preventDefault(); cancel(); }
             });
+        }
+
+        // ── Budget item color: 4-state system ──────────────────────────
+        // expense: ≤60% emerald → 60-95% amber → 95-100% sky (on-target) → >100% rose
+        // income:  <60% rose → 60-100% amber → ≥100% emerald
+        function _budgetItemColor(pct, isInc) {
+            if (isInc) {
+                if (pct >= 100) return '#10b981';
+                if (pct >= 60)  return '#f59e0b';
+                return '#ef4444';
+            }
+            if (pct > 100) return '#ef4444';   // over — rose
+            if (pct >= 95) return '#0ea5e9';   // on target — sky blue
+            if (pct >= 60) return '#f59e0b';   // approaching — amber
+            return '#10b981';                   // safe — emerald
+        }
+
+        function _setBudgetViewMode(mode) {
+            _budgetViewMode = mode;
+            const planBtn = document.getElementById('bview-btn-plan');
+            const remBtn  = document.getElementById('bview-btn-remaining');
+            if (planBtn) {
+                planBtn.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition-all '
+                    + (mode === 'plan' ? 'bg-zinc-800 text-white' : 'text-zinc-500');
+            }
+            if (remBtn) {
+                remBtn.className = 'flex-1 py-2 rounded-xl text-xs font-bold transition-all '
+                    + (mode === 'remaining' ? 'bg-zinc-800 text-white' : 'text-zinc-500');
+            }
+            renderBudgets();
         }
 
         function _toggleBalLegend() {
@@ -3057,8 +3084,30 @@ Transactions using it will stay.`)) {
                                  : calculateSpentInMonth(selectedBudgetMonth, main, sub);
             const icon   = itemIcons[`${main}:${sub}`] || (isInc ? '💵' : '💸');
             const pct    = budget > 0 ? actual / budget * 100 : 0;
+            const color  = _budgetItemColor(pct, isInc);
+            const CIRC   = 175.93;
+            const fill   = Math.min(pct / 100, 1) * CIRC;
 
-            // Populate icon grid
+            // Header donut
+            const arc = document.getElementById('bim-hdr-arc');
+            if (arc) {
+                arc.setAttribute('stroke', color);
+                arc.setAttribute('stroke-dasharray', `${fill.toFixed(2)} ${(CIRC - fill).toFixed(2)}`);
+            }
+            const hdrIcon = document.getElementById('bim-hdr-icon');
+            if (hdrIcon) hdrIcon.textContent = icon;
+
+            // Name + category + amount
+            const nameEl = document.getElementById('bim-name-display');
+            if (nameEl) { nameEl.textContent = sub; nameEl.onclick = function() { _bimInlineEditName(this); }; }
+            const catEl = document.getElementById('bim-cat-label');
+            if (catEl) catEl.textContent = main;
+            const amtEl = document.getElementById('bim-amt-val');
+            if (amtEl) amtEl.textContent = `$${Math.round(budget)}`;
+
+            // Icon picker — hidden by default, populate grid
+            const pickerEl = document.getElementById('bim-icon-picker');
+            if (pickerEl) pickerEl.classList.add('hidden');
             const grid = document.getElementById('bim-icon-grid');
             if (grid) {
                 grid.innerHTML = BUDGET_ICONS.map(e =>
@@ -3067,57 +3116,218 @@ Transactions using it will stay.`)) {
                 ).join('');
             }
 
-            // Populate fields
-            document.getElementById('bim-name').value   = sub;
-            document.getElementById('bim-amount').value = budget > 0 ? budget : '';
-
-            // Preview
-            document.getElementById('bim-preview-icon').textContent = icon;
-            document.getElementById('bim-preview-name').textContent = sub;
-            document.getElementById('bim-preview-cat').textContent  = main;
-            _bimUpdatePreview(pct, isInc);
-
-            // Show/hide delete (hide only if it's the last item in category)
+            // Show/hide delete (hide if it's the last item in category)
             const arr = expenseCategories[main] || [];
             const del = document.getElementById('bim-delete-btn');
             if (del) del.classList.toggle('hidden', arr.length <= 1);
 
+            // Populate transaction list
+            _bimPopulateTxList(main, sub, isInc);
+
             document.getElementById('budget-item-modal').classList.remove('hidden');
+        }
+
+        function _bimPopulateTxList(main, sub, isInc) {
+            const [year, month] = selectedBudgetMonth.split('-').map(Number);
+            const monthTxs = transactions.filter(t => {
+                const d = new Date(t.date + 'T00:00:00');
+                if (d.getFullYear() !== year || (d.getMonth() + 1) !== month) return false;
+                if (t.excluded) return false;
+                if (isInc) return t.type === 'income' && t.mainCategory === sub;
+                return t.type === 'expense' && t.mainCategory === main && t.subCategory === sub;
+            }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const listEl  = document.getElementById('bim-tx-list');
+            const emptyEl = document.getElementById('bim-tx-empty');
+
+            if (monthTxs.length === 0) {
+                if (listEl)  listEl.innerHTML = '';
+                if (emptyEl) emptyEl.classList.remove('hidden');
+                return;
+            }
+            if (emptyEl) emptyEl.classList.add('hidden');
+
+            const sign = isInc ? '+' : '-';
+            const amtStyle = isInc ? 'color:#34d399' : 'color:#e4e4e7';
+            listEl.innerHTML = monthTxs.map(t => {
+                const d   = new Date(t.date + 'T00:00:00');
+                const day = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return `<div class="flex items-center justify-between bg-zinc-900 rounded-2xl px-4 py-3">
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-medium text-zinc-200 truncate">${t.description || (isInc ? 'Income' : 'Expense')}</div>
+                        <div class="text-[11px] text-zinc-600 mt-0.5">${day}</div>
+                    </div>
+                    <div class="text-sm font-bold ml-3 shrink-0" style="${amtStyle}">${sign}$${t.amount.toFixed(2)}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function _bimToggleIconPicker() {
+            const picker = document.getElementById('bim-icon-picker');
+            if (picker) picker.classList.toggle('hidden');
         }
 
         function _bimSelectIcon(emoji) {
             _bimSelectedIcon = emoji;
-            document.getElementById('bim-preview-icon').textContent = emoji;
+            const hdrIcon = document.getElementById('bim-hdr-icon');
+            if (hdrIcon) hdrIcon.textContent = emoji;
             document.querySelectorAll('#bim-icon-grid button').forEach(btn => {
                 const sel = btn.textContent.trim() === emoji;
                 btn.className = 'text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all '
                     + (sel ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700');
             });
+            // Save immediately and close picker
+            if (_bimMain && _bimSub) {
+                itemIcons[`${_bimMain}:${_bimSub}`] = emoji;
+                saveData();
+                renderBudgets();
+            }
+            document.getElementById('bim-icon-picker').classList.add('hidden');
         }
 
-        function _bimUpdatePreview(pct, isInc) {
-            const arc  = document.getElementById('bim-preview-arc');
-            const stat = document.getElementById('bim-preview-status');
-            const CIRC = 175.93;
-            let color, fill, statusTxt, statusCls;
-            if (isInc) {
-                color = pct >= 100 ? '#10b981' : pct >= 60 ? '#f59e0b' : '#ef4444';
-                fill  = Math.min(pct / 100, 1) * CIRC;
-                statusTxt = pct >= 100 ? 'Target reached' : `${Math.round(pct)}% received`;
-                statusCls = pct >= 100 ? 'text-emerald-400' : 'text-zinc-500';
-            } else {
-                color = pct <= 60 ? '#10b981' : pct < 100 ? '#f59e0b' : '#ef4444';
-                fill  = Math.min(pct / 100, 1) * CIRC;
-                statusTxt = pct === 0 ? 'No spending yet'
-                          : pct > 100 ? `${Math.round(pct)}% — over budget`
-                          : `${Math.round(pct)}% spent`;
-                statusCls = pct <= 60 ? 'text-emerald-400' : pct < 100 ? 'text-amber-400' : 'text-rose-400';
+        function _bimInlineEditName(el) {
+            const current = el.textContent.trim();
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = current;
+            input.className = 'w-full bg-zinc-800 rounded-xl px-3 py-1.5 text-base font-bold text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500';
+            el.replaceWith(input);
+            input.focus();
+            input.select();
+
+            function commit() {
+                const newName = input.value.trim() || current;
+                if (newName !== current && _bimMain && _bimSub) {
+                    if ((expenseCategories[_bimMain] || []).includes(newName)) {
+                        alert(`"${newName}" already exists in ${_bimMain}.`);
+                    } else {
+                        const idx = (expenseCategories[_bimMain] || []).indexOf(_bimSub);
+                        if (idx !== -1) expenseCategories[_bimMain][idx] = newName;
+                        Object.keys(monthlyBudgets).forEach(mo => {
+                            const mb = monthlyBudgets[mo];
+                            if (mb[_bimMain] && _bimSub in mb[_bimMain]) {
+                                mb[_bimMain][newName] = mb[_bimMain][_bimSub];
+                                delete mb[_bimMain][_bimSub];
+                            }
+                        });
+                        transactions.forEach(t => {
+                            if (t.mainCategory === _bimMain && t.subCategory === _bimSub) t.subCategory = newName;
+                        });
+                        goals.forEach(g => {
+                            if (g.linkedSub === _bimSub) { g.linkedSub = newName; g.name = newName; }
+                        });
+                        if (itemIcons[`${_bimMain}:${_bimSub}`]) {
+                            itemIcons[`${_bimMain}:${newName}`] = itemIcons[`${_bimMain}:${_bimSub}`];
+                            delete itemIcons[`${_bimMain}:${_bimSub}`];
+                        }
+                        _bimSub = newName;
+                        saveData();
+                        renderBudgets();
+                    }
+                }
+                const nameEl = document.createElement('div');
+                nameEl.id = 'bim-name-display';
+                nameEl.className = 'text-base font-bold text-zinc-100 mb-0.5 cursor-pointer truncate active:text-emerald-400 transition-colors';
+                nameEl.textContent = _bimSub;
+                nameEl.onclick = function() { _bimInlineEditName(this); };
+                input.replaceWith(nameEl);
             }
-            if (arc) {
-                arc.setAttribute('stroke', color);
-                arc.setAttribute('stroke-dasharray', `${fill.toFixed(2)} ${(CIRC - fill).toFixed(2)}`);
+
+            input.addEventListener('blur', commit);
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
+                if (e.key === 'Escape') { input.value = current; input.blur(); }
+            });
+        }
+
+        function _bimInlineEditAmount(el) {
+            const mb      = monthlyBudgets[selectedBudgetMonth] || {};
+            const current = (mb[_bimMain] || {})[_bimSub] || 0;
+            const amtVal  = document.getElementById('bim-amt-val');
+            if (!amtVal) return;
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.inputMode = 'numeric';
+            input.step = '1';
+            input.min  = '0';
+            input.value = current > 0 ? current : '';
+            input.placeholder = '0';
+            input.className = 'bg-zinc-800 rounded-lg px-2 py-0.5 text-sm font-bold text-zinc-100 w-28 focus:outline-none focus:ring-1 focus:ring-emerald-500';
+            amtVal.replaceWith(input);
+            input.focus();
+            input.select();
+
+            function commit() {
+                const newAmt = Math.round(parseFloat(input.value) || 0);
+                monthlyBudgets[selectedBudgetMonth] = monthlyBudgets[selectedBudgetMonth] || {};
+                monthlyBudgets[selectedBudgetMonth][_bimMain] = monthlyBudgets[selectedBudgetMonth][_bimMain] || {};
+                monthlyBudgets[selectedBudgetMonth][_bimMain][_bimSub] = newAmt;
+                saveData();
+                renderBudgets();
+                // Refresh donut in header
+                const isInc  = _bimMain === 'Income';
+                const actual = isInc ? calculateIncomeInMonth(selectedBudgetMonth, _bimSub)
+                                     : calculateSpentInMonth(selectedBudgetMonth, _bimMain, _bimSub);
+                const pct    = newAmt > 0 ? actual / newAmt * 100 : 0;
+                const color  = _budgetItemColor(pct, isInc);
+                const CIRC   = 175.93;
+                const fill   = Math.min(pct / 100, 1) * CIRC;
+                const arc    = document.getElementById('bim-hdr-arc');
+                if (arc) {
+                    arc.setAttribute('stroke', color);
+                    arc.setAttribute('stroke-dasharray', `${fill.toFixed(2)} ${(CIRC - fill).toFixed(2)}`);
+                }
+                const newSpan = document.createElement('span');
+                newSpan.id = 'bim-amt-val';
+                newSpan.className = 'text-sm font-bold text-zinc-300';
+                newSpan.textContent = `$${newAmt}`;
+                input.replaceWith(newSpan);
             }
-            if (stat) { stat.textContent = statusTxt; stat.className = 'text-sm mt-1 font-medium ' + statusCls; }
+
+            input.addEventListener('blur', commit);
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
+                if (e.key === 'Escape') {
+                    const newSpan = document.createElement('span');
+                    newSpan.id = 'bim-amt-val';
+                    newSpan.className = 'text-sm font-bold text-zinc-300';
+                    newSpan.textContent = `$${current}`;
+                    input.replaceWith(newSpan);
+                }
+            });
+        }
+
+        function _bimInlinePlanAmount(main, sub, el) {
+            const mb      = monthlyBudgets[selectedBudgetMonth] || {};
+            const current = (mb[main] || {})[sub] || 0;
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.inputMode = 'numeric';
+            input.step = '1';
+            input.min  = '0';
+            input.value = current > 0 ? current : '';
+            input.placeholder = '0';
+            input.className = 'w-full bg-zinc-800 rounded-lg text-center text-[12px] font-bold text-zinc-100 py-0.5 focus:outline-none focus:ring-1 focus:ring-emerald-500';
+            el.replaceWith(input);
+            input.focus();
+            input.select();
+
+            function commit() {
+                const newAmt = Math.round(parseFloat(input.value) || 0);
+                monthlyBudgets[selectedBudgetMonth] = monthlyBudgets[selectedBudgetMonth] || {};
+                monthlyBudgets[selectedBudgetMonth][main] = monthlyBudgets[selectedBudgetMonth][main] || {};
+                monthlyBudgets[selectedBudgetMonth][main][sub] = newAmt;
+                saveData();
+                renderBudgets();
+            }
+
+            input.addEventListener('blur', commit);
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
+                if (e.key === 'Escape') { renderBudgets(); }
+            });
         }
 
         function closeBudgetItemModal() {
@@ -3127,54 +3337,6 @@ Transactions using it will stay.`)) {
 
         function _bimBackdrop(e) {
             if (e.target === document.getElementById('budget-item-modal')) closeBudgetItemModal();
-        }
-
-        function saveBudgetItemModal() {
-            if (!_bimMain || !_bimSub) return;
-            const newName = document.getElementById('bim-name').value.trim();
-            const newAmt  = Math.round(parseFloat(document.getElementById('bim-amount').value) || 0);
-            if (!newName) { document.getElementById('bim-name').focus(); return; }
-
-            // Save icon
-            const iconToSave = _bimSelectedIcon || itemIcons[`${_bimMain}:${_bimSub}`];
-            if (iconToSave) itemIcons[`${_bimMain}:${_bimSub}`] = iconToSave;
-
-            // Save budget amount for current month
-            monthlyBudgets[selectedBudgetMonth] = monthlyBudgets[selectedBudgetMonth] || {};
-            monthlyBudgets[selectedBudgetMonth][_bimMain] = monthlyBudgets[selectedBudgetMonth][_bimMain] || {};
-            monthlyBudgets[selectedBudgetMonth][_bimMain][_bimSub] = newAmt;
-
-            // Rename if needed
-            if (newName !== _bimSub) {
-                if ((expenseCategories[_bimMain] || []).includes(newName)) {
-                    alert(`"${newName}" already exists in ${_bimMain}.`);
-                    return;
-                }
-                const idx = (expenseCategories[_bimMain] || []).indexOf(_bimSub);
-                if (idx !== -1) expenseCategories[_bimMain][idx] = newName;
-                Object.keys(monthlyBudgets).forEach(mo => {
-                    const mb = monthlyBudgets[mo];
-                    if (mb[_bimMain] && _bimSub in mb[_bimMain]) {
-                        mb[_bimMain][newName] = mb[_bimMain][_bimSub];
-                        delete mb[_bimMain][_bimSub];
-                    }
-                });
-                transactions.forEach(t => {
-                    if (t.mainCategory === _bimMain && t.subCategory === _bimSub) t.subCategory = newName;
-                });
-                goals.forEach(g => {
-                    if (g.linkedSub === _bimSub) { g.linkedSub = newName; g.name = newName; }
-                });
-                // Move icon key
-                if (itemIcons[`${_bimMain}:${_bimSub}`]) {
-                    itemIcons[`${_bimMain}:${newName}`] = itemIcons[`${_bimMain}:${_bimSub}`];
-                    delete itemIcons[`${_bimMain}:${_bimSub}`];
-                }
-            }
-
-            saveData();
-            closeBudgetItemModal();
-            renderBudgets();
         }
 
         function deleteBudgetItemFromModal() {
