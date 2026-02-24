@@ -762,13 +762,25 @@
                         <select id="sub-cat"
                                 class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
                     </div>
+                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account <span class="text-zinc-700 normal-case tracking-normal font-normal">(optional)</span></div>
+                        <select id="expense-account"
+                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                    </div>
                 </div>
 
                 <!-- Income category -->
-                <div id="income-cat-row" class="hidden border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Income Type</div>
-                    <select id="income-cat"
-                            class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                <div id="income-cat-row" class="hidden">
+                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Income Type</div>
+                        <select id="income-cat"
+                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                    </div>
+                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account <span class="text-zinc-700 normal-case tracking-normal font-normal">(optional)</span></div>
+                        <select id="income-account" onchange="_onIncomeAccountChange()"
+                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                    </div>
                 </div>
 
                 <!-- Transfer fields -->
@@ -829,7 +841,7 @@
 
 
 
-    <!-- BUDGET CATEGORY MODAL (transaction summary + inline editing) -->
+    <!-- BUDGET CATEGORY MODAL (redesigned like wallet detail modal) -->
     <div id="budget-item-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-50" onclick="_bimBackdrop(event)">
         <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
             <!-- drag handle -->
@@ -837,27 +849,47 @@
                 <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
             </div>
             <div class="px-5 pt-3 pb-8">
-                <!-- Header: donut + inline-editable name/amount (tap icon to show picker) -->
-                <div class="flex items-center gap-4 mb-5">
-                    <div class="relative flex-shrink-0 cursor-pointer" style="width:72px;height:72px" onclick="_bimToggleIconPicker()">
-                        <svg width="72" height="72" viewBox="0 0 72 72">
-                            <circle cx="36" cy="36" r="28" fill="none" stroke="#27272a" stroke-width="8"/>
-                            <circle id="bim-hdr-arc" cx="36" cy="36" r="28" fill="none" stroke="#10b981" stroke-width="8"
-                                    stroke-dasharray="0 175.93" stroke-linecap="round" transform="rotate(-90 36 36)"/>
-                        </svg>
-                        <div id="bim-hdr-icon" class="absolute inset-0 flex items-center justify-center text-[26px]">💸</div>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <div id="bim-name-display" class="text-base font-bold text-zinc-100 mb-0.5 cursor-pointer truncate active:text-emerald-400 transition-colors" onclick="_bimInlineEditName(this)">Item Name</div>
-                        <div id="bim-cat-label" class="text-[10px] text-zinc-600 uppercase tracking-widest font-semibold mb-1"></div>
-                        <div class="flex items-baseline gap-1 cursor-pointer" onclick="_bimInlineEditAmount(this)">
-                            <span id="bim-amt-val" class="text-sm font-bold text-zinc-300"></span>
-                            <span class="text-[11px] text-zinc-600">planned</span>
+                <!-- Centered header: large icon + name -->
+                <div class="flex flex-col items-center mb-6">
+                    <div class="relative cursor-pointer mb-3" onclick="_bimToggleIconPicker()">
+                        <div class="w-20 h-20 rounded-2xl bg-zinc-900 flex items-center justify-center">
+                            <div id="bim-hdr-icon" class="text-[40px]">💸</div>
                         </div>
+                        <!-- Hidden arc for data -->
+                        <svg width="0" height="0" style="position:absolute"><circle id="bim-hdr-arc" cx="0" cy="0" r="0"/></svg>
+                    </div>
+                    <div id="bim-name-display" class="text-xl font-bold text-zinc-100 mb-1 text-center cursor-pointer active:text-emerald-400 transition-colors" onclick="_bimInlineEditName(this)">Item Name</div>
+                    <div id="bim-cat-label" class="text-[10px] text-zinc-600 uppercase tracking-widest font-semibold mb-3"></div>
+                </div>
+
+                <!-- Stats row: Budgeted / Spent / Remaining -->
+                <div id="bim-stats" class="grid grid-cols-3 gap-3 mb-5">
+                    <div class="bg-zinc-900 rounded-2xl p-3 text-center">
+                        <div class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-1">Budgeted</div>
+                        <div id="bim-stat-budgeted" class="text-sm font-bold text-zinc-300 cursor-pointer" onclick="_bimInlineEditAmount(this)">$0</div>
+                    </div>
+                    <div class="bg-zinc-900 rounded-2xl p-3 text-center">
+                        <div class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-1">Spent</div>
+                        <div id="bim-stat-spent" class="text-sm font-bold text-rose-400">$0</div>
+                    </div>
+                    <div class="bg-zinc-900 rounded-2xl p-3 text-center">
+                        <div class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-1">Left</div>
+                        <div id="bim-stat-left" class="text-sm font-bold text-emerald-400">$0</div>
                     </div>
                 </div>
 
-                <!-- Icon picker (hidden by default, revealed on tap of donut) -->
+                <!-- Progress bar -->
+                <div id="bim-progress-wrap" class="mb-5">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-[10px] font-black tracking-[.12em] text-zinc-600 uppercase">Progress</span>
+                        <span id="bim-progress-pct" class="text-[11px] font-bold text-emerald-400">0%</span>
+                    </div>
+                    <div class="h-2.5 bg-zinc-800 rounded-full overflow-hidden">
+                        <div id="bim-progress-bar" class="h-full rounded-full bg-emerald-500 progress-bar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <!-- Icon picker (hidden by default, revealed on tap of icon) -->
                 <div id="bim-icon-picker" class="hidden mb-5">
                     <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Choose icon</div>
                     <div class="bg-zinc-900 rounded-2xl p-3">
@@ -872,11 +904,17 @@
                     <div id="bim-tx-empty" class="hidden text-xs text-zinc-600 text-center py-5">No transactions this month</div>
                 </div>
 
-                <!-- Delete -->
-                <button id="bim-delete-btn" onclick="deleteBudgetItemFromModal()"
-                        class="w-full py-3.5 rounded-2xl text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all">
-                    Delete Category
-                </button>
+                <!-- Action buttons (like wallet detail) -->
+                <div class="space-y-2">
+                    <button id="bim-edit-btn" onclick="_bimStartEdit()"
+                            class="w-full py-3.5 rounded-2xl text-sm font-bold text-white bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all">
+                        Edit Category
+                    </button>
+                    <button id="bim-delete-btn" onclick="deleteBudgetItemFromModal()"
+                            class="w-full py-3.5 rounded-2xl text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all">
+                        Delete Category
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -936,34 +974,6 @@
             <div class="flex items-center justify-between px-6 pt-5 pb-2">
                 <h2 class="text-xl font-semibold tracking-tight">Settings</h2>
                 <button onclick="hideDataModal()" class="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors text-lg leading-none">×</button>
-            </div>
-
-            <!-- ── EDIT CATEGORIES ─────────────────────── -->
-            <div class="px-5 mb-5">
-                <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Categories</div>
-                <div class="bg-zinc-900 rounded-3xl overflow-hidden">
-                    <button onclick="toggleCategoryEditorAccordion()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
-                        <div class="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
-                            <svg width="17" height="17" fill="none" stroke="#a78bfa" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                        </div>
-                        <div class="flex-1 text-left">
-                            <div class="font-semibold text-sm">Edit Sections</div>
-                            <div id="cat-editor-count" class="text-[11px] text-zinc-500 mt-0.5"></div>
-                        </div>
-                        <svg id="cat-editor-chevron" class="acc-chevron w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
-                    <div class="acc-body" id="cat-editor-body">
-                        <div class="border-t border-zinc-800">
-                            <div id="category-editor-list"></div>
-                            <button onclick="addCategoryInline()" class="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-zinc-800/60 transition-colors group border-t border-zinc-800">
-                                <div class="w-7 h-7 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
-                                    <svg class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                                </div>
-                                <span class="text-sm text-zinc-500 group-hover:text-emerald-400 transition-colors">Add section</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- ── PREFERENCES ──────────────────────────── -->
@@ -1948,7 +1958,9 @@
                 sign    = isInc ? '+' : '−';
                 emoji   = isExcl ? '🚫' : isInc ? '💰' : (CAT_EMOJI[t.mainCategory] || '💸');
                 title   = t.desc || (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : ''));
-                meta    = isExcl ? 'Excluded from budget' : (t.desc ? (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : '')) : '');
+                const linkedAcc = t.walletAccountId ? _getAccById(t.walletAccountId) : null;
+                const accLabel = linkedAcc ? ' · ' + linkedAcc.name : '';
+                meta    = isExcl ? 'Excluded from budget' : (t.desc ? (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : '') + accLabel) : accLabel.slice(3));
             }
             return `<div class="tx-item mb-1.5" data-index="${realIdx}">
                 <div class="tx-content flex items-stretch" onclick="openEditTx(${realIdx})" style="cursor:pointer">
@@ -2039,6 +2051,8 @@
         /* ── Undo snackbar ───────────────────────────────── */
         function _showUndo(idx) {
             _undoData = { t: transactions[idx], idx };
+            // Reverse balance changes before removing
+            _updateAccountBalances(transactions[idx], true);
             transactions.splice(idx, 1);
             saveData();
 
@@ -2062,6 +2076,8 @@
             if (!_undoData) return;
             clearTimeout(_undoTimer);
             transactions.splice(_undoData.idx, 0, _undoData.t);
+            // Re-apply balance changes
+            _updateAccountBalances(_undoData.t, false);
             _undoData = null;
             saveData();
             const bar = document.getElementById('_undo');
@@ -2287,18 +2303,44 @@
                 const cAmtFill = isBalanced ? '#10b981' : balance > 0 ? '#f59e0b' : '#ef4444';
                 const cLblFill = isBalanced ? '#34d399' : balance > 0 ? '#d97706' : '#f87171';
 
-                const centerSVG = incomePlanned === 0
-                    ? `<text x="${cxD}" y="${cyD+4}" text-anchor="middle" fill="#52525b" font-size="10" font-family="system-ui,sans-serif">No income set</text>`
-                    : `<text x="${cxD}" y="${cyD-7}" text-anchor="middle" fill="${cAmtFill}" font-size="22" font-weight="700" font-family="system-ui,sans-serif">${cAmt}</text><text x="${cxD}" y="${cyD+12}" text-anchor="middle" fill="${cLblFill}" font-size="9" font-family="system-ui,sans-serif" letter-spacing="0.08em">${cLbl}</text>`;
+                let centerSVG;
+                if (incomePlanned === 0) {
+                    centerSVG = `<text x="${cxD}" y="${cyD+4}" text-anchor="middle" fill="#52525b" font-size="10" font-family="system-ui,sans-serif">No income set</text>`;
+                } else if (_budgetViewMode === 'remaining') {
+                    const mExpPure2 = calculateSpentInMonth(selectedBudgetMonth);
+                    const mSavings2 = _calculateTotalSavingsInMonth(selectedBudgetMonth);
+                    const totalSpent2 = mExpPure2 + Math.max(0, mSavings2);
+                    const leftToSpend2 = expBudgeted - totalSpent2;
+                    const ltsFill = leftToSpend2 >= 0 ? '#34d399' : '#ef4444';
+                    centerSVG = `<text x="${cxD}" y="${cyD-7}" text-anchor="middle" fill="${ltsFill}" font-size="22" font-weight="700" font-family="system-ui,sans-serif">${leftToSpend2 >= 0 ? '' : '-'}$${Math.round(Math.abs(leftToSpend2))}</text><text x="${cxD}" y="${cyD+12}" text-anchor="middle" fill="${ltsFill}" font-size="9" font-family="system-ui,sans-serif" letter-spacing="0.08em">${leftToSpend2 >= 0 ? 'LEFT TO SPEND' : 'OVER BUDGET'}</text>`;
+                } else {
+                    centerSVG = `<text x="${cxD}" y="${cyD-7}" text-anchor="middle" fill="${cAmtFill}" font-size="22" font-weight="700" font-family="system-ui,sans-serif">${cAmt}</text><text x="${cxD}" y="${cyD+12}" text-anchor="middle" fill="${cLblFill}" font-size="9" font-family="system-ui,sans-serif" letter-spacing="0.08em">${cLbl}</text>`;
+                }
 
-                // Right-side stats
-                const statsHTML = incomePlanned === 0
-                    ? `<p style="font-size:11px;color:#52525b;line-height:1.6">Set a planned<br>income amount<br>to get started.</p>`
-                    : `<div style="display:flex;flex-direction:column;gap:12px">
+                // Right-side stats differ by view mode
+                let statsHTML;
+                if (incomePlanned === 0) {
+                    statsHTML = `<p style="font-size:11px;color:#52525b;line-height:1.6">Set a planned<br>income amount<br>to get started.</p>`;
+                } else if (_budgetViewMode === 'remaining') {
+                    // Remaining mode: Spent vs Budgeted, Left to Spend
+                    const mExpPure = calculateSpentInMonth(selectedBudgetMonth);
+                    const mSavings = _calculateTotalSavingsInMonth(selectedBudgetMonth);
+                    const totalSpent = mExpPure + Math.max(0, mSavings);
+                    const leftToSpend = expBudgeted - totalSpent;
+                    const ltsColor = leftToSpend >= 0 ? '#34d399' : '#ef4444';
+                    statsHTML = `<div style="display:flex;flex-direction:column;gap:12px">
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Spent</div><div style="font-size:14px;font-weight:700;color:#f87171;font-variant-numeric:tabular-nums">$${Math.round(totalSpent)}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Budgeted</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${Math.round(expBudgeted)}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${leftToSpend >= 0 ? 'Left to Spend' : 'Over Budget'}</div><div style="font-size:14px;font-weight:700;color:${ltsColor};font-variant-numeric:tabular-nums">$${Math.round(Math.abs(leftToSpend))}</div></div>
+                       </div>`;
+                } else {
+                    // Plan mode: Expected Income vs Planned Outflows
+                    statsHTML = `<div style="display:flex;flex-direction:column;gap:12px">
                         <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Expected Income</div><div style="font-size:14px;font-weight:700;color:#34d399;font-variant-numeric:tabular-nums">$${Math.round(incomePlanned)}</div></div>
                         <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Planned Outflows</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${Math.round(expBudgeted)}</div></div>
                         <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${isBalanced ? 'Balanced' : balance >= 0 ? 'Left to Budget' : 'Over Income'}</div><div style="font-size:14px;font-weight:700;color:${cAmtFill};font-variant-numeric:tabular-nums">$${Math.round(Math.abs(balance))}</div></div>
                        </div>`;
+                }
 
                 // Category legend — collapsible single column
                 const legendHTML = legendItems.length ? `
@@ -2333,9 +2375,19 @@
                 const CIRC = 2 * Math.PI * R; // ≈ 175.93
 
                 html += `<div class="mb-5">`;
+                const catKeys = Object.keys(expenseCategories);
+                const catIdx = catKeys.indexOf(main);
+                const isFirstCat = catIdx === 0;
+                const isLastCat = catIdx === catKeys.length - 1;
                 html += `<div class="flex items-center gap-2 px-1 mb-3">
                     <span class="text-lg">${mainEmojis[main] || '📂'}</span>
-                    <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase">${main}</span>
+                    <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase flex-1">${main}</span>
+                    <button onclick="event.stopPropagation();_budgetMoveSection('${main.replace(/'/g,"\\'")}','up')" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isFirstCat?'opacity-20 pointer-events-none':''}" title="Move up">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+                    </button>
+                    <button onclick="event.stopPropagation();_budgetMoveSection('${main.replace(/'/g,"\\'")}','down')" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isLastCat?'opacity-20 pointer-events-none':''}" title="Move down">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
                 </div>`;
 
                 html += `<div class="grid grid-cols-3 gap-3">`;
@@ -2360,7 +2412,7 @@
                             <div class="text-[36px] leading-none mb-2 mt-1">${icon}</div>
                             <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-1 w-full truncate px-1">${sub}</div>
                             <div class="text-[12px] font-bold text-center ${planAmtCls} w-full truncate px-1"
-                                 onclick="event.stopPropagation();_bimInlinePlanAmount('${mEsc}','${sEsc}',this)">${planAmtText}</div>
+                                 >${planAmtText}</div>
                         </div>`;
                     } else {
                         // Remaining mode: donut ring, remaining amount in center (SVG text), $spent/$planned below
@@ -2458,7 +2510,7 @@
                             <div class="text-[36px] leading-none mb-2 mt-1">${icon}</div>
                             <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-1 w-full truncate px-1">${sub}</div>
                             <div class="text-[12px] font-bold text-center ${planAmtCls} w-full truncate px-1"
-                                 onclick="event.stopPropagation();_bimInlinePlanAmount('${mEsc}','${sEsc}',this)">${planAmtText}</div>
+                                 >${planAmtText}</div>
                         </div>`;
                     } else {
                         const dashFill = Math.min(pct / 100, 1) * CIRC;
@@ -2636,6 +2688,37 @@
                     + (mode === 'remaining' ? 'bg-zinc-800 text-white' : 'text-zinc-500');
             }
             renderBudgets();
+        }
+
+        /* ── Budget section/category reordering ─────────────── */
+        function _budgetMoveSection(cat, dir) {
+            const keys = Object.keys(expenseCategories);
+            const i = keys.indexOf(cat);
+            if (dir === 'up' && i <= 0) return;
+            if (dir === 'down' && (i < 0 || i >= keys.length - 1)) return;
+            const j = dir === 'up' ? i - 1 : i + 1;
+            [keys[i], keys[j]] = [keys[j], keys[i]];
+            const r = {};
+            keys.forEach(k => r[k] = expenseCategories[k]);
+            expenseCategories = r;
+            saveData();
+            renderBudgets();
+        }
+
+        /* ── Wallet account reordering ─────────────────────── */
+        function _walletMoveAccount(id, dir) {
+            const idx = walletAccounts.findIndex(a => a.id === id);
+            if (idx < 0) return;
+            const acc = walletAccounts[idx];
+            // Find same-type accounts and their indices
+            const sameType = walletAccounts.map((a, i) => ({a, i})).filter(x => x.a.type === acc.type);
+            const posInType = sameType.findIndex(x => x.i === idx);
+            if (dir === 'up' && posInType <= 0) return;
+            if (dir === 'down' && posInType >= sameType.length - 1) return;
+            const swapIdx = dir === 'up' ? sameType[posInType - 1].i : sameType[posInType + 1].i;
+            [walletAccounts[idx], walletAccounts[swapIdx]] = [walletAccounts[swapIdx], walletAccounts[idx]];
+            saveData();
+            renderWallet();
         }
 
         function _toggleBalLegend() {
@@ -3329,6 +3412,10 @@
         function closeAddItemModal() {
             document.getElementById('add-budget-item-modal').classList.add('hidden');
             _aimMain = null; _aimSelectedIcon = null;
+            _aimEditingMain = null; _aimEditingSub = null;
+            // Reset button text
+            const addBtn = document.querySelector('#add-budget-item-modal button[onclick="_aimConfirm()"]');
+            if (addBtn) addBtn.textContent = 'Add Category';
         }
 
         function _aimBackdrop(e) {
@@ -3359,30 +3446,63 @@
         }
 
         function _aimConfirm() {
-            if (!_aimMain) return;
+            const editMain = _aimEditingMain;
+            const editSub  = _aimEditingSub;
+            const main = editMain || _aimMain;
+            if (!main) return;
             const nameEl = document.getElementById('aim-name-input');
             const name = nameEl ? nameEl.value.trim() : '';
             if (!name) { if (nameEl) nameEl.focus(); return; }
-            if ((expenseCategories[_aimMain] || []).includes(name)) {
-                if (nameEl) { nameEl.focus(); nameEl.select(); }
-                return;
-            }
-
-            if (!expenseCategories[_aimMain]) expenseCategories[_aimMain] = [];
-            expenseCategories[_aimMain].push(name);
-
-            if (_aimSelectedIcon) {
-                itemIcons[`${_aimMain}:${name}`] = _aimSelectedIcon;
-            }
 
             const amtEl = document.getElementById('aim-amount-input');
-            const planned = amtEl ? parseFloat(amtEl.value) : 0;
-            if (planned > 0) {
+            const planned = amtEl ? parseFloat(amtEl.value) || 0 : 0;
+
+            if (editSub) {
+                // Edit mode: rename if needed, update amount and icon
+                if (name !== editSub) {
+                    if ((expenseCategories[main] || []).includes(name)) {
+                        if (nameEl) { nameEl.focus(); nameEl.select(); }
+                        return;
+                    }
+                    const idx = (expenseCategories[main] || []).indexOf(editSub);
+                    if (idx >= 0) expenseCategories[main][idx] = name;
+                    Object.keys(monthlyBudgets).forEach(m => {
+                        if (monthlyBudgets[m][main] && monthlyBudgets[m][main][editSub] !== undefined) {
+                            monthlyBudgets[m][main][name] = monthlyBudgets[m][main][editSub];
+                            delete monthlyBudgets[m][main][editSub];
+                        }
+                    });
+                    transactions.forEach(t => {
+                        if (t.mainCategory === main && t.subCategory === editSub) t.subCategory = name;
+                        if (main === 'Income' && t.type === 'income' && t.mainCategory === editSub) t.mainCategory = name;
+                    });
+                    if (itemIcons[`${main}:${editSub}`]) {
+                        itemIcons[`${main}:${name}`] = itemIcons[`${main}:${editSub}`];
+                        delete itemIcons[`${main}:${editSub}`];
+                    }
+                }
                 if (!monthlyBudgets[selectedBudgetMonth]) monthlyBudgets[selectedBudgetMonth] = {};
-                if (!monthlyBudgets[selectedBudgetMonth][_aimMain]) monthlyBudgets[selectedBudgetMonth][_aimMain] = {};
-                monthlyBudgets[selectedBudgetMonth][_aimMain][name] = planned;
+                if (!monthlyBudgets[selectedBudgetMonth][main]) monthlyBudgets[selectedBudgetMonth][main] = {};
+                monthlyBudgets[selectedBudgetMonth][main][name] = planned;
+                if (_aimSelectedIcon) itemIcons[`${main}:${name}`] = _aimSelectedIcon;
+            } else {
+                // Add mode
+                if ((expenseCategories[main] || []).includes(name)) {
+                    if (nameEl) { nameEl.focus(); nameEl.select(); }
+                    return;
+                }
+                if (!expenseCategories[main]) expenseCategories[main] = [];
+                expenseCategories[main].push(name);
+                if (_aimSelectedIcon) itemIcons[`${main}:${name}`] = _aimSelectedIcon;
+                if (planned > 0) {
+                    if (!monthlyBudgets[selectedBudgetMonth]) monthlyBudgets[selectedBudgetMonth] = {};
+                    if (!monthlyBudgets[selectedBudgetMonth][main]) monthlyBudgets[selectedBudgetMonth][main] = {};
+                    monthlyBudgets[selectedBudgetMonth][main][name] = planned;
+                }
             }
 
+            _aimEditingMain = null;
+            _aimEditingSub = null;
             _syncIncomeCats();
             saveData();
             closeAddItemModal();
@@ -3443,30 +3563,65 @@ Transactions using it will stay.`)) {
 
             const pct    = budget > 0 ? Math.abs(actual) / budget * 100 : 0;
             const color  = _budgetItemColor(pct, isInc);
-            const CIRC   = 175.93;
-            const fill   = Math.min(pct / 100, 1) * CIRC;
+            const remaining = budget - actual;
 
-            // Header donut
-            const arc = document.getElementById('bim-hdr-arc');
-            if (arc) {
-                arc.setAttribute('stroke', color);
-                arc.setAttribute('stroke-dasharray', `${fill.toFixed(2)} ${(CIRC - fill).toFixed(2)}`);
-            }
+            // Header icon
             const hdrIcon = document.getElementById('bim-hdr-icon');
             if (hdrIcon) hdrIcon.textContent = icon;
 
-            // Name + category + amount
+            // Centered name + category
             const nameEl = document.getElementById('bim-name-display');
             if (nameEl) {
                 nameEl.textContent = sub;
-                // Dynamic sections: name not editable (managed by wallet)
                 nameEl.onclick = isDynamic ? null : function() { _bimInlineEditName(this); };
                 nameEl.style.cursor = isDynamic ? 'default' : 'pointer';
             }
             const catEl = document.getElementById('bim-cat-label');
             if (catEl) catEl.textContent = main;
-            const amtEl = document.getElementById('bim-amt-val');
-            if (amtEl) amtEl.textContent = `$${Math.round(budget)}`;
+
+            // Stats row
+            const budgetedEl = document.getElementById('bim-stat-budgeted');
+            if (budgetedEl) {
+                budgetedEl.textContent = budget > 0 ? `$${Math.round(budget)}` : 'Not set';
+                budgetedEl.onclick = function() { _bimInlineEditAmount(this); };
+            }
+            const spentEl = document.getElementById('bim-stat-spent');
+            if (spentEl) {
+                spentEl.textContent = `$${Math.round(Math.abs(actual))}`;
+                spentEl.className = 'text-sm font-bold ' + (isInc ? 'text-emerald-400' : 'text-rose-400');
+                // Update label for income
+                const spentLabel = spentEl.parentElement?.querySelector('.text-zinc-600');
+                if (spentLabel) spentLabel.textContent = isInc ? 'Received' : 'Spent';
+            }
+            const leftEl = document.getElementById('bim-stat-left');
+            if (leftEl) {
+                if (budget > 0) {
+                    leftEl.textContent = remaining >= 0 ? `$${Math.round(remaining)}` : `-$${Math.round(-remaining)}`;
+                    leftEl.className = 'text-sm font-bold ' + (remaining >= 0 ? 'text-emerald-400' : 'text-rose-400');
+                } else {
+                    leftEl.textContent = '—';
+                    leftEl.className = 'text-sm font-bold text-zinc-600';
+                }
+            }
+
+            // Progress bar
+            const progWrap = document.getElementById('bim-progress-wrap');
+            const progBar  = document.getElementById('bim-progress-bar');
+            const progPct  = document.getElementById('bim-progress-pct');
+            if (budget > 0 && progWrap) {
+                progWrap.classList.remove('hidden');
+                const barPct = Math.min(pct, 100);
+                if (progBar) {
+                    progBar.style.width = barPct + '%';
+                    progBar.style.backgroundColor = color;
+                }
+                if (progPct) {
+                    progPct.textContent = Math.round(pct) + '%';
+                    progPct.style.color = color;
+                }
+            } else if (progWrap) {
+                progWrap.classList.add('hidden');
+            }
 
             // Icon picker — hidden for dynamic sections, populate grid for others
             const pickerEl = document.getElementById('bim-icon-picker');
@@ -3478,6 +3633,10 @@ Transactions using it will stay.`)) {
                         class="text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all ${e === icon ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700'}">${e}</button>`
                 ).join('');
             }
+
+            // Show/hide edit button — hidden for dynamic sections
+            const editBtn = document.getElementById('bim-edit-btn');
+            if (editBtn) editBtn.classList.toggle('hidden', isDynamic);
 
             // Show/hide delete — hidden for dynamic sections (managed by wallet)
             const del = document.getElementById('bim-delete-btn');
@@ -3493,6 +3652,42 @@ Transactions using it will stay.`)) {
 
             document.getElementById('budget-item-modal').classList.remove('hidden');
         }
+
+        // Edit button handler — opens add-budget-item modal in edit mode
+        function _bimStartEdit() {
+            const main = _bimMain, sub = _bimSub;
+            if (!main || !sub) return;
+            document.getElementById('budget-item-modal').classList.add('hidden');
+            // Open add-item modal pre-populated for editing
+            const mb = monthlyBudgets[selectedBudgetMonth] || {};
+            const budget = (mb[main] || {})[sub] || 0;
+            const icon = itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || '💸';
+            const modal = document.getElementById('add-budget-item-modal');
+            const catLabel = document.getElementById('aim-cat-label');
+            const nameInput = document.getElementById('aim-name-input');
+            const amtInput = document.getElementById('aim-amount-input');
+            const hdrIcon = document.getElementById('aim-hdr-icon');
+            if (catLabel) catLabel.textContent = main;
+            if (nameInput) nameInput.value = sub;
+            if (amtInput) amtInput.value = budget || '';
+            if (hdrIcon) hdrIcon.textContent = icon;
+            _aimSelectedIcon = icon;
+            _aimEditingMain = main;
+            _aimEditingSub = sub;
+            // Update button text
+            const addBtn = modal?.querySelector('button[onclick="_aimConfirm()"]');
+            if (addBtn) addBtn.textContent = 'Save Changes';
+            // Populate icon picker
+            const grid = document.getElementById('aim-icon-grid');
+            if (grid) {
+                grid.innerHTML = BUDGET_ICONS.map(e =>
+                    `<button type="button" onclick="_aimSelectIcon('${e}')"
+                        class="text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all ${e === icon ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700'}">${e}</button>`
+                ).join('');
+            }
+            if (modal) modal.classList.remove('hidden');
+        }
+        let _aimEditingMain = null, _aimEditingSub = null;
 
         function _bimPopulateTxList(main, sub, isInc, isDynamic) {
             const [year, month] = selectedBudgetMonth.split('-').map(Number);
@@ -3624,8 +3819,6 @@ Transactions using it will stay.`)) {
         function _bimInlineEditAmount(el) {
             const mb      = monthlyBudgets[selectedBudgetMonth] || {};
             const current = (mb[_bimMain] || {})[_bimSub] || 0;
-            const amtVal  = document.getElementById('bim-amt-val');
-            if (!amtVal) return;
 
             const input = document.createElement('input');
             input.type = 'number';
@@ -3634,8 +3827,8 @@ Transactions using it will stay.`)) {
             input.min  = '0';
             input.value = current > 0 ? current : '';
             input.placeholder = '0';
-            input.className = 'bg-zinc-800 rounded-lg px-2 py-0.5 text-sm font-bold text-zinc-100 w-28 focus:outline-none focus:ring-1 focus:ring-emerald-500';
-            amtVal.replaceWith(input);
+            input.className = 'bg-zinc-800 rounded-lg px-2 py-0.5 text-sm font-bold text-zinc-100 w-20 text-center focus:outline-none focus:ring-1 focus:ring-emerald-500';
+            el.replaceWith(input);
             input.focus();
             input.select();
 
@@ -3646,35 +3839,15 @@ Transactions using it will stay.`)) {
                 monthlyBudgets[selectedBudgetMonth][_bimMain][_bimSub] = newAmt;
                 saveData();
                 renderBudgets();
-                // Refresh donut in header
-                const isInc  = _bimMain === 'Income';
-                const actual = isInc ? calculateIncomeInMonth(selectedBudgetMonth, _bimSub)
-                                     : calculateSpentInMonth(selectedBudgetMonth, _bimMain, _bimSub);
-                const pct    = newAmt > 0 ? actual / newAmt * 100 : 0;
-                const color  = _budgetItemColor(pct, isInc);
-                const CIRC   = 175.93;
-                const fill   = Math.min(pct / 100, 1) * CIRC;
-                const arc    = document.getElementById('bim-hdr-arc');
-                if (arc) {
-                    arc.setAttribute('stroke', color);
-                    arc.setAttribute('stroke-dasharray', `${fill.toFixed(2)} ${(CIRC - fill).toFixed(2)}`);
-                }
-                const newSpan = document.createElement('span');
-                newSpan.id = 'bim-amt-val';
-                newSpan.className = 'text-sm font-bold text-zinc-300';
-                newSpan.textContent = `$${newAmt}`;
-                input.replaceWith(newSpan);
+                // Refresh the modal stats
+                openBudgetItemModal(_bimMain, _bimSub);
             }
 
             input.addEventListener('blur', commit);
             input.addEventListener('keydown', e => {
                 if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
                 if (e.key === 'Escape') {
-                    const newSpan = document.createElement('span');
-                    newSpan.id = 'bim-amt-val';
-                    newSpan.className = 'text-sm font-bold text-zinc-300';
-                    newSpan.textContent = `$${current}`;
-                    input.replaceWith(newSpan);
+                    openBudgetItemModal(_bimMain, _bimSub);
                 }
             });
         }
@@ -3809,6 +3982,7 @@ Transactions using it will stay.`)) {
                     saveBtn.textContent = 'Save Expense';
                 }
                 updateMainOptions();
+                _populateExpenseAccountSelect();
             } else if (type === 'income') {
                 incBtn.className = INC_ACTIVE;
                 incCatRow.classList.remove('hidden');
@@ -3820,6 +3994,7 @@ Transactions using it will stay.`)) {
                 }
                 incSelect.innerHTML = '';
                 (expenseCategories['Income'] || incomeCats).forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; incSelect.appendChild(opt); });
+                _populateIncomeAccountSelect();
             } else if (type === 'transfer') {
                 if (trfBtn) trfBtn.className = TRF_ACTIVE;
                 if (trfFields) trfFields.classList.remove('hidden');
@@ -3892,6 +4067,76 @@ Transactions using it will stay.`)) {
                 infoEl.classList.remove('hidden');
             } else {
                 infoEl.classList.add('hidden');
+            }
+        }
+
+        /* ── Account select helpers for expense/income ───────── */
+        function _populateExpenseAccountSelect() {
+            const sel = document.getElementById('expense-account');
+            if (!sel) return;
+            const spending = walletAccounts.filter(a => a.type === 'spending');
+            sel.innerHTML = '<option value="">None</option>' +
+                spending.map(a => `<option value="${a.id}">${a.icon || '🏦'} ${a.name}</option>`).join('');
+        }
+
+        function _populateIncomeAccountSelect() {
+            const sel = document.getElementById('income-account');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">None</option>' +
+                walletAccounts.map(a => `<option value="${a.id}">${a.icon || '🏦'} ${a.name} (${a.type})</option>`).join('');
+            _onIncomeAccountChange();
+        }
+
+        function _onIncomeAccountChange() {
+            const sel = document.getElementById('income-account');
+            const incCatSel = document.getElementById('income-cat');
+            if (!sel || !incCatSel) return;
+            const acc = walletAccounts.find(a => a.id === sel.value);
+            if (acc && (acc.type === 'saving' || acc.type === 'debt')) {
+                // Lock income type to match the account section
+                const secType = acc.type === 'saving' ? 'Saving' : 'Debt';
+                incCatSel.innerHTML = `<option value="${acc.name}" selected>${acc.name}</option>`;
+                incCatSel.disabled = true;
+                incCatSel.style.opacity = '0.5';
+            } else {
+                incCatSel.disabled = false;
+                incCatSel.style.opacity = '';
+                // Re-populate if it was locked
+                if (incCatSel.options.length <= 1 || incCatSel.disabled === false) {
+                    const current = incCatSel.value;
+                    incCatSel.innerHTML = '';
+                    (expenseCategories['Income'] || incomeCats).forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c; opt.textContent = c;
+                        incCatSel.appendChild(opt);
+                    });
+                    if (current) incCatSel.value = current;
+                }
+            }
+        }
+
+        /* ── Account balance update helpers ─────────────────── */
+        function _updateAccountBalances(trans, isUndo) {
+            const amt = parseFloat(trans.amount);
+            const sign = isUndo ? -1 : 1;
+
+            if (trans.type === 'transfer') {
+                // Transfers always update balances regardless of exclusion
+                const fromAcc = walletAccounts.find(a => a.id === trans.fromAccountId);
+                const toAcc   = walletAccounts.find(a => a.id === trans.toAccountId);
+                if (fromAcc) fromAcc.balance = parseFloat(fromAcc.balance || 0) - amt * sign;
+                if (toAcc)   toAcc.balance   = parseFloat(toAcc.balance || 0) + amt * sign;
+            } else if (!trans.excluded) {
+                // Non-excluded expense/income update linked account
+                const accId = trans.walletAccountId;
+                if (!accId) return;
+                const acc = walletAccounts.find(a => a.id === accId);
+                if (!acc) return;
+                if (trans.type === 'expense') {
+                    acc.balance = parseFloat(acc.balance || 0) - amt * sign;
+                } else if (trans.type === 'income') {
+                    acc.balance = parseFloat(acc.balance || 0) + amt * sign;
+                }
             }
         }
 
@@ -4020,7 +4265,7 @@ Transactions using it will stay.`)) {
                     </div>
                     <div class="space-y-2">`;
 
-                sec.items.forEach(acc => {
+                sec.items.forEach((acc, accIdx) => {
                     const colour = acc.colour || '#10b981';
                     const isDebt = acc.type === 'debt';
                     const balLabel = isDebt ? 'Left to pay' : (acc.type === 'saving' ? 'Saved' : 'Balance');
@@ -4029,6 +4274,18 @@ Transactions using it will stay.`)) {
                     const hasGoal  = goalVal > 0;
                     const pct = hasGoal ? Math.min((isDebt ? (1 - balVal / goalVal) : (balVal / goalVal)) * 100, 100) : -1;
                     const defaultBadge = acc.isDefault ? `<span class="ml-auto text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full" style="background:${colour}20;color:${colour}">Default</span>` : '';
+
+                    const isFirstInType = accIdx === 0;
+                    const isLastInType = accIdx === sec.items.length - 1;
+                    const reorderBtns = sec.items.length > 1 ? `
+                        <div class="flex flex-col gap-0.5 ml-1 shrink-0">
+                            <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','up')" class="w-5 h-5 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isFirstInType?'opacity-20 pointer-events-none':''}" title="Move up">
+                                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+                            </button>
+                            <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','down')" class="w-5 h-5 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isLastInType?'opacity-20 pointer-events-none':''}" title="Move down">
+                                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                            </button>
+                        </div>` : '';
 
                     html += `<button onclick="openWalletDetail('${acc.id}')" class="w-full text-left bg-zinc-900 rounded-2xl p-4 hover:bg-zinc-800/80 transition-colors active:scale-[.99]">
                         <div class="flex items-center gap-3 mb-2">
@@ -4046,6 +4303,7 @@ Transactions using it will stay.`)) {
                                 <div class="font-semibold text-sm tabular-nums ${isDebt ? 'text-rose-400' : ''}">${isDebt ? '-' : ''}${_walletFmt(balVal)}</div>
                                 ${hasGoal ? `<div class="text-[10px] text-zinc-600 mt-0.5">${isDebt ? 'of ' + _walletFmt(goalVal) + ' paid' : 'of ' + _walletFmt(goalVal)}</div>` : ''}
                             </div>
+                            ${reorderBtns}
                         </div>`;
 
                     if (hasGoal && pct >= 0) {
@@ -4313,26 +4571,39 @@ Transactions using it will stay.`)) {
                 progWrap.classList.add('hidden');
             }
 
-            // Transactions linked to this account (transfers involving this account)
+            // Transactions linked to this account (transfers + expense/income with walletAccountId)
             const txList  = document.getElementById('wd-tx-list');
             const txEmpty = document.getElementById('wd-tx-empty');
             const linked = transactions.filter(t =>
-                t.type === 'transfer' && (t.fromAccountId === id || t.toAccountId === id)
+                (t.type === 'transfer' && (t.fromAccountId === id || t.toAccountId === id)) ||
+                ((t.type === 'expense' || t.type === 'income') && t.walletAccountId === id)
             ).slice(-10).reverse();
             if (linked.length) {
                 txEmpty.classList.add('hidden');
                 txList.innerHTML = linked.map(t => {
-                    const isOutgoing = t.fromAccountId === id;
-                    const otherAcc = _getAccById(isOutgoing ? t.toAccountId : t.fromAccountId);
-                    const otherName = otherAcc ? otherAcc.name : '?';
-                    const label = isOutgoing ? `→ ${otherName}` : `← ${otherName}`;
-                    return `<div class="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3">
-                        <div class="min-w-0">
-                            <div class="text-sm font-medium truncate">${t.desc || label}</div>
-                            <div class="text-[10px] text-zinc-600 mt-0.5">${t.date} · ${label}</div>
-                        </div>
-                        <div class="text-sm font-semibold tabular-nums ${isOutgoing ? 'text-rose-400' : 'text-emerald-400'}">${isOutgoing ? '-' : '+'}${_walletFmt(parseFloat(t.amount))}</div>
-                    </div>`;
+                    if (t.type === 'transfer') {
+                        const isOutgoing = t.fromAccountId === id;
+                        const otherAcc = _getAccById(isOutgoing ? t.toAccountId : t.fromAccountId);
+                        const otherName = otherAcc ? otherAcc.name : '?';
+                        const label = isOutgoing ? `→ ${otherName}` : `← ${otherName}`;
+                        return `<div class="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3">
+                            <div class="min-w-0">
+                                <div class="text-sm font-medium truncate">${t.desc || label}</div>
+                                <div class="text-[10px] text-zinc-600 mt-0.5">${t.date} · ${label}</div>
+                            </div>
+                            <div class="text-sm font-semibold tabular-nums ${isOutgoing ? 'text-rose-400' : 'text-emerald-400'}">${isOutgoing ? '-' : '+'}${_walletFmt(parseFloat(t.amount))}</div>
+                        </div>`;
+                    } else {
+                        const isInc = t.type === 'income';
+                        const catLabel = t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : '');
+                        return `<div class="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3">
+                            <div class="min-w-0">
+                                <div class="text-sm font-medium truncate">${t.desc || catLabel}</div>
+                                <div class="text-[10px] text-zinc-600 mt-0.5">${t.date} · ${isInc ? 'Income' : 'Expense'}</div>
+                            </div>
+                            <div class="text-sm font-semibold tabular-nums ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}${_walletFmt(parseFloat(t.amount))}</div>
+                        </div>`;
+                    }
                 }).join('');
             } else {
                 txList.innerHTML = '';
@@ -4439,8 +4710,19 @@ Transactions using it will stay.`)) {
                 setTimeout(() => {
                     document.getElementById('sub-cat').value = t.subCategory || '';
                 }, 0);
+                // Restore expense account
+                const expAccSel = document.getElementById('expense-account');
+                if (expAccSel && t.walletAccountId) expAccSel.value = t.walletAccountId;
             } else if (t.type === 'income') {
                 document.getElementById('income-cat').value = t.mainCategory || '';
+                // Restore income account
+                setTimeout(() => {
+                    const incAccSel = document.getElementById('income-account');
+                    if (incAccSel && t.walletAccountId) {
+                        incAccSel.value = t.walletAccountId;
+                        _onIncomeAccountChange();
+                    }
+                }, 0);
             }
             if (t.type !== 'transfer') {
                 const saveBtn = document.getElementById('save-transaction-btn');
@@ -4474,18 +4756,26 @@ Transactions using it will stay.`)) {
                 trans.mainCategory = document.getElementById('main-cat').value;
                 trans.subCategory  = document.getElementById('sub-cat').value;
                 if (!trans.mainCategory || !trans.subCategory) return alert("Choose section & category");
+                const expAccId = document.getElementById('expense-account')?.value;
+                if (expAccId) trans.walletAccountId = expAccId;
             } else {
                 trans.mainCategory = document.getElementById('income-cat').value;
                 trans.subCategory  = '';
+                const incAccId = document.getElementById('income-account')?.value;
+                if (incAccId) trans.walletAccountId = incAccId;
             }
 
+            // Undo old balance changes when editing
             if (_editingTxIdx !== null) {
+                _updateAccountBalances(transactions[_editingTxIdx], true);
                 trans.id = transactions[_editingTxIdx].id;
                 transactions[_editingTxIdx] = trans;
             } else {
                 trans.id = Date.now();
                 transactions.unshift(trans);
             }
+            // Apply new balance changes
+            _updateAccountBalances(trans, false);
             saveData();
             hideModal();
             renderAll();
