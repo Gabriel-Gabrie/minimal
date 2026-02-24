@@ -299,7 +299,16 @@
                     <!-- home dot — visible when this is the launch tab -->
                     <span id="home-dot-3" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
                 </button>
-
+                <!-- Wallet -->
+                <button
+                    onclick="_tabTap(4)"
+                    onmousedown="_tabHoldStart(4, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
+                    ontouchstart="_tabHoldStart(4, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
+                    id="tab-4" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 4H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M16 12h.01"/><path d="M1 10h22"/></svg>
+                    <span>Wallet</span>
+                    <span id="home-dot-4" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
+                </button>
 
             </div>
         </div>
@@ -638,6 +647,59 @@
             </div>
         </div>
 
+
+        <!-- WALLET -->
+        <div id="screen-4" class="hidden pb-12">
+
+            <!-- Net Worth Header -->
+            <div class="px-5 pt-6 pb-5">
+                <div class="bg-zinc-900 rounded-3xl p-6 relative overflow-hidden">
+                    <!-- Decorative gradient -->
+                    <div class="absolute inset-0 opacity-[0.07]" style="background:linear-gradient(135deg,#10b981 0%,#06b6d4 50%,#8b5cf6 100%)"></div>
+                    <div class="relative">
+                        <p class="text-[9px] font-black tracking-[.18em] text-zinc-500 uppercase mb-1">Net Worth</p>
+                        <div id="wallet-net-worth" class="text-3xl font-semibold tracking-tighter">$0.00</div>
+                        <div class="flex items-center gap-4 mt-3">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                <span class="text-[11px] text-zinc-500">Assets</span>
+                                <span id="wallet-total-assets" class="text-[11px] font-semibold text-emerald-400">$0.00</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-2 h-2 rounded-full bg-rose-500"></div>
+                                <span class="text-[11px] text-zinc-500">Debts</span>
+                                <span id="wallet-total-debts" class="text-[11px] font-semibold text-rose-400">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account sections rendered by JS -->
+            <div id="wallet-accounts-list" class="px-5 space-y-5 mb-5"></div>
+
+            <!-- Empty state -->
+            <div id="wallet-empty" class="hidden px-5">
+                <div class="bg-zinc-900 rounded-3xl p-8 text-center">
+                    <div class="text-4xl mb-4">💳</div>
+                    <p class="font-semibold text-sm mb-1.5">No accounts yet</p>
+                    <p class="text-xs text-zinc-500 leading-relaxed mb-6">Add your bank accounts, savings goals,<br>and debts to track your net worth.</p>
+                    <button onclick="showWalletAddModal()"
+                        class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[.98] text-white font-semibold py-3.5 rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20">
+                        + Add Account
+                    </button>
+                </div>
+            </div>
+
+            <!-- Add account button (when accounts exist) -->
+            <div id="wallet-add-btn-wrap" class="hidden px-5 pb-6">
+                <button onclick="showWalletAddModal()"
+                    class="w-full py-3.5 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-sm font-semibold text-zinc-400 hover:text-white transition-colors flex items-center justify-center gap-2">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Account
+                </button>
+            </div>
+        </div>
 
         <!-- Floating Add -->
         <button onclick="showAddModal()" class="fixed bottom-8 right-8 w-16 h-16 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-5xl shadow-2xl z-50">+</button>
@@ -1105,6 +1167,7 @@
         let transactions = [];
         let expenseCategories = {};
         let monthlyBudgets = {};
+        let walletAccounts = [];
 
         let currentType = 'expense';
         let selectedBudgetMonth = "";
@@ -1177,7 +1240,7 @@
         function saveData() {
             if (_demoMode) return; // never persist demo data
             const snap = {
-                transactions, expenseCategories, monthlyBudgets, itemIcons
+                transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts
                 // incomeCats is now derived from expenseCategories['Income'] — not saved separately
             };
             // Always write to localStorage as offline cache
@@ -1201,6 +1264,7 @@
 
             transactions      = d.transactions      || [];
             itemIcons         = d.itemIcons         || {};
+            walletAccounts    = d.walletAccounts    || [];
             incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
             selectedBudgetMonth = getCurrentMonthKey();
 
@@ -1242,6 +1306,7 @@
 
                 transactions:      JSON.parse(localStorage.getItem('transactions')),
                 itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
+                walletAccounts:    JSON.parse(localStorage.getItem('walletAccounts')),
                 incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
             });
         }
@@ -2919,7 +2984,7 @@
             active.classList.add('tab-active');
             active.classList.remove('text-zinc-500');
             active.classList.add('text-white');
-            [renderOverview, renderTransactions, renderBudgets, renderReports][n]?.();
+            [renderOverview, renderTransactions, renderBudgets, renderReports, renderWallet][n]?.();
         }
 
         function prevBudgetMonth() {
@@ -3448,6 +3513,430 @@ Transactions using it will stay.`)) {
             renderTransactions();
             renderBudgets();
             renderAllReports();
+            renderWallet();
+        }
+
+        /* ══════════════════════════════════════════════
+           WALLET — Account Management
+        ══════════════════════════════════════════════ */
+
+        let _walletType = 'spending';
+        let _walletEditId = null;
+        let _walletDetailId = null;
+        let _walletSelectedIcon = null;
+        let _walletSelectedColour = null;
+
+        const WALLET_DEFAULTS = {
+            spending: [
+                { name: 'Chequing',  icon: '🏦' },
+                { name: 'Credit',    icon: '💳' },
+                { name: 'Cash',      icon: '💵' },
+            ],
+            saving: [
+                { name: 'Savings',        icon: '🐷' },
+                { name: 'Emergency Fund', icon: '🛟' },
+                { name: 'House',          icon: '🏠' },
+            ],
+            debt: [
+                { name: 'Loan',          icon: '🏛️' },
+                { name: 'Personal Debt', icon: '🤝' },
+                { name: 'Car Loan',      icon: '🚗' },
+            ],
+        };
+
+        const WALLET_ICONS = ['🏦','💳','💵','🐷','🛟','🏠','🏛️','🤝','🚗','💰','📈','🎓','✈️','💎','🛒','📱','🎮','🏥','👶','🐕','🎯','⚡','🌐','🔑'];
+
+        const WALLET_COLOURS = [
+            '#10b981','#06b6d4','#3b82f6','#8b5cf6','#ec4899',
+            '#f59e0b','#ef4444','#14b8a6','#6366f1','#f97316',
+            '#84cc16','#a855f7',
+        ];
+
+        function _walletFmt(n) {
+            const v = parseFloat(n) || 0;
+            const neg = v < 0;
+            const abs = Math.abs(v);
+            const str = abs >= 1000 ? abs.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : abs.toFixed(2);
+            return (neg ? '-$' : '$') + str;
+        }
+
+        /* ── Render wallet page ─────────────────────── */
+        function renderWallet() {
+            const listEl  = document.getElementById('wallet-accounts-list');
+            const emptyEl = document.getElementById('wallet-empty');
+            const addBtn  = document.getElementById('wallet-add-btn-wrap');
+            if (!listEl) return;
+
+            const spending = walletAccounts.filter(a => a.type === 'spending');
+            const saving   = walletAccounts.filter(a => a.type === 'saving');
+            const debt     = walletAccounts.filter(a => a.type === 'debt');
+
+            // Net worth calculation
+            const totalAssets = walletAccounts
+                .filter(a => a.type !== 'debt')
+                .reduce((s, a) => s + (parseFloat(a.balance) || 0), 0);
+            const totalDebts = walletAccounts
+                .filter(a => a.type === 'debt')
+                .reduce((s, a) => s + (parseFloat(a.balance) || 0), 0);
+            const netWorth = totalAssets - totalDebts;
+
+            document.getElementById('wallet-net-worth').textContent = _walletFmt(netWorth);
+            document.getElementById('wallet-net-worth').className = `text-3xl font-semibold tracking-tighter ${netWorth >= 0 ? '' : 'text-rose-400'}`;
+            document.getElementById('wallet-total-assets').textContent = _walletFmt(totalAssets);
+            document.getElementById('wallet-total-debts').textContent = _walletFmt(totalDebts);
+
+            if (!walletAccounts.length) {
+                listEl.innerHTML = '';
+                emptyEl.classList.remove('hidden');
+                addBtn.classList.add('hidden');
+                return;
+            }
+            emptyEl.classList.add('hidden');
+            addBtn.classList.remove('hidden');
+
+            let html = '';
+
+            const sections = [
+                { key: 'spending', label: 'Spending', items: spending, icon: '💳' },
+                { key: 'saving',   label: 'Saving',   items: saving,   icon: '🐷' },
+                { key: 'debt',     label: 'Debt',     items: debt,     icon: '🏛️' },
+            ];
+
+            sections.forEach(sec => {
+                if (!sec.items.length) return;
+                html += `<div>
+                    <div class="flex items-center gap-2 mb-2.5">
+                        <span class="text-sm">${sec.icon}</span>
+                        <span class="text-[9px] font-black tracking-[.14em] text-zinc-500 uppercase">${sec.label}</span>
+                        <div class="flex-1 h-px bg-zinc-800"></div>
+                    </div>
+                    <div class="space-y-2">`;
+
+                sec.items.forEach(acc => {
+                    const colour = acc.colour || '#10b981';
+                    const isDebt = acc.type === 'debt';
+                    const balLabel = isDebt ? 'Left to pay' : (acc.type === 'saving' ? 'Saved' : 'Balance');
+                    const balVal   = parseFloat(acc.balance) || 0;
+                    const goalVal  = parseFloat(acc.goal) || 0;
+                    const hasGoal  = goalVal > 0;
+                    const pct = hasGoal ? Math.min((isDebt ? (1 - balVal / goalVal) : (balVal / goalVal)) * 100, 100) : -1;
+                    const defaultBadge = acc.isDefault ? `<span class="ml-auto text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full" style="background:${colour}20;color:${colour}">Default</span>` : '';
+
+                    html += `<button onclick="openWalletDetail('${acc.id}')" class="w-full text-left bg-zinc-900 rounded-2xl p-4 hover:bg-zinc-800/80 transition-colors active:scale-[.99]">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style="background:${colour}20">
+                                <span>${acc.icon || '🏦'}</span>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm truncate">${acc.name}</span>
+                                    ${defaultBadge}
+                                </div>
+                                <div class="text-[11px] text-zinc-500 mt-0.5">${balLabel}</div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <div class="font-semibold text-sm tabular-nums ${isDebt ? 'text-rose-400' : ''}">${isDebt ? '-' : ''}${_walletFmt(balVal)}</div>
+                                ${hasGoal ? `<div class="text-[10px] text-zinc-600 mt-0.5">${isDebt ? 'of ' + _walletFmt(goalVal) + ' paid' : 'of ' + _walletFmt(goalVal)}</div>` : ''}
+                            </div>
+                        </div>`;
+
+                    if (hasGoal && pct >= 0) {
+                        html += `<div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-1">
+                            <div class="h-full rounded-full progress-bar" style="width:${Math.max(pct,0)}%;background:${colour}"></div>
+                        </div>`;
+                    }
+                    html += `</button>`;
+                });
+
+                html += `</div></div>`;
+            });
+
+            listEl.innerHTML = html;
+        }
+
+        /* ── Show add account modal ─────────────────── */
+        function showWalletAddModal() {
+            _walletEditId = null;
+            _walletType = 'spending';
+            document.getElementById('wallet-modal-title').textContent = 'Add Account';
+            document.getElementById('wallet-save-btn').textContent = 'Save Account';
+            document.getElementById('wallet-name').value = '';
+            document.getElementById('wallet-balance').value = '';
+            document.getElementById('wallet-goal').value = '';
+            document.getElementById('wallet-default').checked = false;
+            _walletSelectedIcon = '🏦';
+            _walletSelectedColour = '#10b981';
+            _renderWalletModalType();
+            document.getElementById('wallet-modal').classList.remove('hidden');
+        }
+
+        function hideWalletModal() {
+            document.getElementById('wallet-modal').classList.add('hidden');
+        }
+
+        /* ── Set wallet account type ────────────────── */
+        function setWalletType(t) {
+            _walletType = t;
+            _renderWalletModalType();
+        }
+
+        function _renderWalletModalType() {
+            const types = ['spending','saving','debt'];
+            types.forEach(t => {
+                const btn = document.getElementById('wtype-' + t);
+                if (t === _walletType) {
+                    btn.className = 'flex flex-col items-center gap-1 py-3.5 transition-colors bg-emerald-500 text-white';
+                } else {
+                    btn.className = 'flex flex-col items-center gap-1 py-3.5 transition-colors text-zinc-500';
+                }
+            });
+
+            // Labels for debt vs non-debt
+            const isDebt = _walletType === 'debt';
+            document.getElementById('wallet-balance-label').textContent = isDebt ? 'Left to Pay' : 'Current Balance';
+            document.getElementById('wallet-goal-label').textContent = isDebt ? 'Starting Debt' : 'Goal Amount';
+            document.getElementById('wallet-balance').placeholder = isDebt ? '0.00' : '0.00';
+            document.getElementById('wallet-goal').placeholder = isDebt ? '0.00' : '0.00';
+
+            // Render defaults grid
+            _renderWalletDefaults();
+            // Render icon/colour pickers
+            _renderWalletIconPicker();
+            _renderWalletColourPicker();
+        }
+
+        function _renderWalletDefaults() {
+            const grid = document.getElementById('wallet-defaults-grid');
+            const defs = WALLET_DEFAULTS[_walletType] || [];
+            grid.innerHTML = defs.map(d =>
+                `<button onclick="_pickWalletDefault('${d.name}','${d.icon}')"
+                    class="flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors active:scale-95">
+                    <span class="text-sm">${d.icon}</span>
+                    <span class="text-xs font-semibold text-zinc-300">${d.name}</span>
+                </button>`
+            ).join('') + `<button onclick="_pickWalletDefault('','')"
+                class="flex items-center gap-2 px-3 py-2 bg-zinc-800/60 hover:bg-zinc-700 rounded-xl transition-colors active:scale-95 border border-dashed border-zinc-700">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span class="text-xs font-semibold text-zinc-500">Custom</span>
+            </button>`;
+        }
+
+        function _pickWalletDefault(name, icon) {
+            if (name) {
+                document.getElementById('wallet-name').value = name;
+                _walletSelectedIcon = icon;
+                _renderWalletIconPicker();
+            } else {
+                document.getElementById('wallet-name').value = '';
+                document.getElementById('wallet-name').focus();
+            }
+        }
+
+        function _renderWalletIconPicker() {
+            const grid = document.getElementById('wallet-icon-grid');
+            grid.innerHTML = WALLET_ICONS.map(ic => {
+                const sel = ic === _walletSelectedIcon;
+                return `<button onclick="_selectWalletIcon('${ic}')"
+                    class="w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all ${sel ? 'ring-2 ring-emerald-500 bg-emerald-500/15 scale-110' : 'bg-zinc-800 hover:bg-zinc-700'}">${ic}</button>`;
+            }).join('');
+        }
+
+        function _selectWalletIcon(ic) {
+            _walletSelectedIcon = ic;
+            _renderWalletIconPicker();
+        }
+
+        function _renderWalletColourPicker() {
+            const grid = document.getElementById('wallet-colour-grid');
+            grid.innerHTML = WALLET_COLOURS.map(c => {
+                const sel = c === _walletSelectedColour;
+                return `<button onclick="_selectWalletColour('${c}')"
+                    class="w-9 h-9 rounded-full transition-all ${sel ? 'ring-2 ring-offset-2 ring-offset-zinc-900 scale-110' : 'hover:scale-105'}"
+                    style="background:${c};${sel ? 'ring-color:' + c : ''}"></button>`;
+            }).join('');
+        }
+
+        function _selectWalletColour(c) {
+            _walletSelectedColour = c;
+            _renderWalletColourPicker();
+        }
+
+        /* ── Save account ───────────────────────────── */
+        function saveWalletAccount() {
+            const name = document.getElementById('wallet-name').value.trim();
+            if (!name) { document.getElementById('wallet-name').focus(); return; }
+
+            const balance   = parseFloat(document.getElementById('wallet-balance').value) || 0;
+            const goal      = parseFloat(document.getElementById('wallet-goal').value) || 0;
+            const isDefault = document.getElementById('wallet-default').checked;
+
+            // Clear other defaults of same type if this is set as default
+            if (isDefault) {
+                walletAccounts.forEach(a => {
+                    if (a.type === _walletType && (!_walletEditId || a.id !== _walletEditId)) {
+                        a.isDefault = false;
+                    }
+                });
+            }
+
+            if (_walletEditId) {
+                // Edit existing
+                const acc = walletAccounts.find(a => a.id === _walletEditId);
+                if (acc) {
+                    acc.name = name;
+                    acc.type = _walletType;
+                    acc.icon = _walletSelectedIcon;
+                    acc.colour = _walletSelectedColour;
+                    acc.balance = balance;
+                    acc.goal = goal;
+                    acc.isDefault = isDefault;
+                }
+            } else {
+                // New account
+                walletAccounts.push({
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+                    name,
+                    type: _walletType,
+                    icon: _walletSelectedIcon,
+                    colour: _walletSelectedColour,
+                    balance,
+                    goal,
+                    isDefault,
+                    createdAt: new Date().toISOString(),
+                });
+            }
+
+            saveData();
+            hideWalletModal();
+            renderWallet();
+            showToast(_walletEditId ? 'Account updated' : 'Account added', 'emerald');
+        }
+
+        /* ── Account detail ─────────────────────────── */
+        function openWalletDetail(id) {
+            const acc = walletAccounts.find(a => a.id === id);
+            if (!acc) return;
+            _walletDetailId = id;
+
+            const colour = acc.colour || '#10b981';
+            const isDebt = acc.type === 'debt';
+
+            document.getElementById('wd-icon').textContent = acc.icon || '🏦';
+            document.getElementById('wd-icon-wrap').style.background = colour + '20';
+            document.getElementById('wd-name').textContent = acc.name;
+
+            const badge = document.getElementById('wd-type-badge');
+            const typeLabels = { spending: 'Spending', saving: 'Saving', debt: 'Debt' };
+            badge.textContent = typeLabels[acc.type] || acc.type;
+            const badgeColours = { spending: '#10b981', saving: '#06b6d4', debt: '#ef4444' };
+            const bc = badgeColours[acc.type] || '#10b981';
+            badge.style.background = bc + '20';
+            badge.style.color = bc;
+
+            // Stats
+            const stats = document.getElementById('wd-stats');
+            const bal = parseFloat(acc.balance) || 0;
+            const goal = parseFloat(acc.goal) || 0;
+            if (isDebt) {
+                stats.innerHTML = `
+                    <div class="bg-zinc-900 rounded-2xl p-4">
+                        <p class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-2">Left to Pay</p>
+                        <p class="text-[15px] font-semibold tracking-tight text-rose-400 leading-none">${_walletFmt(bal)}</p>
+                    </div>
+                    <div class="bg-zinc-900 rounded-2xl p-4">
+                        <p class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-2">Starting Debt</p>
+                        <p class="text-[15px] font-semibold tracking-tight leading-none">${_walletFmt(goal)}</p>
+                    </div>`;
+            } else {
+                stats.innerHTML = `
+                    <div class="bg-zinc-900 rounded-2xl p-4">
+                        <p class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-2">Balance</p>
+                        <p class="text-[15px] font-semibold tracking-tight text-emerald-400 leading-none">${_walletFmt(bal)}</p>
+                    </div>
+                    <div class="bg-zinc-900 rounded-2xl p-4">
+                        <p class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-2">${acc.type === 'saving' ? 'Goal' : 'Goal'}</p>
+                        <p class="text-[15px] font-semibold tracking-tight leading-none">${goal > 0 ? _walletFmt(goal) : '—'}</p>
+                    </div>`;
+            }
+
+            // Progress
+            const progWrap = document.getElementById('wd-progress-wrap');
+            if (goal > 0 && (acc.type === 'saving' || acc.type === 'debt')) {
+                progWrap.classList.remove('hidden');
+                let pct;
+                if (isDebt) {
+                    pct = goal > 0 ? Math.max(0, Math.min(((goal - bal) / goal) * 100, 100)) : 0;
+                    document.getElementById('wd-progress-label').textContent = 'Paid Off';
+                } else {
+                    pct = goal > 0 ? Math.min((bal / goal) * 100, 100) : 0;
+                    document.getElementById('wd-progress-label').textContent = 'Progress';
+                }
+                document.getElementById('wd-progress-pct').textContent = Math.round(pct) + '%';
+                document.getElementById('wd-progress-pct').style.color = colour;
+                document.getElementById('wd-progress-bar').style.width = pct + '%';
+                document.getElementById('wd-progress-bar').style.background = colour;
+            } else {
+                progWrap.classList.add('hidden');
+            }
+
+            // Transactions linked to this account
+            const txList  = document.getElementById('wd-tx-list');
+            const txEmpty = document.getElementById('wd-tx-empty');
+            const linked = transactions.filter(t => t.walletAccountId === id).slice(-10).reverse();
+            if (linked.length) {
+                txEmpty.classList.add('hidden');
+                txList.innerHTML = linked.map(t => {
+                    const isExp = t.type === 'expense';
+                    return `<div class="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3">
+                        <div class="min-w-0">
+                            <div class="text-sm font-medium truncate">${t.desc || t.subCategory || t.mainCategory || 'Transaction'}</div>
+                            <div class="text-[10px] text-zinc-600 mt-0.5">${t.date}</div>
+                        </div>
+                        <div class="text-sm font-semibold tabular-nums ${isExp ? 'text-rose-400' : 'text-emerald-400'}">${isExp ? '-' : '+'}${_walletFmt(parseFloat(t.amount))}</div>
+                    </div>`;
+                }).join('');
+            } else {
+                txList.innerHTML = '';
+                txEmpty.classList.remove('hidden');
+            }
+
+            document.getElementById('wallet-detail-modal').classList.remove('hidden');
+        }
+
+        function walletDetailBackdrop(e) {
+            if (e.target === e.currentTarget) {
+                document.getElementById('wallet-detail-modal').classList.add('hidden');
+            }
+        }
+
+        function editWalletAccount() {
+            const acc = walletAccounts.find(a => a.id === _walletDetailId);
+            if (!acc) return;
+            document.getElementById('wallet-detail-modal').classList.add('hidden');
+
+            _walletEditId = acc.id;
+            _walletType = acc.type;
+            _walletSelectedIcon = acc.icon || '🏦';
+            _walletSelectedColour = acc.colour || '#10b981';
+
+            document.getElementById('wallet-modal-title').textContent = 'Edit Account';
+            document.getElementById('wallet-save-btn').textContent = 'Update Account';
+            document.getElementById('wallet-name').value = acc.name;
+            document.getElementById('wallet-balance').value = acc.balance || '';
+            document.getElementById('wallet-goal').value = acc.goal || '';
+            document.getElementById('wallet-default').checked = !!acc.isDefault;
+
+            _renderWalletModalType();
+            document.getElementById('wallet-modal').classList.remove('hidden');
+        }
+
+        function deleteWalletAccount() {
+            if (!confirm('Delete this account? This cannot be undone.')) return;
+            walletAccounts = walletAccounts.filter(a => a.id !== _walletDetailId);
+            saveData();
+            document.getElementById('wallet-detail-modal').classList.add('hidden');
+            renderWallet();
+            showToast('Account deleted', 'rose');
         }
 
         function openEditTx(idx) {
@@ -3805,10 +4294,11 @@ Transactions using it will stay.`)) {
             // Full factory reset: wipe everything and restore defaults
             transactions      = [];
             monthlyBudgets    = {};
+            walletAccounts    = [];
             expenseCategories = {...defaultCategories};
             _syncIncomeCats();
             // Wipe localStorage completely for this app
-            ['transactions','monthlyBudgets','expenseCategories','incomeCats','tutDone']
+            ['transactions','monthlyBudgets','expenseCategories','incomeCats','walletAccounts','tutDone']
                 .forEach(function(k) { localStorage.removeItem(k); });
             // Delete from Firestore if signed in
             const user = _fbAuth ? _fbAuth.currentUser : null;
@@ -3826,6 +4316,7 @@ Transactions using it will stay.`)) {
                 transactions,
                 expenseCategories,
                 monthlyBudgets,
+                walletAccounts,
                 exportedAt: new Date().toISOString()
             };
             const filename = `Minimal-Budget-Backup-${new Date().toISOString().slice(0,10)}.json`;
@@ -3847,6 +4338,7 @@ Transactions using it will stay.`)) {
                     if (imported.transactions) transactions = imported.transactions;
                     if (imported.expenseCategories) expenseCategories = imported.expenseCategories;
                     if (imported.monthlyBudgets) monthlyBudgets = imported.monthlyBudgets;
+                    if (imported.walletAccounts) walletAccounts = imported.walletAccounts;
                     saveData();
                     alert("Backup restored successfully!");
                     hideDataModal();
@@ -3938,7 +4430,7 @@ Transactions using it will stay.`)) {
         }
 
         /* ── Launch screen preference ───────────────────── */
-        const LAUNCH_TABS = ['Overview', 'Transactions', 'Budgets', 'Reports'];
+        const LAUNCH_TABS = ['Overview', 'Transactions', 'Budgets', 'Reports', 'Wallet'];
 
         function getLaunchTab() {
             return parseInt(localStorage.getItem('launchTab') || '0', 10);
@@ -5159,6 +5651,7 @@ Transactions using it will stay.`)) {
             // Load fresh default state — no localStorage, no Firestore
             transactions      = [];
             monthlyBudgets    = {};
+            walletAccounts    = [];
             expenseCategories = {...defaultCategories};
             incomeCats        = ["Salary","Freelance","Investments","Gifts","Other"];
             // Show the app
@@ -5177,6 +5670,7 @@ Transactions using it will stay.`)) {
             // Clear any changes made in demo mode then go back to auth
             transactions      = [];
             monthlyBudgets    = {};
+            walletAccounts    = [];
             expenseCategories = {...defaultCategories};
             incomeCats        = ["Salary","Freelance","Investments","Gifts","Other"];
             _showAuthScreen();
@@ -5664,5 +6158,165 @@ Transactions using it will stay.`)) {
                 </button>
             </div>
 
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         WALLET — ADD / EDIT ACCOUNT MODAL
+    ═══════════════════════════════════════════════════ -->
+    <div id="wallet-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[160]">
+        <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
+
+            <!-- Drag handle -->
+            <div class="flex justify-center pt-3 pb-0">
+                <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
+            </div>
+
+            <!-- Title -->
+            <div class="px-5 pt-4 pb-2">
+                <h2 id="wallet-modal-title" class="font-semibold text-lg">Add Account</h2>
+            </div>
+
+            <!-- Account Type Toggle -->
+            <div class="grid grid-cols-3 mx-5 mt-2 rounded-2xl overflow-hidden bg-zinc-800">
+                <button onclick="setWalletType('spending')" id="wtype-spending"
+                    class="flex flex-col items-center gap-1 py-3.5 transition-colors bg-emerald-500 text-white">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 4H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M1 10h22"/></svg>
+                    <span class="text-[10px] font-bold tracking-wider uppercase">Spending</span>
+                </button>
+                <button onclick="setWalletType('saving')" id="wtype-saving"
+                    class="flex flex-col items-center gap-1 py-3.5 transition-colors text-zinc-500">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16"/><path d="M3 21h18"/><path d="M9 7h6"/><path d="M9 11h6"/></svg>
+                    <span class="text-[10px] font-bold tracking-wider uppercase">Saving</span>
+                </button>
+                <button onclick="setWalletType('debt')" id="wtype-debt"
+                    class="flex flex-col items-center gap-1 py-3.5 transition-colors text-zinc-500">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span class="text-[10px] font-bold tracking-wider uppercase">Debt</span>
+                </button>
+            </div>
+
+            <!-- Quick-pick default accounts -->
+            <div class="mx-5 mt-4">
+                <p class="text-[9px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Quick Pick</p>
+                <div id="wallet-defaults-grid" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <!-- Account fields card -->
+            <div class="mx-5 mt-4 rounded-3xl overflow-hidden bg-zinc-800/60 mb-3">
+                <!-- Name -->
+                <div class="px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account Name</div>
+                    <input id="wallet-name" type="text" placeholder="e.g. Main Chequing"
+                        class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
+                </div>
+
+                <!-- Icon picker -->
+                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-2">Icon</div>
+                    <div id="wallet-icon-grid" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Colour -->
+                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-2">Colour</div>
+                    <div id="wallet-colour-grid" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Balance / Starting Debt -->
+                <div id="wallet-balance-row" class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div id="wallet-balance-label" class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Current Balance</div>
+                    <input id="wallet-balance" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
+                        class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
+                </div>
+
+                <!-- Goal / Left to pay -->
+                <div id="wallet-goal-row" class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div id="wallet-goal-label" class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Goal Amount</div>
+                    <input id="wallet-goal" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
+                        class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
+                </div>
+
+                <!-- Default account toggle -->
+                <div class="border-t border-zinc-700/50">
+                    <label class="flex items-center justify-between px-5 py-4 cursor-pointer">
+                        <div>
+                            <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-0.5">Default Account</div>
+                            <div class="text-[11px] text-zinc-600">Primary account for this type</div>
+                        </div>
+                        <div class="relative flex-none ml-3">
+                            <input type="checkbox" id="wallet-default" class="sr-only peer">
+                            <div class="w-11 h-6 bg-zinc-700 rounded-full peer peer-checked:bg-emerald-500 transition-colors"></div>
+                            <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="px-5 pb-10 space-y-2">
+                <button onclick="saveWalletAccount()" id="wallet-save-btn"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-3xl font-semibold text-base transition-colors text-white">
+                    Save Account
+                </button>
+                <button onclick="hideWalletModal()"
+                    class="w-full py-3 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════
+         WALLET — ACCOUNT DETAIL MODAL
+    ═══════════════════════════════════════════════════ -->
+    <div id="wallet-detail-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-[160]" onclick="walletDetailBackdrop(event)">
+        <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
+            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10">
+                <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
+            </div>
+            <div class="px-5 pt-3 pb-8">
+                <!-- Header -->
+                <div class="flex items-center gap-4 mb-5">
+                    <div id="wd-icon-wrap" class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl shrink-0" style="background:#10b981">
+                        <span id="wd-icon">🏦</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div id="wd-name" class="text-base font-bold text-zinc-100 mb-0.5 truncate">Account</div>
+                        <div id="wd-type-badge" class="inline-block text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400">Spending</div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div id="wd-stats" class="grid grid-cols-2 gap-3 mb-5"></div>
+
+                <!-- Progress bar for savings/debt -->
+                <div id="wd-progress-wrap" class="hidden mb-5">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span id="wd-progress-label" class="text-[10px] font-black tracking-[.12em] text-zinc-600 uppercase">Progress</span>
+                        <span id="wd-progress-pct" class="text-[11px] font-bold text-emerald-400">0%</span>
+                    </div>
+                    <div class="h-2.5 bg-zinc-800 rounded-full overflow-hidden">
+                        <div id="wd-progress-bar" class="h-full rounded-full bg-emerald-500 progress-bar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <!-- Linked transactions -->
+                <div class="mb-5">
+                    <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Recent Transactions</div>
+                    <div id="wd-tx-list" class="space-y-1.5"></div>
+                    <div id="wd-tx-empty" class="hidden text-xs text-zinc-600 text-center py-5">No transactions linked to this account</div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="space-y-2">
+                    <button onclick="editWalletAccount()" class="w-full py-3.5 rounded-2xl text-sm font-bold text-white bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all">
+                        Edit Account
+                    </button>
+                    <button onclick="deleteWalletAccount()" class="w-full py-3.5 rounded-2xl text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all">
+                        Delete Account
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
