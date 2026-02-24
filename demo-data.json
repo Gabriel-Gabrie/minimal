@@ -3,7 +3,7 @@
     {
       "id": 1740000000001,
       "date": "2025-03-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -21,7 +21,7 @@
     {
       "id": 1740000000005,
       "date": "2025-03-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -84,7 +84,7 @@
     {
       "id": 1740000000010,
       "date": "2025-03-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -111,7 +111,7 @@
     {
       "id": 1740000000025,
       "date": "2025-03-14",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -120,7 +120,7 @@
     {
       "id": 1740000000002,
       "date": "2025-03-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -129,7 +129,7 @@
     {
       "id": 1740000000011,
       "date": "2025-03-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -147,7 +147,7 @@
     {
       "id": 1740000000019,
       "date": "2025-03-17",
-      "desc": "Dinner \u2013 The Grill",
+      "desc": "Dinner – The Grill",
       "amount": 38.75,
       "type": "expense",
       "mainCategory": "Food",
@@ -163,6 +163,24 @@
       "subCategory": "Gas/Charging"
     },
     {
+      "id": 1740000000013,
+      "date": "2025-03-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000014,
+      "date": "2025-03-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
+    },
+    {
       "id": 1740000000023,
       "date": "2025-03-21",
       "desc": "Movie Night",
@@ -174,7 +192,7 @@
     {
       "id": 1740000000003,
       "date": "2025-03-22",
-      "desc": "Freelance \u2013 Web Design Project",
+      "desc": "Freelance – Web Design Project",
       "amount": 450,
       "type": "income",
       "mainCategory": "Freelance",
@@ -192,7 +210,7 @@
     {
       "id": 1740000000020,
       "date": "2025-03-27",
-      "desc": "Lunch \u2013 Chipotle",
+      "desc": "Lunch – Chipotle",
       "amount": 22.4,
       "type": "expense",
       "mainCategory": "Food",
@@ -210,7 +228,7 @@
     {
       "id": 1740000000026,
       "date": "2025-04-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -228,7 +246,7 @@
     {
       "id": 1740000000029,
       "date": "2025-04-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -300,7 +318,7 @@
     {
       "id": 1740000000034,
       "date": "2025-04-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -318,7 +336,7 @@
     {
       "id": 1740000000027,
       "date": "2025-04-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -327,7 +345,7 @@
     {
       "id": 1740000000035,
       "date": "2025-04-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -361,9 +379,27 @@
       "subCategory": "Grooming/Haircut"
     },
     {
+      "id": 1740000000037,
+      "date": "2025-04-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000038,
+      "date": "2025-04-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
+    },
+    {
       "id": 1740000000043,
       "date": "2025-04-23",
-      "desc": "Dinner \u2013 Olive Garden",
+      "desc": "Dinner – Olive Garden",
       "amount": 45.6,
       "type": "expense",
       "mainCategory": "Food",
@@ -399,7 +435,7 @@
     {
       "id": 1740000000049,
       "date": "2025-05-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -417,7 +453,7 @@
     {
       "id": 1740000000053,
       "date": "2025-05-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -489,7 +525,7 @@
     {
       "id": 1740000000058,
       "date": "2025-05-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -507,7 +543,7 @@
     {
       "id": 1740000000050,
       "date": "2025-05-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -516,7 +552,7 @@
     {
       "id": 1740000000059,
       "date": "2025-05-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -543,16 +579,34 @@
     {
       "id": 1740000000051,
       "date": "2025-05-20",
-      "desc": "Freelance \u2013 Website Build",
+      "desc": "Freelance – Website Build",
       "amount": 600,
       "type": "income",
       "mainCategory": "Freelance",
       "subCategory": ""
     },
     {
+      "id": 1740000000061,
+      "date": "2025-05-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000062,
+      "date": "2025-05-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
+    },
+    {
       "id": 1740000000071,
       "date": "2025-05-20",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -588,7 +642,7 @@
     {
       "id": 1740000000068,
       "date": "2025-05-27",
-      "desc": "Dinner \u2013 Thai Palace",
+      "desc": "Dinner – Thai Palace",
       "amount": 52.8,
       "type": "expense",
       "mainCategory": "Food",
@@ -597,7 +651,7 @@
     {
       "id": 1740000000073,
       "date": "2025-05-29",
-      "desc": "Doctor Visit \u2013 Copay",
+      "desc": "Doctor Visit – Copay",
       "amount": 120,
       "type": "expense",
       "mainCategory": "Health",
@@ -606,7 +660,7 @@
     {
       "id": 1740000000074,
       "date": "2025-06-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -624,7 +678,7 @@
     {
       "id": 1740000000077,
       "date": "2025-06-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -705,7 +759,7 @@
     {
       "id": 1740000000082,
       "date": "2025-06-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -723,7 +777,7 @@
     {
       "id": 1740000000075,
       "date": "2025-06-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -732,7 +786,7 @@
     {
       "id": 1740000000083,
       "date": "2025-06-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -750,7 +804,7 @@
     {
       "id": 1740000000095,
       "date": "2025-06-17",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -773,6 +827,24 @@
       "type": "expense",
       "mainCategory": "Personal",
       "subCategory": "Entertainment"
+    },
+    {
+      "id": 1740000000085,
+      "date": "2025-06-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000086,
+      "date": "2025-06-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
     },
     {
       "id": 1740000000089,
@@ -822,7 +894,7 @@
     {
       "id": 1740000000100,
       "date": "2025-07-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -840,7 +912,7 @@
     {
       "id": 1740000000104,
       "date": "2025-07-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -858,7 +930,7 @@
     {
       "id": 1740000000117,
       "date": "2025-07-04",
-      "desc": "4th of July BBQ \u2013 Restaurant",
+      "desc": "4th of July BBQ – Restaurant",
       "amount": 45.8,
       "type": "expense",
       "mainCategory": "Food",
@@ -921,7 +993,7 @@
     {
       "id": 1740000000109,
       "date": "2025-07-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -939,7 +1011,7 @@
     {
       "id": 1740000000101,
       "date": "2025-07-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -948,7 +1020,7 @@
     {
       "id": 1740000000110,
       "date": "2025-07-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -966,7 +1038,7 @@
     {
       "id": 1740000000122,
       "date": "2025-07-17",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -991,6 +1063,24 @@
       "subCategory": "Restaurants/Coffee"
     },
     {
+      "id": 1740000000112,
+      "date": "2025-07-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000113,
+      "date": "2025-07-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
+    },
+    {
       "id": 1740000000116,
       "date": "2025-07-20",
       "desc": "Costco",
@@ -1002,7 +1092,7 @@
     {
       "id": 1740000000102,
       "date": "2025-07-22",
-      "desc": "Freelance \u2013 Small Project",
+      "desc": "Freelance – Small Project",
       "amount": 350,
       "type": "income",
       "mainCategory": "Freelance",
@@ -1047,7 +1137,7 @@
     {
       "id": 1740000000127,
       "date": "2025-08-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -1065,7 +1155,7 @@
     {
       "id": 1740000000131,
       "date": "2025-08-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -1146,7 +1236,7 @@
     {
       "id": 1740000000136,
       "date": "2025-08-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -1164,7 +1254,7 @@
     {
       "id": 1740000000128,
       "date": "2025-08-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -1173,7 +1263,7 @@
     {
       "id": 1740000000137,
       "date": "2025-08-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -1191,7 +1281,7 @@
     {
       "id": 1740000000149,
       "date": "2025-08-17",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -1205,6 +1295,24 @@
       "type": "expense",
       "mainCategory": "Food",
       "subCategory": "Groceries"
+    },
+    {
+      "id": 1740000000139,
+      "date": "2025-08-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000140,
+      "date": "2025-08-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
     },
     {
       "id": 1740000000148,
@@ -1254,7 +1362,7 @@
     {
       "id": 1740000000129,
       "date": "2025-08-28",
-      "desc": "Freelance \u2013 Design Work",
+      "desc": "Freelance – Design Work",
       "amount": 500,
       "type": "income",
       "mainCategory": "Freelance",
@@ -1263,7 +1371,7 @@
     {
       "id": 1740000000153,
       "date": "2025-09-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -1281,7 +1389,7 @@
     {
       "id": 1740000000156,
       "date": "2025-09-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -1362,7 +1470,7 @@
     {
       "id": 1740000000161,
       "date": "2025-09-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -1371,7 +1479,7 @@
     {
       "id": 1740000000154,
       "date": "2025-09-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -1380,7 +1488,7 @@
     {
       "id": 1740000000162,
       "date": "2025-09-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -1398,7 +1506,7 @@
     {
       "id": 1740000000174,
       "date": "2025-09-17",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -1421,6 +1529,24 @@
       "type": "expense",
       "mainCategory": "Transportation",
       "subCategory": "Gas/Charging"
+    },
+    {
+      "id": 1740000000164,
+      "date": "2025-09-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000165,
+      "date": "2025-09-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
     },
     {
       "id": 1740000000170,
@@ -1470,7 +1596,7 @@
     {
       "id": 1740000000178,
       "date": "2025-10-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -1488,7 +1614,7 @@
     {
       "id": 1740000000182,
       "date": "2025-10-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -1569,7 +1695,7 @@
     {
       "id": 1740000000187,
       "date": "2025-10-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -1578,7 +1704,7 @@
     {
       "id": 1740000000179,
       "date": "2025-10-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -1587,7 +1713,7 @@
     {
       "id": 1740000000188,
       "date": "2025-10-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -1605,7 +1731,7 @@
     {
       "id": 1740000000200,
       "date": "2025-10-17",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -1614,7 +1740,7 @@
     {
       "id": 1740000000180,
       "date": "2025-10-18",
-      "desc": "Freelance \u2013 Consulting",
+      "desc": "Freelance – Consulting",
       "amount": 280,
       "type": "income",
       "mainCategory": "Freelance",
@@ -1637,6 +1763,24 @@
       "type": "expense",
       "mainCategory": "Food",
       "subCategory": "Groceries"
+    },
+    {
+      "id": 1740000000190,
+      "date": "2025-10-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000191,
+      "date": "2025-10-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
     },
     {
       "id": 1740000000196,
@@ -1695,7 +1839,7 @@
     {
       "id": 1740000000205,
       "date": "2025-11-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -1713,7 +1857,7 @@
     {
       "id": 1740000000208,
       "date": "2025-11-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -1794,7 +1938,7 @@
     {
       "id": 1740000000213,
       "date": "2025-11-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -1803,7 +1947,7 @@
     {
       "id": 1740000000226,
       "date": "2025-11-14",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -1812,7 +1956,7 @@
     {
       "id": 1740000000206,
       "date": "2025-11-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -1821,7 +1965,7 @@
     {
       "id": 1740000000214,
       "date": "2025-11-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -1853,6 +1997,24 @@
       "type": "expense",
       "mainCategory": "Transportation",
       "subCategory": "Gas/Charging"
+    },
+    {
+      "id": 1740000000216,
+      "date": "2025-11-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000217,
+      "date": "2025-11-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
     },
     {
       "id": 1740000000222,
@@ -1893,7 +2055,7 @@
     {
       "id": 1740000000229,
       "date": "2025-12-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -1911,7 +2073,7 @@
     {
       "id": 1740000000233,
       "date": "2025-12-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -2001,7 +2163,7 @@
     {
       "id": 1740000000238,
       "date": "2025-12-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -2010,7 +2172,7 @@
     {
       "id": 1740000000230,
       "date": "2025-12-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -2019,7 +2181,7 @@
     {
       "id": 1740000000239,
       "date": "2025-12-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -2062,9 +2224,27 @@
       "subCategory": "Groceries"
     },
     {
+      "id": 1740000000241,
+      "date": "2025-12-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000242,
+      "date": "2025-12-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
+    },
+    {
       "id": 1740000000251,
       "date": "2025-12-20",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -2100,7 +2280,7 @@
     {
       "id": 1740000000231,
       "date": "2025-12-26",
-      "desc": "Freelance \u2013 Year-End Project",
+      "desc": "Freelance – Year-End Project",
       "amount": 500,
       "type": "income",
       "mainCategory": "Freelance",
@@ -2118,7 +2298,7 @@
     {
       "id": 1740000000256,
       "date": "2026-01-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -2136,7 +2316,7 @@
     {
       "id": 1740000000260,
       "date": "2026-01-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -2172,7 +2352,7 @@
     {
       "id": 1740000000278,
       "date": "2026-01-07",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -2217,7 +2397,7 @@
     {
       "id": 1740000000265,
       "date": "2026-01-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -2235,7 +2415,7 @@
     {
       "id": 1740000000257,
       "date": "2026-01-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -2244,7 +2424,7 @@
     {
       "id": 1740000000266,
       "date": "2026-01-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -2287,6 +2467,24 @@
       "subCategory": "Restaurants/Coffee"
     },
     {
+      "id": 1740000000268,
+      "date": "2026-01-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000269,
+      "date": "2026-01-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
+    },
+    {
       "id": 1740000000279,
       "date": "2026-01-21",
       "desc": "Urgent Care Visit",
@@ -2298,7 +2496,7 @@
     {
       "id": 1740000000258,
       "date": "2026-01-24",
-      "desc": "Freelance \u2013 New Year Project",
+      "desc": "Freelance – New Year Project",
       "amount": 520,
       "type": "income",
       "mainCategory": "Freelance",
@@ -2334,7 +2532,7 @@
     {
       "id": 1740000000282,
       "date": "2026-02-01",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -2352,7 +2550,7 @@
     {
       "id": 1740000000285,
       "date": "2026-02-01",
-      "desc": "Auto Insurance \u2013 Monthly",
+      "desc": "Auto Insurance – Monthly",
       "amount": 150,
       "type": "expense",
       "mainCategory": "Transportation",
@@ -2433,7 +2631,7 @@
     {
       "id": 1740000000290,
       "date": "2026-02-12",
-      "desc": "Phone Plan \u2013 Monthly",
+      "desc": "Phone Plan – Monthly",
       "amount": 45,
       "type": "expense",
       "mainCategory": "Personal",
@@ -2451,7 +2649,7 @@
     {
       "id": 1740000000283,
       "date": "2026-02-15",
-      "desc": "Direct Deposit \u2013 Salary",
+      "desc": "Direct Deposit – Salary",
       "amount": 2400,
       "type": "income",
       "mainCategory": "Salary",
@@ -2460,7 +2658,7 @@
     {
       "id": 1740000000291,
       "date": "2026-02-15",
-      "desc": "Internet \u2013 Monthly",
+      "desc": "Internet – Monthly",
       "amount": 60,
       "type": "expense",
       "mainCategory": "Household",
@@ -2478,7 +2676,7 @@
     {
       "id": 1740000000303,
       "date": "2026-02-17",
-      "desc": "Gym \u2013 Monthly Training",
+      "desc": "Gym – Monthly Training",
       "amount": 75,
       "type": "expense",
       "mainCategory": "Health",
@@ -2501,6 +2699,24 @@
       "type": "expense",
       "mainCategory": "Food",
       "subCategory": "Groceries"
+    },
+    {
+      "id": 1740000000293,
+      "date": "2026-02-20",
+      "desc": "Transfer – Emergency Fund",
+      "amount": 300,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Emergency Fund"
+    },
+    {
+      "id": 1740000000294,
+      "date": "2026-02-20",
+      "desc": "Transfer – Vacation Fund",
+      "amount": 150,
+      "type": "expense",
+      "mainCategory": "Savings",
+      "subCategory": "Vacation Fund"
     },
     {
       "id": 1740000000304,
@@ -2610,6 +2826,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2025-04": {
@@ -2652,6 +2872,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2025-05": {
@@ -2694,6 +2918,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2025-06": {
@@ -2736,6 +2964,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2025-07": {
@@ -2778,6 +3010,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2025-08": {
@@ -2820,6 +3056,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2025-09": {
@@ -2862,6 +3102,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2025-10": {
@@ -2904,6 +3148,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2025-11": {
@@ -2946,6 +3194,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2025-12": {
@@ -2988,6 +3240,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2026-01": {
@@ -3030,6 +3286,10 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     },
     "2026-02": {
@@ -3072,8 +3332,28 @@
       },
       "Debt": {
         "Student Loans": 250
+      },
+      "Savings": {
+        "Emergency Fund": 300,
+        "Vacation Fund": 150
       }
     }
   },
+  "goals": [
+    {
+      "id": 1740000000999,
+      "name": "Emergency Fund",
+      "linkedSub": "Emergency Fund",
+      "target": 10000,
+      "deadline": "2026-12-31"
+    },
+    {
+      "id": 1740000001000,
+      "name": "Vacation Fund",
+      "linkedSub": "Vacation Fund",
+      "target": 3000,
+      "deadline": "2026-08-01"
+    }
+  ],
   "exportedAt": "2026-02-23T09:18:28.040Z"
 }
