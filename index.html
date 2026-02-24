@@ -310,11 +310,11 @@
                     onmousedown="_tabHoldStart(4, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
                     ontouchstart="_tabHoldStart(4, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
                     id="tab-4" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h2M13 15h4"/></svg>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
                     <span>Accounts</span>
+                    <!-- home dot — visible when this is the launch tab -->
                     <span id="home-dot-4" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
                 </button>
-
 
             </div>
         </div>
@@ -652,34 +652,42 @@
 
             </div>
         </div>
+        <!-- GOALS -->
+        <div id="screen-4" class="hidden pb-16 overflow-y-auto">
 
-
-        <!-- ACCOUNTS -->
-        <div id="screen-4" class="hidden pb-28 overflow-y-auto">
-            <!-- Net Worth header -->
-            <div class="px-5 pt-6 pb-4">
-                <p class="text-[9px] font-black tracking-widest uppercase text-zinc-500 mb-1">Net Worth</p>
-                <div id="acct-net-worth" class="text-3xl font-semibold text-zinc-100">$0.00</div>
-                <div id="acct-net-breakdown" class="text-xs text-zinc-500 mt-1"></div>
-            </div>
-
-            <!-- Account list -->
-            <div id="acct-list" class="px-5 space-y-3"></div>
-
-            <!-- Empty state -->
-            <div id="acct-empty" class="hidden px-5 pt-10 text-center">
-                <div class="text-5xl mb-4">🏦</div>
-                <p class="font-semibold text-zinc-300 mb-1">No accounts yet</p>
-                <p class="text-sm text-zinc-500">Add your bank accounts and credit cards to track balances and tag transactions.</p>
-            </div>
-
-            <!-- Add account button -->
-            <div class="px-5 mt-5">
-                <button onclick="showAccountModal()" class="w-full flex items-center justify-center gap-2 py-4 rounded-3xl border border-zinc-700 border-dashed text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors text-sm font-medium">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            <!-- ── Accounts Header ── -->
+            <div class="px-5 pt-5 pb-2 flex justify-between items-center">
+                <div>
+                    <h2 class="font-semibold text-lg">Accounts</h2>
+                    <p class="text-[10px] text-zinc-600 mt-0.5 uppercase tracking-widest font-bold">Net Worth &amp; Goals</p>
+                </div>
+                <button onclick="showAddAccountModal()" class="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-full transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                     Add Account
                 </button>
             </div>
+
+            <!-- ── Net Worth Summary Card ── -->
+            <div id="net-worth-card" class="mx-5 mt-3 mb-5 bg-zinc-900 rounded-3xl p-5"></div>
+
+            <!-- ── Accounts List ── -->
+            <div id="accounts-list" class="px-5 space-y-2.5 mb-6"></div>
+
+            <!-- ── Goals Section Header ── -->
+            <div class="px-5 pt-2 pb-3 flex justify-between items-center border-t border-zinc-800/60 mt-2">
+                <div>
+                    <h3 class="font-semibold text-base">Goals</h3>
+                    <p class="text-[10px] text-zinc-600 mt-0.5 uppercase tracking-widest font-bold">Track your targets</p>
+                </div>
+                <button onclick="showAddGoalModal()" class="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-3.5 py-2 rounded-full transition-colors">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                    New Goal
+                </button>
+            </div>
+
+            <!-- ── Goals List ── -->
+            <div id="goals-list" class="px-5 space-y-4 pb-6"></div>
+
         </div>
 
         <!-- Floating Add -->
@@ -786,16 +794,6 @@
                 </label>
             </div>
 
-            <!-- Account (optional) -->
-            <div id="tx-account-row" class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-6">
-                <div class="px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account</div>
-                    <select id="tx-account" class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer">
-                        <option value="">— No Account —</option>
-                    </select>
-                </div>
-            </div>
-
             <!-- Actions -->
             <div class="px-5 pb-10 space-y-2">
                 <button onclick="addTransaction()" id="save-transaction-btn"
@@ -810,7 +808,123 @@
         </div>
     </div>
 
+    <!-- GOAL MODAL (redesigned) -->
+    <div id="goal-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50" onclick="if(event.target===this)hideModal()">
+        <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl max-h-[92vh] overflow-auto relative">
 
+            <!-- Drag handle + X close -->
+            <div class="flex justify-center pt-3 pb-0">
+                <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
+            </div>
+            <button onclick="hideModal()" class="absolute top-3 right-4 w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 rounded-full text-zinc-400 hover:text-white transition-colors z-10">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+
+            <!-- Header -->
+            <div class="px-5 pt-6 pb-4 flex items-center gap-3">
+                <button id="goal-modal-emoji-btn" onclick="_pickGoalEmoji()" class="text-4xl leading-none w-14 h-14 bg-zinc-800 rounded-2xl flex items-center justify-center shrink-0 active:scale-95 transition-all">🎯</button>
+                <div class="flex-1 min-w-0">
+                    <h2 id="goal-modal-title" class="text-xl font-semibold tracking-tight">New Goal</h2>
+                    <p id="goal-modal-subtitle" class="text-zinc-500 text-xs mt-0.5">Set a target and track your progress</p>
+                </div>
+            </div>
+
+            <!-- Goal Emoji Picker (hidden by default) -->
+            <div id="goal-emoji-picker" class="hidden mx-5 mb-4 bg-zinc-800/60 rounded-3xl p-4">
+                <div class="text-[10px] font-bold tracking-widest text-zinc-500 uppercase mb-3">Choose an emoji</div>
+                <div id="goal-emoji-grid" class="grid grid-cols-8 gap-1 text-xl"></div>
+            </div>
+
+            <!-- Goal Type Selector -->
+            <div class="mx-5 mb-4">
+                <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-2">Goal Type</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="_setGoalType('savings')" id="goal-type-savings"
+                            class="flex flex-col items-start gap-1 px-4 py-3 rounded-2xl border-2 border-emerald-500 bg-emerald-500/10 transition-all">
+                        <span class="text-base">💰</span>
+                        <span class="text-xs font-bold text-zinc-200">Save Up</span>
+                        <span class="text-[10px] text-zinc-500 leading-tight">Build savings toward a target amount</span>
+                    </button>
+                    <button onclick="_setGoalType('debt')" id="goal-type-debt"
+                            class="flex flex-col items-start gap-1 px-4 py-3 rounded-2xl border-2 border-zinc-700 bg-zinc-800/50 transition-all">
+                        <span class="text-base">📉</span>
+                        <span class="text-xs font-bold text-zinc-200">Pay Off Debt</span>
+                        <span class="text-[10px] text-zinc-500 leading-tight">Track paying down a debt account</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fields -->
+            <div class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-4">
+
+                <!-- Goal Name -->
+                <div class="px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Goal Name</div>
+                    <input id="goal-name" type="text" placeholder="e.g. Emergency Fund, Europe Trip"
+                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
+                </div>
+
+                <!-- Target Amount (savings type only) -->
+                <div id="goal-target-row" class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Target Amount</div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-emerald-400 font-semibold">$</span>
+                        <input id="goal-target" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
+                               class="flex-1 bg-transparent text-sm font-semibold text-zinc-100 focus:outline-none placeholder-zinc-600">
+                    </div>
+                </div>
+
+                <!-- Link to Account (optional for savings, required for debt) -->
+                <div id="goal-account-row" class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">
+                        <span id="goal-account-label">Link to Account</span>
+                        <span id="goal-account-optional" class="text-zinc-700 normal-case font-normal ml-1">— optional</span>
+                    </div>
+                    <select id="goal-account"
+                            class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer">
+                        <option value="">None (manual tracking)</option>
+                    </select>
+                </div>
+
+                <!-- Deadline (optional for all types) -->
+                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">
+                        Target Date
+                        <span class="text-zinc-700 normal-case font-normal ml-1">— optional</span>
+                    </div>
+                    <input id="goal-deadline" type="date"
+                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Current Amount (savings type, no account linked) -->
+            <div id="goal-current-row" class="hidden mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-4">
+                <div class="px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">
+                        Amount Saved So Far
+                        <span class="text-zinc-700 normal-case font-normal ml-1">— optional</span>
+                    </div>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-emerald-400 font-semibold">$</span>
+                        <input id="goal-current" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
+                               class="flex-1 bg-transparent text-sm font-semibold text-zinc-100 focus:outline-none placeholder-zinc-600">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="px-5 pb-10 space-y-2">
+                <button onclick="saveGoal()" id="goal-save-btn"
+                        class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-3xl font-semibold text-base transition-colors">
+                    Create Goal
+                </button>
+                <button onclick="hideModal()"
+                        class="w-full py-3 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- ACCOUNT MODAL -->
     <div id="account-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50" onclick="if(event.target===this)hideModal()">
@@ -1228,6 +1342,17 @@
                         </div>
                         <div class="h-px bg-zinc-800 mx-5"></div>
                         <div class="flex items-center gap-4 px-5 py-4">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
+                                <svg width="16" height="16" fill="none" stroke="#34d399" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-sm">Goal Milestones</div>
+                                <div class="text-[11px] text-zinc-500 mt-0.5">Celebrate 50% and 100% progress</div>
+                            </div>
+                            <label class="tog-wrap"><input type="checkbox" id="notif-goals" onchange="saveNotifSettings()"><span class="tog-track"></span></label>
+                        </div>
+                        <div class="h-px bg-zinc-800 mx-5"></div>
+                        <div class="flex items-center gap-4 px-5 py-4">
                             <div class="w-9 h-9 rounded-xl bg-blue-500/15 flex items-center justify-center shrink-0">
                                 <svg width="16" height="16" fill="none" stroke="#60a5fa" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             </div>
@@ -1395,8 +1520,7 @@
         let transactions = [];
         let expenseCategories = {};
         let monthlyBudgets = {};
-        let accounts = [];
-
+        let goals = [];
         let currentType = 'expense';
         let selectedBudgetMonth = "";
         let _rCharts = {};  // report chart instances keyed by card id
@@ -1410,9 +1534,11 @@
         let txSort = 'date-desc';     // 'date-desc'|'date-asc'|'amount-desc'|'amount-asc'
         let _undoData = null, _undoTimer = null;
         let _editingTxIdx = null;
+        let _editingGoalIdx = null;
+        let accounts = [];
+        let _editingAccountId = null;
 
-
-        let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Debt":"💳","Banking":"🏛️" };
+        let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Debt":"💳","Savings":"🏦","Banking":"🏛️" };
         let itemIcons = {}; // keyed "main:sub", e.g. "Food:Groceries" → "🛒"
         let _bimMain = null, _bimSub = null, _bimSelectedIcon = null;
         let _balLegendOpen = false;
@@ -1428,7 +1554,7 @@
             "Health":         ["Supplements", "Medical", "Training"],
             "Banking":        ["Bank Fees", "Transfers", "Cash Withdrawal"],
             "Debt":           ["Student Loans"],
-
+            "Savings":        ["Emergency Fund", "Tuition"],
         };
 
         const defaultItemIcons = {
@@ -1458,7 +1584,8 @@
             "Banking:Transfers":          "💸",
             "Banking:Cash Withdrawal":    "💵",
             "Debt:Student Loans":         "🎓",
-
+            "Savings:Emergency Fund":     "🔐",
+            "Savings:Tuition":            "📖",
         };
 
         /* ── Persistence helpers ─────────────────────── */
@@ -1468,7 +1595,7 @@
         function saveData() {
             if (_demoMode) return; // never persist demo data
             const snap = {
-                transactions, expenseCategories, monthlyBudgets, itemIcons, accounts
+                transactions, expenseCategories, monthlyBudgets, goals, itemIcons, accounts
                 // incomeCats is now derived from expenseCategories['Income'] — not saved separately
             };
             // Always write to localStorage as offline cache
@@ -1489,7 +1616,7 @@
         function _applyData(d) {
             expenseCategories = d.expenseCategories || {...defaultCategories};
             monthlyBudgets    = d.monthlyBudgets    || {};
-
+            goals             = d.goals             || [];
             transactions      = d.transactions      || [];
             itemIcons         = d.itemIcons         || {};
             accounts          = d.accounts          || [];
@@ -1531,7 +1658,7 @@
             _applyData({
                 expenseCategories: JSON.parse(localStorage.getItem('expenseCategories')),
                 monthlyBudgets:    JSON.parse(localStorage.getItem('monthlyBudgets')),
-
+                goals:             JSON.parse(localStorage.getItem('goals')),
                 transactions:      JSON.parse(localStorage.getItem('transactions')),
                 itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
                 accounts:          JSON.parse(localStorage.getItem('accounts')),
@@ -1617,6 +1744,623 @@
                 .reduce((s, t) => s + parseFloat(t.amount), 0);
         }
 
+        /* ─── Account type definitions ──────────────────────────────────── */
+        const ACCOUNT_TYPES = {
+            checking:   { label: 'Checking',     emoji: '🏦', isLiability: false, color: '#3b82f6' },
+            savings:    { label: 'Savings',      emoji: '💰', isLiability: false, color: '#10b981' },
+            investment: { label: 'Investment',   emoji: '📈', isLiability: false, color: '#8b5cf6' },
+            cash:       { label: 'Cash',         emoji: '💵', isLiability: false, color: '#eab308' },
+            property:   { label: 'Property',     emoji: '🏠', isLiability: false, color: '#f97316' },
+            credit:     { label: 'Credit Card',  emoji: '💳', isLiability: true,  color: '#ef4444' },
+            loan:       { label: 'Loan / Debt',  emoji: '📋', isLiability: true,  color: '#f43f5e' },
+            other:      { label: 'Other',        emoji: '📂', isLiability: false, color: '#71717a' },
+        };
+
+        const ACCOUNT_EMOJIS = ['🏦','💰','💵','💳','📈','🏠','🚗','💼','📋','🎓','💊','🌍','✈️','🎯','🔐','🛡️','📱','🖥️','⛽','🎬','🛒','🎸','🏋️','🌱','📂','💎','🏖️','🚀','🎁','🏅'];
+        const GOAL_EMOJIS   = ['🎯','🏆','💰','🛡️','✈️','🏠','🚗','📚','🎓','💊','🏖️','🌍','💎','🚀','🎁','🎸','🏋️','🌱','🔐','📈','💼','🎬','🛒','🏅','⭐','🌟','🎪','🏄','🎨','🌺'];
+
+        let _acctSelectedEmoji = '🏦';
+        let _goalSelectedEmoji = '🎯';
+        let _goalType = 'savings'; // 'savings' | 'debt'
+
+        function calculateGoalProgress(goal) {
+            // Legacy support: if passed a string (linkedSub), wrap in old-style call
+            if (typeof goal === 'string') {
+                const linkedSub = goal;
+                return { current: transactions.filter(t => t.type === 'expense' && t.mainCategory === 'Savings' && t.subCategory === linkedSub)
+                    .reduce((sum, t) => sum + parseFloat(t.amount), 0), target: 0, percent: 0 };
+            }
+            if (goal.type === 'debt') {
+                const acct = accounts.find(a => a.id === goal.linkedAccountId);
+                const startBal = goal.startBalance || 0;
+                if (!acct || startBal <= 0) return { current: 0, target: startBal, percent: 0 };
+                const paidOff = Math.max(0, startBal - acct.balance);
+                const percent = Math.min(100, Math.round(paidOff / startBal * 100));
+                return { current: paidOff, target: startBal, percent };
+            } else {
+                let current = 0;
+                if (goal.linkedAccountId) {
+                    const acct = accounts.find(a => a.id === goal.linkedAccountId);
+                    current = acct ? acct.balance : 0;
+                } else if (goal.linkedSub) {
+                    current = transactions
+                        .filter(t => t.type === 'expense' && t.mainCategory === 'Savings' && t.subCategory === goal.linkedSub)
+                        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+                } else {
+                    current = goal.currentAmount || 0;
+                }
+                const target = goal.target || 0;
+                const percent = target > 0 ? Math.min(100, Math.round(current / target * 100)) : 0;
+                return { current, target, percent };
+            }
+        }
+
+        /* ─── Accounts: render ────────────────────────────────────────── */
+        function renderAccounts() {
+            // Net worth card
+            const nwEl = document.getElementById('net-worth-card');
+            if (nwEl) {
+                let totalAssets = 0, totalLiabilities = 0;
+                accounts.forEach(a => {
+                    if (!a.includeInNetWorth) return;
+                    const def = ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other;
+                    if (def.isLiability) totalLiabilities += (a.balance || 0);
+                    else totalAssets += (a.balance || 0);
+                });
+                const netWorth = totalAssets - totalLiabilities;
+                const nwColor  = netWorth >= 0 ? '#10b981' : '#ef4444';
+                const nwSign   = netWorth >= 0 ? '' : '−';
+                nwEl.innerHTML = accounts.length === 0
+                    ? `<div class="text-center py-4">
+                           <div class="text-3xl mb-2">🏦</div>
+                           <div class="font-semibold text-zinc-400 mb-1">No accounts yet</div>
+                           <div class="text-xs text-zinc-600">Tap "Add Account" to get started</div>
+                       </div>`
+                    : `<div class="flex items-start justify-between mb-3">
+                           <div>
+                               <p class="text-[9px] font-black tracking-[.18em] text-zinc-600 uppercase">Net Worth</p>
+                               <div class="text-3xl font-semibold tracking-tighter mt-0.5" style="color:${nwColor}">${nwSign}${_fmtCurrency(Math.abs(netWorth))}</div>
+                           </div>
+                           <div class="text-right pt-1 space-y-1.5">
+                               <div class="flex items-center justify-end gap-2">
+                                   <span class="text-[11px] text-zinc-500">Assets</span>
+                                   <span class="text-[11px] font-semibold text-emerald-400">${_fmtCurrency(totalAssets)}</span>
+                               </div>
+                               <div class="flex items-center justify-end gap-2">
+                                   <span class="text-[11px] text-zinc-500">Liabilities</span>
+                                   <span class="text-[11px] font-semibold text-rose-400">${_fmtCurrency(totalLiabilities)}</span>
+                               </div>
+                           </div>
+                       </div>
+                       <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                           ${totalAssets > 0 ? `<div class="h-full rounded-full bg-emerald-500 progress-bar" style="width:${Math.min(100, Math.round(totalAssets / (totalAssets + totalLiabilities) * 100))}%"></div>` : ''}
+                       </div>
+                       <div class="flex justify-between mt-1.5">
+                           <span class="text-[10px] text-zinc-600">${accounts.length} account${accounts.length !== 1 ? 's' : ''}</span>
+                           <span class="text-[10px] text-zinc-600">${Math.min(100, totalAssets > 0 ? Math.round(totalAssets / (totalAssets + totalLiabilities) * 100) : 0)}% assets</span>
+                       </div>`;
+            }
+
+            // Account cards
+            const listEl = document.getElementById('accounts-list');
+            if (!listEl) return;
+            if (accounts.length === 0) { listEl.innerHTML = ''; return; }
+
+            // Group: assets first, then liabilities
+            const assets = accounts.filter(a => !(ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other).isLiability);
+            const liabs  = accounts.filter(a => (ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other).isLiability);
+
+            let html = '';
+            if (assets.length > 0) {
+                html += `<div class="text-[9px] font-black tracking-[.18em] text-zinc-600 uppercase mb-1.5 px-1">Assets</div>`;
+                assets.forEach(a => { html += _renderAccountCard(a); });
+            }
+            if (liabs.length > 0) {
+                html += `<div class="text-[9px] font-black tracking-[.18em] text-zinc-600 uppercase mb-1.5 px-1 mt-4">Liabilities</div>`;
+                liabs.forEach(a => { html += _renderAccountCard(a); });
+            }
+            listEl.innerHTML = html;
+
+            // Render goals on the same screen
+            renderGoals();
+        }
+
+        function _renderAccountCard(a) {
+            const def  = ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other;
+            const bal  = a.balance || 0;
+            const isLiab = def.isLiability;
+            const balColor = isLiab ? '#f87171' : '#10b981';
+            const balStr   = isLiab ? `-${_fmtCurrency(bal)}` : _fmtCurrency(bal);
+            const linkedGoals = goals.filter(g => String(g.linkedAccountId) === String(a.id));
+            const goalBadgesHtml = linkedGoals.length
+                ? `<div class="mt-2.5 pt-2.5 border-t border-zinc-800 flex flex-wrap gap-1.5">
+                       ${linkedGoals.map(g => {
+                           const p = calculateGoalProgress(g);
+                           const done = p.percent >= 100;
+                           const badgeColor = done ? '#10b981' : '#a78bfa';
+                           const bgColor    = done ? 'rgba(16,185,129,.12)' : 'rgba(167,139,250,.12)';
+                           return `<span class="inline-flex items-center gap-1 text-[10px] font-bold rounded-full px-2.5 py-1" style="color:${badgeColor};background:${bgColor}">${g.emoji || '🎯'} ${g.name} · ${p.percent}%</span>`;
+                       }).join('')}
+                   </div>`
+                : '';
+            return `<div class="bg-zinc-900 rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-all" onclick="showAccountSummary('${a.id}')">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0" style="background:${def.color}22">${a.emoji || def.emoji}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-sm truncate text-zinc-100">${a.name}</div>
+                        <div class="text-[11px] text-zinc-500 mt-0.5">${def.label}${a.note ? ' · ' + a.note : ''}</div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="font-semibold text-sm tabular-nums" style="color:${balColor}">${balStr}</div>
+                        <div class="text-[10px] text-zinc-600 mt-0.5">${isLiab ? 'owed' : 'balance'}</div>
+                    </div>
+                </div>
+                ${goalBadgesHtml}
+            </div>`;
+        }
+
+        function _fmtCurrency(n) {
+            const abs = Math.abs(n);
+            if (abs >= 1000000) return '$' + (abs / 1000000).toFixed(2) + 'M';
+            if (abs >= 1000) return '$' + abs.toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+            return '$' + abs.toFixed(2);
+        }
+
+        /* ─── Accounts: CRUD ──────────────────────────────────────────── */
+        function showAddAccountModal() {
+            _editingAccountId = null;
+            _acctSelectedEmoji = '🏦';
+
+            document.getElementById('account-modal-title').textContent = 'New Account';
+            document.getElementById('acct-save-btn').textContent = 'Add Account';
+            document.getElementById('acct-delete-row').classList.add('hidden');
+            document.getElementById('acct-name').value = '';
+            document.getElementById('acct-balance').value = '';
+            document.getElementById('acct-note').value = '';
+            document.getElementById('acct-networth').checked = true;
+            document.getElementById('acct-emoji-btn').textContent = _acctSelectedEmoji;
+            document.getElementById('acct-emoji-picker').classList.add('hidden');
+            document.getElementById('acct-balance-label').textContent = 'Current Balance';
+
+            // Build type grid
+            _renderAccountTypeGrid('checking');
+            // Build emoji grid
+            _renderEmojiGrid('acct-emoji-grid', ACCOUNT_EMOJIS, (em) => {
+                _acctSelectedEmoji = em;
+                document.getElementById('acct-emoji-btn').textContent = em;
+                document.getElementById('acct-emoji-picker').classList.add('hidden');
+            });
+
+            document.getElementById('account-modal').classList.remove('hidden');
+        }
+
+        function editAccount(id) {
+            id = parseInt(id);
+            const a = accounts.find(x => x.id === id);
+            if (!a) return;
+            _editingAccountId = id;
+            _acctSelectedEmoji = a.emoji || (ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other).emoji;
+
+            document.getElementById('account-modal-title').textContent = 'Edit Account';
+            document.getElementById('acct-save-btn').textContent = 'Save Changes';
+            document.getElementById('acct-delete-row').classList.remove('hidden');
+            document.getElementById('acct-name').value = a.name;
+            document.getElementById('acct-balance').value = a.balance;
+            document.getElementById('acct-note').value = a.note || '';
+            document.getElementById('acct-networth').checked = a.includeInNetWorth !== false;
+            document.getElementById('acct-emoji-btn').textContent = _acctSelectedEmoji;
+            document.getElementById('acct-emoji-picker').classList.add('hidden');
+
+            const def = ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other;
+            document.getElementById('acct-balance-label').textContent = def.isLiability ? 'Amount Owed' : 'Current Balance';
+
+            _renderAccountTypeGrid(a.type);
+            _renderEmojiGrid('acct-emoji-grid', ACCOUNT_EMOJIS, (em) => {
+                _acctSelectedEmoji = em;
+                document.getElementById('acct-emoji-btn').textContent = em;
+                document.getElementById('acct-emoji-picker').classList.add('hidden');
+            });
+
+            document.getElementById('account-modal').classList.remove('hidden');
+        }
+
+        let _selectedAccountType = 'checking';
+        function _renderAccountTypeGrid(selected) {
+            _selectedAccountType = selected;
+            const assetGrid = document.getElementById('acct-type-grid-assets');
+            const liabGrid  = document.getElementById('acct-type-grid-liabs');
+            if (!assetGrid || !liabGrid) return;
+
+            function _typeBtn(key, def) {
+                const isActive = key === selected;
+                return `<button onclick="_selectAccountType('${key}')" id="acct-type-${key}"
+                    class="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 transition-all text-left ${isActive ? 'border-emerald-500 bg-emerald-500/10' : 'border-zinc-700 bg-zinc-800/50'}">
+                    <span class="text-base shrink-0">${def.emoji}</span>
+                    <span class="text-xs font-semibold ${isActive ? 'text-zinc-100' : 'text-zinc-400'}">${def.label}</span>
+                </button>`;
+            }
+
+            assetGrid.innerHTML = Object.entries(ACCOUNT_TYPES)
+                .filter(([, d]) => !d.isLiability)
+                .map(([k, d]) => _typeBtn(k, d)).join('');
+            liabGrid.innerHTML = Object.entries(ACCOUNT_TYPES)
+                .filter(([, d]) => d.isLiability)
+                .map(([k, d]) => _typeBtn(k, d)).join('');
+
+            const isLiab = (ACCOUNT_TYPES[selected] || ACCOUNT_TYPES.other).isLiability;
+            const balLabel = document.getElementById('acct-balance-label');
+            if (balLabel) balLabel.textContent = isLiab ? 'Amount Owed' : 'Current Balance';
+        }
+
+        function _selectAccountType(key) {
+            _selectedAccountType = key;
+            _renderAccountTypeGrid(key);
+        }
+
+        /* ─── Account Summary Modal ───────────────────────────────────── */
+        let _asmAccountId = null;
+
+        function showAccountSummary(id) {
+            const a = accounts.find(x => x.id == id);
+            if (!a) return;
+            _asmAccountId = id;
+
+            const def = ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other;
+            const isLiab = def.isLiability;
+            const bal = a.balance || 0;
+            const balStr = isLiab ? `-${_fmtCurrency(bal)}` : _fmtCurrency(bal);
+            const balColor = isLiab ? '#f87171' : '#10b981';
+
+            // Icon
+            const iconEl = document.getElementById('asm-icon-bg');
+            if (iconEl) { iconEl.textContent = a.emoji || def.emoji; iconEl.style.background = def.color + '22'; }
+
+            // Name, type, balance
+            const nameEl = document.getElementById('asm-name');
+            if (nameEl) nameEl.textContent = a.name;
+            const typeEl = document.getElementById('asm-type-label');
+            if (typeEl) typeEl.textContent = def.label + (a.note ? ' · ' + a.note : '');
+            const balEl = document.getElementById('asm-balance-val');
+            if (balEl) { balEl.textContent = balStr; balEl.style.color = balColor; }
+            const balSubEl = document.getElementById('asm-balance-sub');
+            if (balSubEl) balSubEl.textContent = isLiab ? 'owed' : 'balance';
+
+            // Transactions linked to this account
+            const linked = transactions.filter(t => String(t.accountId) === String(id))
+                .sort((a, b) => b.date.localeCompare(a.date));
+            const txList = document.getElementById('asm-tx-list');
+            const txEmpty = document.getElementById('asm-tx-empty');
+            if (txList) {
+                if (linked.length === 0) {
+                    txList.innerHTML = '';
+                    if (txEmpty) txEmpty.classList.remove('hidden');
+                } else {
+                    if (txEmpty) txEmpty.classList.add('hidden');
+                    txList.innerHTML = linked.map(t => {
+                        const isInc = t.type === 'income';
+                        const sign = isInc ? '+' : '−';
+                        const col  = isInc ? '#10b981' : '#f87171';
+                        const label = t.desc || (isInc ? t.mainCategory : `${t.mainCategory} · ${t.subCategory}`) || '—';
+                        return `<div class="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3">
+                            <div class="min-w-0">
+                                <div class="text-sm font-medium text-zinc-200 truncate">${label}</div>
+                                <div class="text-[10px] text-zinc-600 mt-0.5">${t.date}</div>
+                            </div>
+                            <div class="font-semibold text-sm tabular-nums ml-3 shrink-0" style="color:${col}">${sign}${_fmtCurrency(t.amount)}</div>
+                        </div>`;
+                    }).join('');
+                }
+            }
+
+            document.getElementById('account-summary-modal').classList.remove('hidden');
+        }
+
+        function hideAccountSummary() {
+            document.getElementById('account-summary-modal').classList.add('hidden');
+            _asmAccountId = null;
+        }
+
+        function _acctSumBackdrop(e) {
+            if (e.target === document.getElementById('account-summary-modal')) hideAccountSummary();
+        }
+
+        function _asmInlineEditName(el) {
+            const a = accounts.find(x => x.id == _asmAccountId);
+            if (!a) return;
+            const cur = a.name;
+            const input = document.createElement('input');
+            input.type = 'text'; input.value = cur;
+            input.className = 'text-base font-bold text-zinc-100 bg-transparent focus:outline-none border-b border-emerald-500 w-full pb-0.5';
+            el.replaceWith(input); input.focus(); input.select();
+            function commit() {
+                const newName = input.value.trim();
+                if (newName && newName !== cur) { a.name = newName; saveData(); renderAccounts(); }
+                const nameEl = document.createElement('div');
+                nameEl.id = 'asm-name';
+                nameEl.className = 'text-base font-bold text-zinc-100 mb-0.5 cursor-pointer truncate active:text-emerald-400 transition-colors';
+                nameEl.textContent = a.name; nameEl.onclick = function() { _asmInlineEditName(this); };
+                input.replaceWith(nameEl);
+            }
+            input.addEventListener('blur', commit);
+            input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } if (e.key === 'Escape') { input.value = cur; input.blur(); } });
+        }
+
+        function _asmInlineEditBalance(el) {
+            const a = accounts.find(x => x.id == _asmAccountId);
+            if (!a) return;
+            const cur = a.balance || 0;
+            const input = document.createElement('input');
+            input.type = 'number'; input.inputMode = 'decimal'; input.step = '0.01'; input.value = cur.toFixed(2);
+            input.className = 'text-sm font-bold bg-transparent focus:outline-none border-b border-emerald-500 w-28 pb-0.5';
+            input.style.color = (ACCOUNT_TYPES[a.type] || ACCOUNT_TYPES.other).isLiability ? '#f87171' : '#10b981';
+            const balEl = document.getElementById('asm-balance-val');
+            if (balEl) balEl.replaceWith(input); input.focus(); input.select();
+            function commit() {
+                const newBal = parseFloat(input.value);
+                if (!isNaN(newBal)) { a.balance = newBal; saveData(); renderAccounts(); showAccountSummary(_asmAccountId); }
+                else { showAccountSummary(_asmAccountId); }
+            }
+            input.addEventListener('blur', commit);
+            input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } if (e.key === 'Escape') { input.value = cur.toFixed(2); input.blur(); } });
+        }
+
+        function _asmToggleEmojiPicker() { /* no-op: emoji editing via Edit Account modal */ }
+
+        function editAccountFromSummary() {
+            if (!_asmAccountId) return;
+            hideAccountSummary();
+            editAccount(_asmAccountId);
+        }
+
+        function deleteAccountFromSummary() {
+            if (!_asmAccountId) return;
+            deleteAccount(_asmAccountId);
+        }
+
+        /* ─── Goal Summary Modal ──────────────────────────────────────── */
+        let _gsmGoalIdx = null;
+
+        function showGoalSummary(i) {
+            const g = goals[i];
+            if (!g) return;
+            _gsmGoalIdx = i;
+
+            const prog = calculateGoalProgress(g);
+            const { current, target, percent } = prog;
+            const done = percent >= 100;
+            const barColor = done ? '#10b981' : percent >= 75 ? '#f59e0b' : percent >= 40 ? '#3b82f6' : '#10b981';
+
+            // Header
+            const emojiEl = document.getElementById('gsm-emoji');
+            if (emojiEl) emojiEl.textContent = g.emoji || '🎯';
+            const nameEl = document.getElementById('gsm-name');
+            if (nameEl) nameEl.textContent = g.name;
+
+            // Type badge
+            const typeBadgeEl = document.getElementById('gsm-type-badge');
+            if (typeBadgeEl) {
+                typeBadgeEl.innerHTML = g.type === 'debt'
+                    ? `<span class="text-[9px] font-bold tracking-widest uppercase text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full">Pay Off</span>`
+                    : `<span class="text-[9px] font-bold tracking-widest uppercase text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Save Up</span>`;
+            }
+
+            // Deadline badge
+            const dlEl = document.getElementById('gsm-deadline-badge');
+            if (dlEl && g.deadline) {
+                const daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
+                if (done) dlEl.innerHTML = `<span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full">Complete 🎉</span>`;
+                else if (daysLeft <= 0) dlEl.innerHTML = `<span class="bg-rose-500/20 text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full">Past due</span>`;
+                else if (daysLeft <= 30) dlEl.innerHTML = `<span class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full">${daysLeft}d left</span>`;
+                else dlEl.innerHTML = `<span class="bg-zinc-800 text-zinc-400 text-[10px] font-bold px-2.5 py-1 rounded-full">~${Math.round(daysLeft/30.5)}mo left</span>`;
+            } else if (dlEl) dlEl.innerHTML = '';
+
+            // Progress bar + label
+            const barEl = document.getElementById('gsm-bar');
+            if (barEl) { barEl.style.width = percent + '%'; barEl.style.background = barColor; }
+            const pctEl = document.getElementById('gsm-percent');
+            if (pctEl) { pctEl.textContent = percent + '%'; pctEl.style.color = barColor; }
+            const progLbl = document.getElementById('gsm-progress-label');
+            if (progLbl) {
+                if (g.type === 'debt') {
+                    progLbl.innerHTML = `<span style="color:#10b981;font-weight:600">${_fmtCurrency(current)} paid</span> <span class="text-zinc-500">of ${_fmtCurrency(g.startBalance || 0)}</span>`;
+                } else {
+                    progLbl.innerHTML = `<span style="color:#10b981;font-weight:600">${_fmtCurrency(current)}</span> <span class="text-zinc-500">of ${_fmtCurrency(target)}</span>`;
+                }
+            }
+
+            // Footer info (monthly needed + linked account)
+            const footerEl = document.getElementById('gsm-footer-info');
+            if (footerEl) {
+                let parts = [];
+                if (!done && g.deadline && target > current) {
+                    const dl = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
+                    if (dl > 0) parts.push(`${_fmtCurrency((target - current) / Math.max(1, dl / 30.5))}/mo needed`);
+                }
+                const acct = g.linkedAccountId ? accounts.find(a => a.id == g.linkedAccountId) : null;
+                if (acct) parts.push(`${acct.emoji || '🏦'} ${acct.name}`);
+                footerEl.innerHTML = parts.map(p => `<span>${p}</span>`).join('');
+            }
+
+            // Linked transactions
+            let linkedTxs = [];
+            const acct = g.linkedAccountId ? accounts.find(a => a.id == g.linkedAccountId) : null;
+            if (acct) {
+                // Show income transactions tagged to the linked account (deposits)
+                linkedTxs = transactions.filter(t => String(t.accountId) === String(g.linkedAccountId))
+                    .sort((a, b) => b.date.localeCompare(a.date));
+            }
+            // For old-style goals with linkedSub, show savings category transactions
+            if (linkedTxs.length === 0 && g.linkedSub) {
+                linkedTxs = transactions
+                    .filter(t => t.type === 'expense' && t.mainCategory === 'Savings' && t.subCategory === g.linkedSub)
+                    .sort((a, b) => b.date.localeCompare(a.date));
+            }
+
+            const txList = document.getElementById('gsm-tx-list');
+            const txEmpty = document.getElementById('gsm-tx-empty');
+            if (txList) {
+                if (linkedTxs.length === 0) {
+                    txList.innerHTML = '';
+                    if (txEmpty) { txEmpty.classList.remove('hidden'); txEmpty.textContent = acct ? 'No transactions linked to this account yet' : 'No linked account — progress tracked manually'; }
+                } else {
+                    if (txEmpty) txEmpty.classList.add('hidden');
+                    txList.innerHTML = linkedTxs.map(t => {
+                        const isInc = t.type === 'income';
+                        const sign = isInc ? '+' : '−';
+                        const col  = isInc ? '#10b981' : '#f87171';
+                        const label = t.desc || (isInc ? t.mainCategory : `${t.mainCategory} · ${t.subCategory}`) || '—';
+                        return `<div class="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3">
+                            <div class="min-w-0">
+                                <div class="text-sm font-medium text-zinc-200 truncate">${label}</div>
+                                <div class="text-[10px] text-zinc-600 mt-0.5">${t.date}</div>
+                            </div>
+                            <div class="font-semibold text-sm tabular-nums ml-3 shrink-0" style="color:${col}">${sign}${_fmtCurrency(t.amount)}</div>
+                        </div>`;
+                    }).join('');
+                }
+            }
+
+            // Show/hide manual progress update panel
+            const manualEl = document.getElementById('gsm-manual-update');
+            if (manualEl) {
+                const isManual = !g.linkedAccountId;
+                manualEl.classList.toggle('hidden', !isManual);
+                if (isManual) {
+                    const amtEl = document.getElementById('gsm-manual-amount');
+                    if (amtEl) amtEl.value = g.currentAmount || '';
+                }
+            }
+
+            document.getElementById('goal-summary-modal').classList.remove('hidden');
+        }
+
+        function _gsmSaveManualProgress() {
+            if (_gsmGoalIdx === null) return;
+            const g = goals[_gsmGoalIdx];
+            if (!g) return;
+            const val = parseFloat(document.getElementById('gsm-manual-amount')?.value);
+            if (isNaN(val) || val < 0) return;
+            g.currentAmount = val;
+            saveData();
+            showGoalSummary(_gsmGoalIdx);
+            renderGoals();
+        }
+
+        function hideGoalSummary() {
+            document.getElementById('goal-summary-modal').classList.add('hidden');
+            _gsmGoalIdx = null;
+        }
+
+        function _goalSumBackdrop(e) {
+            if (e.target === document.getElementById('goal-summary-modal')) hideGoalSummary();
+        }
+
+        function editGoalFromSummary() {
+            const i = _gsmGoalIdx;
+            hideGoalSummary();
+            editGoal(i);
+        }
+
+        function deleteGoalFromSummary() {
+            const i = _gsmGoalIdx;
+            hideGoalSummary();
+            deleteGoal(i);
+        }
+
+        function _pickAccountEmoji() {
+            const picker = document.getElementById('acct-emoji-picker');
+            picker.classList.toggle('hidden');
+        }
+
+        function _pickGoalEmoji() {
+            const picker = document.getElementById('goal-emoji-picker');
+            if (picker) picker.classList.toggle('hidden');
+        }
+
+        function _renderEmojiGrid(gridId, emojis, onSelect) {
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            grid.innerHTML = emojis.map(em =>
+                `<button onclick="_emojiGridPick(this, '${em}')" class="text-xl w-9 h-9 flex items-center justify-center rounded-xl hover:bg-zinc-700 active:scale-90 transition-all">${em}</button>`
+            ).join('');
+            // Store the callback
+            grid._onSelect = onSelect;
+        }
+
+        function _emojiGridPick(btn, em) {
+            const grid = btn.closest('[id$="-grid"]');
+            if (grid && grid._onSelect) grid._onSelect(em);
+        }
+
+        function saveAccount() {
+            const name    = document.getElementById('acct-name').value.trim();
+            const balance = parseFloat(document.getElementById('acct-balance').value) || 0;
+            const note    = document.getElementById('acct-note').value.trim();
+            const inclNW  = document.getElementById('acct-networth').checked;
+            const type    = _selectedAccountType;
+            const emoji   = _acctSelectedEmoji;
+
+            if (!name) return alert('Enter an account name');
+
+            if (_editingAccountId !== null) {
+                const idx = accounts.findIndex(a => a.id === _editingAccountId);
+                if (idx !== -1) {
+                    accounts[idx] = { ...accounts[idx], name, balance, note, type, emoji, includeInNetWorth: inclNW };
+                }
+            } else {
+                accounts.push({ id: Date.now(), name, balance, note, type, emoji, includeInNetWorth: inclNW, createdAt: Date.now() });
+            }
+
+            saveData();
+            hideModal();
+            renderAccounts();
+            _refreshGoalAccountDropdown();
+            _refreshTxAccountDropdown();
+        }
+
+        function deleteAccount(id) {
+            id = parseInt(id);
+            const a = accounts.find(x => x.id === id);
+            if (!a) return;
+            if (!confirm(`Delete "${a.name}"? Goals linked to this account will lose their progress tracking.`)) return;
+            accounts = accounts.filter(x => x.id !== id);
+            // Unlink goals that referenced this account
+            goals.forEach(g => { if (g.linkedAccountId === id) g.linkedAccountId = null; });
+            saveData();
+            hideModal();
+            renderAccounts();
+            renderGoals();
+        }
+
+        function _refreshGoalAccountDropdown() {
+            const sel = document.getElementById('goal-account');
+            if (!sel) return;
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">None (track manually)</option>';
+            accounts.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.id;
+                opt.textContent = `${a.emoji || ''} ${a.name}`;
+                if (a.id == cur) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        function _refreshTxAccountDropdown() {
+            const sel = document.getElementById('tx-account');
+            if (!sel) return;
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">None</option>';
+            accounts.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.id;
+                opt.textContent = `${a.emoji || ''} ${a.name}`;
+                if (a.id == cur) opt.selected = true;
+                sel.appendChild(opt);
+            });
+            const row = document.getElementById('tx-account-row');
+            if (row) row.classList.toggle('hidden', accounts.length === 0);
+        }
 
         function renderOverview() {
             const monthKey  = getCurrentMonthKey();
@@ -1780,7 +2524,7 @@
             }
 
             // ── Recent transactions ────────────────────────────────────
-            const CAT_EMOJI = { Food:'\uD83C\uDF54', Living:'\uD83C\uDFE0', Personal:'\uD83D\uDC64', Health:'\uD83E\uDE7A', Transportation:'\uD83D\uDE97', Debt:'\uD83D\uDCB3' };
+            const CAT_EMOJI = { Food:'\uD83C\uDF54', Living:'\uD83C\uDFE0', Personal:'\uD83D\uDC64', Health:'\uD83E\uDE7A', Transportation:'\uD83D\uDE97', Debt:'\uD83D\uDCB3', Savings:'\uD83C\uDFE6' };
             const recent = transactions.slice()
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 6);
@@ -1993,7 +2737,7 @@
             if (sortLbl) sortLbl.textContent = SORT_LABELS[txSort] || 'Date ↓';
 
             // Filter by type + search query
-            const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳' };
+            const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳', Savings:'🏦' };
             const filtered = sorted.filter(t => {
                 if (txFilter !== 'all' && t.type !== txFilter) return false;
                 if (!q) return true;
@@ -2031,7 +2775,7 @@
         }
 
         function _txRowHTML(t) {
-            const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳' };
+            const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳', Savings:'🏦' };
             const realIdx = transactions.indexOf(t);
             const isInc   = t.type === 'income';
             const isExcl  = !!t.excluded;
@@ -2542,7 +3286,7 @@
                     if (mb[main] && sub in mb[main]) { mb[main][newName] = mb[main][sub]; delete mb[main][sub]; }
                 });
                 transactions.forEach(t => { if (t.mainCategory === main && t.subCategory === sub) t.subCategory = newName; });
-
+                goals.forEach(g => { if (g.linkedSub === sub) { g.linkedSub = newName; } });
                 saveData();
                 renderBudgets();
             }
@@ -2658,7 +3402,7 @@
         const CAT_PALETTE = {
             'Food':'#f59e0b','Living':'#818cf8','Personal':'#c084fc',
             'Health':'#34d399','Transportation':'#38bdf8',
-            'Debt':'#fb923c','Banking':'#94a3b8'
+            'Debt':'#fb923c','Savings':'#a3e635','Banking':'#94a3b8'
         };
         const _FB_COLORS = ['#f87171','#fb923c','#fbbf24','#a3e635','#34d399',
                             '#22d3ee','#818cf8','#c084fc','#f472b6','#e879f9'];
@@ -3175,6 +3919,115 @@
             document.getElementById('history-list').innerHTML = listHTML || '<p class="text-center text-zinc-600 text-sm py-8">No data yet</p>';
         }
 
+        function renderGoals() {
+            const listEl = document.getElementById('goals-list');
+            if (!listEl) return;
+            if (goals.length === 0) {
+                listEl.innerHTML = `<div class="text-center py-12">
+                    <div class="text-5xl mb-3">🎯</div>
+                    <div class="font-semibold text-zinc-400 mb-1">No goals yet</div>
+                    <div class="text-xs text-zinc-600">Tap "New Goal" to start tracking</div>
+                </div>`;
+                return;
+            }
+
+            let html = '';
+            goals.forEach((g, i) => {
+                const prog = calculateGoalProgress(g);
+                const { current, target, percent } = prog;
+                const done = percent >= 100;
+
+                // Progress bar color
+                const barColor = done ? '#10b981' : percent >= 75 ? '#f59e0b' : percent >= 40 ? '#3b82f6' : '#10b981';
+                const glowCls  = done ? 'ring-1 ring-emerald-500/30 shadow-emerald-500/10 shadow-lg' : '';
+
+                // Deadline badge
+                let deadlineBadge = '';
+                if (g.deadline) {
+                    const daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
+                    if (done) {
+                        deadlineBadge = `<span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full">Complete 🎉</span>`;
+                    } else if (daysLeft <= 0) {
+                        deadlineBadge = `<span class="bg-rose-500/20 text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full">Past due</span>`;
+                    } else if (daysLeft <= 30) {
+                        deadlineBadge = `<span class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full">${daysLeft}d left</span>`;
+                    } else {
+                        const mo = Math.round(daysLeft / 30.5);
+                        deadlineBadge = `<span class="bg-zinc-800 text-zinc-400 text-[10px] font-bold px-2.5 py-1 rounded-full">~${mo}mo left</span>`;
+                    }
+                }
+
+                // Monthly contribution needed
+                let moNeeded = '';
+                if (!done && g.deadline && target > current) {
+                    const daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
+                    if (daysLeft > 0) {
+                        const remaining = target - current;
+                        const moLeft = Math.max(1, daysLeft / 30.5);
+                        const perMo = remaining / moLeft;
+                        moNeeded = `<span class="text-[10px] text-zinc-600">${_fmtCurrency(perMo)}/mo needed</span>`;
+                    }
+                }
+
+                // Type badge
+                const typeBadge = g.type === 'debt'
+                    ? `<span class="text-[9px] font-bold tracking-widest uppercase text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full">Pay Off</span>`
+                    : `<span class="text-[9px] font-bold tracking-widest uppercase text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Save Up</span>`;
+
+                // Progress label
+                let progressLabel = '';
+                if (g.type === 'debt') {
+                    const acct = accounts.find(a => a.id === g.linkedAccountId);
+                    const startBal = g.startBalance || 0;
+                    progressLabel = `<span class="text-emerald-400 font-semibold">${_fmtCurrency(current)} paid</span> <span class="text-zinc-600">of ${_fmtCurrency(startBal)}</span>`;
+                } else {
+                    progressLabel = `<span class="text-emerald-400 font-semibold">${_fmtCurrency(current)}</span> <span class="text-zinc-600">of ${_fmtCurrency(target)}</span>`;
+                }
+
+                // Linked badge
+                let linkedBadge = '';
+                if (g.linkedAccountId) {
+                    const acct = accounts.find(a => a.id === g.linkedAccountId);
+                    if (acct) linkedBadge = `<span class="text-[10px] text-zinc-600">${acct.emoji || '🏦'} ${acct.name}</span>`;
+                } else if (g.linkedSub) {
+                    linkedBadge = `<span class="text-[10px] text-zinc-600">📂 ${g.linkedSub}</span>`;
+                } else if (g.type === 'savings') {
+                    linkedBadge = `<span class="text-[10px] text-zinc-600">✏️ Manual</span>`;
+                }
+
+                html += `<div class="bg-zinc-900 rounded-3xl p-5 ${glowCls} cursor-pointer active:scale-[0.98] transition-all" onclick="showGoalSummary(${i})">
+                    <!-- Goal Header -->
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <div class="text-2xl leading-none shrink-0">${g.emoji || '🎯'}</div>
+                            <div class="min-w-0">
+                                <div class="font-semibold text-base leading-tight truncate text-zinc-100">${g.name}</div>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    ${typeBadge}
+                                    ${linkedBadge}
+                                </div>
+                            </div>
+                        </div>
+                        ${deadlineBadge ? `<div class="ml-2 shrink-0">${deadlineBadge}</div>` : ''}
+                    </div>
+
+                    <!-- Progress -->
+                    <div class="mb-2">
+                        <div class="flex justify-between items-baseline mb-1.5">
+                            <div class="text-sm tabular-nums">${progressLabel}</div>
+                            <div class="text-sm font-bold tabular-nums" style="color:${barColor}">${percent}%</div>
+                        </div>
+                        <div class="h-2.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div class="progress-bar h-full rounded-full" style="width:${percent}%;background:${barColor}"></div>
+                        </div>
+                    </div>
+
+                    <!-- Footer: contribution hint only -->
+                    ${moNeeded ? `<div class="mt-3 pt-3 border-t border-zinc-800">${moNeeded}</div>` : ''}
+                </div>`;
+            });
+            listEl.innerHTML = html;
+        }
 
         // ── Tab long-press: set home screen ─────────────────
         let _tabHoldTimer = null;
@@ -3353,6 +4206,7 @@ Transactions using it will stay.`)) {
                 delete itemIcons[`${main}:${sub}`];
                 saveData();
                 renderBudgets();
+                renderGoals();
             }
         }
 
@@ -3509,7 +4363,9 @@ Transactions using it will stay.`)) {
                         transactions.forEach(t => {
                             if (t.mainCategory === _bimMain && t.subCategory === _bimSub) t.subCategory = newName;
                         });
-
+                        goals.forEach(g => {
+                            if (g.linkedSub === _bimSub) { g.linkedSub = newName; }
+                        });
                         if (itemIcons[`${_bimMain}:${_bimSub}`]) {
                             itemIcons[`${_bimMain}:${newName}`] = itemIcons[`${_bimMain}:${_bimSub}`];
                             delete itemIcons[`${_bimMain}:${_bimSub}`];
@@ -3644,6 +4500,7 @@ Transactions using it will stay.`)) {
             saveData();
             closeBudgetItemModal();
             renderBudgets();
+            renderGoals();
         }
 
         function showAddModal() {
@@ -3657,8 +4514,7 @@ Transactions using it will stay.`)) {
             if (txAcct) txAcct.value = '';
             setType('expense');
             updateExcludeUI();
-            _populateAccountDropdown('tx-account');
-            document.getElementById('tx-account').value = '';
+            _refreshTxAccountDropdown();
         }
 
         function updateExcludeUI() {
@@ -3676,7 +4532,13 @@ Transactions using it will stay.`)) {
 
         function hideModal() {
             document.getElementById('add-modal').classList.add('hidden');
+            document.getElementById('goal-modal').classList.add('hidden');
+            document.getElementById('account-modal').classList.add('hidden');
+            document.getElementById('account-summary-modal').classList.add('hidden');
+            document.getElementById('goal-summary-modal').classList.add('hidden');
             _editingTxIdx = null;
+            _editingGoalIdx = null;
+            _editingAccountId = null;
         }
 
         function setType(type) {
@@ -3751,139 +4613,6 @@ Transactions using it will stay.`)) {
             renderTransactions();
             renderBudgets();
             renderAllReports();
-        }
-
-        /* ── Accounts ──────────────────────────────────── */
-
-        const _acctTypes = {
-            checking: { emoji: '🏦', label: 'Checking' },
-            savings:  { emoji: '🏧', label: 'Savings' },
-            credit:   { emoji: '💳', label: 'Credit Card' },
-            cash:     { emoji: '💵', label: 'Cash' },
-        };
-
-        function getAccountBalance(acctId) {
-            const acct = accounts.find(function(a) { return a.id === acctId; });
-            if (!acct) return 0;
-            let bal = acct.startingBalance || 0;
-            transactions.forEach(function(t) {
-                if (t.accountId !== acctId || t.excluded) return;
-                if (t.type === 'income') bal += t.amount;
-                else bal -= t.amount;
-            });
-            return bal;
-        }
-
-        function renderAccounts() {
-            const listEl  = document.getElementById('acct-list');
-            const emptyEl = document.getElementById('acct-empty');
-            const nwEl    = document.getElementById('acct-net-worth');
-            const nwBdEl  = document.getElementById('acct-net-breakdown');
-
-            _populateAccountDropdown('tx-account');
-            _populateAccountDropdown('import-account-sel');
-            const importRow = document.getElementById('import-account-row');
-            if (importRow) importRow.classList.toggle('hidden', accounts.length === 0);
-
-            if (accounts.length === 0) {
-                if (listEl)  listEl.innerHTML = '';
-                if (emptyEl) emptyEl.classList.remove('hidden');
-                if (nwEl)    nwEl.textContent = '$0.00';
-                if (nwBdEl)  nwBdEl.textContent = '';
-                return;
-            }
-            if (emptyEl) emptyEl.classList.add('hidden');
-
-            let assets = 0, liabilities = 0;
-            accounts.forEach(function(a) {
-                const bal = getAccountBalance(a.id);
-                if (a.type === 'credit') liabilities += Math.max(0, -bal);
-                else assets += bal;
-            });
-            const netWorth = assets - liabilities;
-            if (nwEl) {
-                nwEl.textContent = (netWorth < 0 ? '-' : '') + '$' + Math.abs(netWorth).toFixed(2);
-                nwEl.className = 'text-3xl font-semibold ' + (netWorth < 0 ? 'text-rose-400' : 'text-zinc-100');
-            }
-            if (nwBdEl) {
-                nwBdEl.textContent = (assets > 0 || liabilities > 0)
-                    ? 'Assets $' + assets.toFixed(2) + '  ·  Liabilities $' + liabilities.toFixed(2)
-                    : '';
-            }
-            if (listEl) {
-                listEl.innerHTML = accounts.map(function(a) {
-                    const bal  = getAccountBalance(a.id);
-                    const info = _acctTypes[a.type] || { emoji: '🏦', label: a.type };
-                    const balColor = a.type === 'credit'
-                        ? (bal < 0 ? 'text-rose-400' : 'text-emerald-400')
-                        : (bal >= 0 ? 'text-zinc-100' : 'text-rose-400');
-                    return '<div class="bg-zinc-900 rounded-3xl px-5 py-4 flex items-center gap-4 cursor-pointer active:opacity-70 transition-opacity" onclick="showAccountModal(' + a.id + ')">'
-                        + '<div class="w-11 h-11 rounded-2xl bg-zinc-800 flex items-center justify-center text-xl shrink-0">' + info.emoji + '</div>'
-                        + '<div class="flex-1 min-w-0">'
-                        + '<div class="font-semibold text-sm text-zinc-100 truncate">' + _escHtml(a.name) + '</div>'
-                        + '<div class="text-xs text-zinc-500 mt-0.5">' + info.label + '</div>'
-                        + '</div>'
-                        + '<div class="text-right shrink-0">'
-                        + '<div class="font-semibold text-sm ' + balColor + '">' + (bal < 0 ? '-' : '') + '$' + Math.abs(bal).toFixed(2) + '</div>'
-                        + '</div>'
-                        + '</div>';
-                }).join('');
-            }
-        }
-
-        function _populateAccountDropdown(selectId) {
-            const sel = document.getElementById(selectId);
-            if (!sel) return;
-            const cur = sel.value;
-            sel.innerHTML = '<option value="">\u2014 No Account \u2014</option>'
-                + accounts.map(function(a) {
-                    const info = _acctTypes[a.type] || { emoji: '🏦', label: a.type };
-                    return '<option value="' + a.id + '">' + info.emoji + ' ' + _escHtml(a.name) + '</option>';
-                }).join('');
-            if (cur) sel.value = cur;
-        }
-
-        let _editingAcctId = null;
-
-        function showAccountModal(acctId) {
-            _editingAcctId = acctId || null;
-            const acct = acctId ? accounts.find(function(a) { return a.id === acctId; }) : null;
-            document.getElementById('acct-modal-title').textContent = acct ? 'Edit Account' : 'New Account';
-            document.getElementById('acct-name-input').value = acct ? acct.name : '';
-            document.getElementById('acct-type-sel').value  = acct ? acct.type : 'checking';
-            document.getElementById('acct-bal-input').value  = acct ? (acct.startingBalance || '') : '';
-            document.getElementById('acct-delete-btn').classList.toggle('hidden', !acct);
-            document.getElementById('account-modal').classList.remove('hidden');
-            setTimeout(function() { document.getElementById('acct-name-input').focus(); }, 50);
-        }
-
-        function _closeAccountModal() {
-            document.getElementById('account-modal').classList.add('hidden');
-            _editingAcctId = null;
-        }
-
-        function saveAccount() {
-            const name = document.getElementById('acct-name-input').value.trim();
-            if (!name) { alert('Enter an account name'); return; }
-            const type = document.getElementById('acct-type-sel').value;
-            const startingBalance = parseFloat(document.getElementById('acct-bal-input').value) || 0;
-            if (_editingAcctId) {
-                const idx = accounts.findIndex(function(a) { return a.id === _editingAcctId; });
-                if (idx !== -1) accounts[idx] = Object.assign({}, accounts[idx], { name, type, startingBalance });
-            } else {
-                accounts.push({ id: Date.now(), name: name, type: type, startingBalance: startingBalance });
-            }
-            saveData();
-            _closeAccountModal();
-            renderAccounts();
-        }
-
-        function deleteAccount(id) {
-            if (!confirm('Delete this account? Transactions will be kept but unlinked from it.')) return;
-            accounts = accounts.filter(function(a) { return a.id !== id; });
-            transactions.forEach(function(t) { if (t.accountId === id) delete t.accountId; });
-            saveData();
-            _closeAccountModal();
             renderAccounts();
         }
 
@@ -3912,9 +4641,17 @@ Transactions using it will stay.`)) {
             }
             const saveBtn = document.getElementById('save-transaction-btn');
             if (saveBtn) saveBtn.textContent = t.type === 'income' ? 'Update Income' : 'Update Expense';
-            _populateAccountDropdown('tx-account');
-            const acctSel = document.getElementById('tx-account');
-            if (acctSel) acctSel.value = t.accountId ? String(t.accountId) : '';
+            _refreshTxAccountDropdown();
+            const txAcct = document.getElementById('tx-account');
+            if (txAcct) txAcct.value = t.accountId || '';
+        }
+
+        function _adjustAccountBal(accountId, type, amount, reverse) {
+            if (!accountId) return;
+            const acct = accounts.find(a => a.id == accountId);
+            if (!acct) return;
+            const sign = (type === 'income' ? 1 : -1) * (reverse ? -1 : 1);
+            acct.balance = Math.round(((acct.balance || 0) + sign * parseFloat(amount)) * 100) / 100;
         }
 
         function addTransaction() {
@@ -3940,8 +4677,8 @@ Transactions using it will stay.`)) {
                 trans.subCategory  = '';
             }
 
-            const acctSel = document.getElementById('tx-account');
-            if (acctSel && acctSel.value) trans.accountId = parseInt(acctSel.value);
+            // Capture old transaction BEFORE modifying the array
+            const oldTx = _editingTxIdx !== null ? transactions[_editingTxIdx] : null;
 
             if (_editingTxIdx !== null) {
                 trans.id = oldTx.id;
@@ -3964,6 +4701,162 @@ Transactions using it will stay.`)) {
             _showUndo(index);
         }
 
+        function _setGoalType(type) {
+            _goalType = type;
+            const savBtn = document.getElementById('goal-type-savings');
+            const dbtBtn = document.getElementById('goal-type-debt');
+
+            // Style active / inactive buttons via inline style (avoids Tailwind JIT issues)
+            [savBtn, dbtBtn].forEach(function(btn) {
+                if (!btn) return;
+                btn.style.borderColor = '';
+                btn.style.backgroundColor = '';
+            });
+            const activeBtn = type === 'savings' ? savBtn : dbtBtn;
+            const inactiveBtn = type === 'savings' ? dbtBtn : savBtn;
+            if (activeBtn) { activeBtn.style.borderColor = '#10b981'; activeBtn.style.backgroundColor = 'rgba(16,185,129,0.10)'; }
+            if (inactiveBtn) { inactiveBtn.style.borderColor = '#3f3f46'; inactiveBtn.style.backgroundColor = 'rgba(39,39,42,0.5)'; }
+
+            const targetRow   = document.getElementById('goal-target-row');
+            const categoryRow = document.getElementById('goal-category-row');
+            const lbl = document.getElementById('goal-account-label');
+            const opt = document.getElementById('goal-account-optional');
+
+            if (type === 'savings') {
+                if (targetRow)   targetRow.classList.remove('hidden');
+                if (categoryRow) categoryRow.classList.remove('hidden');
+                if (lbl) lbl.textContent = 'Link to Account';
+                if (opt) opt.classList.remove('hidden');
+            } else {
+                if (targetRow)   targetRow.classList.add('hidden');
+                if (categoryRow) categoryRow.classList.add('hidden');
+                if (lbl) lbl.textContent = 'Debt Account';
+                if (opt) opt.classList.add('hidden');
+            }
+            _updateGoalCurrentRow();
+        }
+
+        function _updateGoalCurrentRow() {
+            const row = document.getElementById('goal-current-row');
+            if (!row) return;
+            const acctVal = document.getElementById('goal-account')?.value || '';
+            const show = _goalType === 'savings' && !acctVal;
+            row.classList.toggle('hidden', !show);
+        }
+
+        function showAddGoalModal() {
+            _editingGoalIdx = null;
+            _goalSelectedEmoji = '🎯';
+            _goalType = 'savings';
+
+            document.getElementById('goal-modal-title').textContent = 'New Goal';
+            document.getElementById('goal-modal-subtitle').textContent = 'Set a target and track your progress';
+            document.getElementById('goal-save-btn').textContent = 'Create Goal';
+            document.getElementById('goal-modal-emoji-btn').textContent = '🎯';
+            document.getElementById('goal-name').value = '';
+            document.getElementById('goal-target').value = '';
+            document.getElementById('goal-deadline').value = '';
+            const curEl = document.getElementById('goal-current');
+            if (curEl) curEl.value = '';
+
+            // Populate account dropdown
+            _refreshGoalAccountDropdown();
+            const acctSel = document.getElementById('goal-account');
+            if (acctSel) acctSel.onchange = _updateGoalCurrentRow;
+
+            // Populate emoji grid
+            _renderEmojiGrid('goal-emoji-grid', GOAL_EMOJIS, (em) => {
+                _goalSelectedEmoji = em;
+                document.getElementById('goal-modal-emoji-btn').textContent = em;
+                document.getElementById('goal-emoji-picker').classList.add('hidden');
+            });
+
+            _setGoalType('savings');
+            document.getElementById('goal-emoji-picker').classList.add('hidden');
+            document.getElementById('goal-modal').classList.remove('hidden');
+        }
+
+        function editGoal(i) {
+            const g = goals[i];
+            if (!g) return;
+            _editingGoalIdx = i;
+            _goalSelectedEmoji = g.emoji || '🎯';
+            _goalType = g.type || 'savings';
+
+            document.getElementById('goal-modal-title').textContent = 'Edit Goal';
+            document.getElementById('goal-modal-subtitle').textContent = 'Update your target or deadline';
+            document.getElementById('goal-save-btn').textContent = 'Save Changes';
+            document.getElementById('goal-modal-emoji-btn').textContent = _goalSelectedEmoji;
+            document.getElementById('goal-name').value = g.name || '';
+            document.getElementById('goal-target').value = g.target || '';
+            document.getElementById('goal-deadline').value = g.deadline || '';
+            const curEl = document.getElementById('goal-current');
+            if (curEl) curEl.value = g.currentAmount || '';
+
+            _refreshGoalAccountDropdown();
+            const acctSel = document.getElementById('goal-account');
+            if (acctSel) {
+                acctSel.value = g.linkedAccountId || '';
+                acctSel.onchange = _updateGoalCurrentRow;
+            }
+
+            _renderEmojiGrid('goal-emoji-grid', GOAL_EMOJIS, (em) => {
+                _goalSelectedEmoji = em;
+                document.getElementById('goal-modal-emoji-btn').textContent = em;
+                document.getElementById('goal-emoji-picker').classList.add('hidden');
+            });
+
+            _setGoalType(_goalType);
+            document.getElementById('goal-emoji-picker').classList.add('hidden');
+            document.getElementById('goal-modal').classList.remove('hidden');
+        }
+
+        function saveGoal() {
+            const name     = document.getElementById('goal-name').value.trim();
+            const target   = parseFloat(document.getElementById('goal-target').value) || 0;
+            const deadline = document.getElementById('goal-deadline').value || null;
+            const linkedAccountId = document.getElementById('goal-account')?.value || null;
+            const currentAmount = parseFloat(document.getElementById('goal-current')?.value) || 0;
+            const emoji    = _goalSelectedEmoji;
+            const type     = _goalType;
+
+            if (!name) return alert('Enter a goal name');
+            if (type === 'savings' && !target) return alert('Enter a target amount');
+            if (type === 'debt' && !linkedAccountId) return alert('Select a debt account to track');
+
+            const goalData = {
+                name, emoji, type,
+                target: type === 'savings' ? target : 0,
+                deadline,
+                linkedAccountId: linkedAccountId || null,
+                currentAmount,
+            };
+
+            if (_editingGoalIdx !== null) {
+                goals[_editingGoalIdx] = { ...goals[_editingGoalIdx], ...goalData };
+            } else {
+                const acct = accounts.find(a => a.id == linkedAccountId);
+                goalData.id = Date.now();
+                goalData.createdAt = Date.now();
+                if (type === 'debt' && acct) goalData.startBalance = acct.balance;
+                goals.push(goalData);
+            }
+
+            saveData();
+            hideModal();
+            renderGoals();
+        }
+
+        // Legacy compatibility: addGoal() now calls saveGoal()
+        function addGoal() { saveGoal(); }
+
+        function deleteGoal(index) {
+            if (confirm("Delete this goal?")) {
+                goals.splice(index, 1);
+                saveData();
+                renderGoals();
+            }
+        }
 
         /* ── Settings modal ─────────────────────────────── */
         function showDataModal() {
@@ -4010,7 +4903,8 @@ Transactions using it will stay.`)) {
             const catCount = Object.values(expenseCategories).reduce((s, arr) => s + arr.length, 0);
             const stats = [
                 ['Transactions', transactions.length,  '#10b981'],
-                ['Budget Items', catCount,              '#10b981'],
+                ['Accounts',     accounts.length,       '#10b981'],
+                ['Goals',        goals.length,          '#10b981'],
             ];
             el.innerHTML = stats.map(([label, val, color]) => `
                 <div class="bg-zinc-900 rounded-2xl py-3 px-3 text-center">
@@ -4251,14 +5145,16 @@ Transactions using it will stay.`)) {
         function deleteIncomeType(i)     { deleteCatItem('Income', i); }
 
         function clearAllData() {
-            if (!confirm('Reset app to factory defaults?\nThis clears ALL transactions, budgets and categories — and restores the default category list.\nThis cannot be undone.')) return;
+            if (!confirm('Reset app to factory defaults?\nThis clears ALL transactions, goals, accounts, budgets and categories — and restores the default category list.\nThis cannot be undone.')) return;
             // Full factory reset: wipe everything and restore defaults
             transactions      = [];
+            goals             = [];
+            accounts          = [];
             monthlyBudgets    = {};
             expenseCategories = {...defaultCategories};
             _syncIncomeCats();
             // Wipe localStorage completely for this app
-            ['transactions','monthlyBudgets','expenseCategories','incomeCats','tutDone']
+            ['transactions','goals','accounts','monthlyBudgets','expenseCategories','incomeCats','tutDone']
                 .forEach(function(k) { localStorage.removeItem(k); });
             // Delete from Firestore if signed in
             const user = _fbAuth ? _fbAuth.currentUser : null;
@@ -4276,6 +5172,8 @@ Transactions using it will stay.`)) {
                 transactions,
                 expenseCategories,
                 monthlyBudgets,
+                goals,
+                accounts,
                 exportedAt: new Date().toISOString()
             };
             const filename = `Minimal-Budget-Backup-${new Date().toISOString().slice(0,10)}.json`;
@@ -4297,6 +5195,8 @@ Transactions using it will stay.`)) {
                     if (imported.transactions) transactions = imported.transactions;
                     if (imported.expenseCategories) expenseCategories = imported.expenseCategories;
                     if (imported.monthlyBudgets) monthlyBudgets = imported.monthlyBudgets;
+                    if (imported.goals) goals = imported.goals;
+                    if (imported.accounts) accounts = imported.accounts;
                     saveData();
                     alert("Backup restored successfully!");
                     hideDataModal();
@@ -4315,10 +5215,12 @@ Transactions using it will stay.`)) {
             const prefs = JSON.parse(localStorage.getItem('notifPrefs') || '{}');
             const masterEl  = document.getElementById('notif-master');
             const budgetEl  = document.getElementById('notif-budget');
+            const goalsEl   = document.getElementById('notif-goals');
             const monthlyEl = document.getElementById('notif-monthly');
             const master = prefs.master !== false;
             if (masterEl)  masterEl.checked  = master;
             if (budgetEl)  budgetEl.checked  = prefs.budget  !== false;
+            if (goalsEl)   goalsEl.checked   = prefs.goals   !== false;
             if (monthlyEl) monthlyEl.checked = prefs.monthly !== false;
             // Dim sub-items if master off
             const body = document.getElementById('notif-acc-body');
@@ -4330,6 +5232,7 @@ Transactions using it will stay.`)) {
             const prefs = {
                 master,
                 budget:  document.getElementById('notif-budget')?.checked  ?? true,
+                goals:   document.getElementById('notif-goals')?.checked   ?? true,
                 monthly: document.getElementById('notif-monthly')?.checked ?? true,
             };
             localStorage.setItem('notifPrefs', JSON.stringify(prefs));
@@ -4369,6 +5272,21 @@ Transactions using it will stay.`)) {
                 });
             }
 
+            // Goal milestones
+            if (prefs.goals !== false) {
+                goals.forEach(g => {
+                    const { percent } = calculateGoalProgress(g);
+                    const key50   = `milestone_50_${g.id}`;
+                    const key100  = `milestone_100_${g.id}`;
+                    if (percent >= 100 && !sessionStorage.getItem(key100)) {
+                        sessionStorage.setItem(key100, '1');
+                        showToast(`🎉 Goal complete: ${g.name}!`, 'emerald');
+                    } else if (percent >= 50 && !sessionStorage.getItem(key50)) {
+                        sessionStorage.setItem(key50, '1');
+                        showToast(`🏆 Halfway there on ${g.name}!`, 'emerald');
+                    }
+                });
+            }
         }
 
         function showToast(msg, color) {
@@ -5337,12 +6255,8 @@ Transactions using it will stay.`)) {
             const toImport = _importParsed.filter(function(t) { return !t.isDup; });
             if (toImport.length === 0) { closeBankImport(); return; }
 
-            const importAcctSel = document.getElementById('import-account-sel');
-            const importAcctId = importAcctSel && importAcctSel.value ? parseInt(importAcctSel.value) : null;
-
             toImport.slice().reverse().forEach(function(t) {
                 const base = { id: Date.now() + Math.random(), amount: t.amount, date: t.date, desc: t.desc };
-                if (importAcctId) base.accountId = importAcctId;
                 if (t.type === 'excluded') {
                     transactions.unshift(Object.assign(base, { type: 'expense', excluded: true, mainCategory: '', subCategory: '' }));
                 } else if (t.type === 'income') {
@@ -5361,7 +6275,7 @@ Transactions using it will stay.`)) {
         /* ══════════════════════════════════════════════
            TUTORIAL
         ══════════════════════════════════════════════ */
-        const TUT_TOTAL = 6;
+        const TUT_TOTAL = 7;
         let _tutIdx = 0;
 
         function tutOpen() {
@@ -5612,6 +6526,8 @@ Transactions using it will stay.`)) {
             _demoMode = true;
             // Load fresh default state — no localStorage, no Firestore
             transactions      = [];
+            goals             = [];
+            accounts          = [];
             monthlyBudgets    = {};
             expenseCategories = {...defaultCategories};
             incomeCats        = ["Salary","Freelance","Investments","Gifts","Other"];
@@ -5630,6 +6546,8 @@ Transactions using it will stay.`)) {
             _updateDemoBannerPadding();
             // Clear any changes made in demo mode then go back to auth
             transactions      = [];
+            goals             = [];
+            accounts          = [];
             monthlyBudgets    = {};
             expenseCategories = {...defaultCategories};
             incomeCats        = ["Salary","Freelance","Investments","Gifts","Other"];
@@ -5821,6 +6739,41 @@ Transactions using it will stay.`)) {
                 </svg>
                 <h2 class="text-2xl font-semibold tracking-tight text-white mb-3">Budgets</h2>
                 <p class="text-zinc-400 text-sm leading-relaxed" style="max-width:18rem">Set monthly limits per category.<br>Budgets glow <span class="text-emerald-400 font-medium">green</span> when on-track, <span class="text-amber-400 font-medium">amber</span> when tight, and <span class="text-rose-400 font-medium">red</span> when over-budget.<br>Simply tap any budget to edit.</p>
+            </div>
+
+            <!-- ── SLIDE 4 · Goals ────────────────────── -->
+            <div class="tut-slide" id="tut-4">
+                <svg width="220" height="160" viewBox="0 0 220 160" fill="none" class="mb-8">
+                    <!-- Goal 1 -->
+                    <rect x="20" y="8" width="180" height="64" rx="16" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+                    <!-- Arc -->
+                    <circle cx="62" cy="40" r="24" stroke="#27272a" stroke-width="4.5"/>
+                    <circle cx="62" cy="40" r="24" stroke="#10b981" stroke-width="4.5"
+                            stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="45.2"
+                            transform="rotate(-90 62 40)"/>
+                    <text x="62" y="45" text-anchor="middle" font-size="10" fill="#10b981" font-family="system-ui,sans-serif" font-weight="700">70%</text>
+                    <!-- Info -->
+                    <text x="100" y="33" font-size="10" fill="#f4f4f5" font-family="system-ui,sans-serif" font-weight="600">Emergency Fund</text>
+                    <text x="100" y="47" font-size="9" fill="#10b981" font-family="system-ui,sans-serif">$7,000 <tspan fill="#52525b">/ $10,000</tspan></text>
+                    <rect x="100" y="55" width="88" height="3" rx="1.5" fill="#27272a"/>
+                    <rect x="100" y="55" width="62" height="3" rx="1.5" fill="#10b981"/>
+                    <!-- Goal 2 — nearly done -->
+                    <rect x="20" y="88" width="180" height="64" rx="16" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+                    <circle cx="62" cy="120" r="24" stroke="#27272a" stroke-width="4.5"/>
+                    <circle cx="62" cy="120" r="24" stroke="#f59e0b" stroke-width="4.5"
+                            stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="22.6"
+                            transform="rotate(-90 62 120)"/>
+                    <text x="62" y="125" text-anchor="middle" font-size="10" fill="#f59e0b" font-family="system-ui,sans-serif" font-weight="700">85%</text>
+                    <text x="100" y="113" font-size="10" fill="#f4f4f5" font-family="system-ui,sans-serif" font-weight="600">New Laptop</text>
+                    <text x="100" y="127" font-size="9" fill="#10b981" font-family="system-ui,sans-serif">$1,700 <tspan fill="#52525b">/ $2,000</tspan></text>
+                    <rect x="100" y="135" width="88" height="3" rx="1.5" fill="#27272a"/>
+                    <rect x="100" y="135" width="75" height="3" rx="1.5" fill="#f59e0b"/>
+                    <!-- countdown badge -->
+                    <rect x="162" y="104" width="34" height="13" rx="6.5" fill="rgba(245,158,11,.15)"/>
+                    <text x="179" y="114" text-anchor="middle" font-size="7.5" fill="#fbbf24" font-family="system-ui,sans-serif" font-weight="700">30d left</text>
+                </svg>
+                <h2 class="text-2xl font-semibold tracking-tight text-white mb-3">Goals</h2>
+                <p class="text-zinc-400 text-sm leading-relaxed" style="max-width:17rem">Create a savings Goal to help you track your progress towards a major expense or fund. You got this!</p>
             </div>
 
 
@@ -6111,65 +7064,12 @@ Transactions using it will stay.`)) {
             <!-- Transaction review list -->
             <div id="import-review-list" class="flex-1 overflow-y-auto px-5 py-3"></div>
 
-            <!-- Footer: account selector + confirm button -->
+            <!-- Footer: confirm button -->
             <div class="px-5 pb-8 pt-3 shrink-0 border-t border-zinc-800">
-                <div id="import-account-row" class="hidden mb-3">
-                    <label class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase block mb-1.5">Import to Account</label>
-                    <select id="import-account-sel" class="w-full bg-zinc-800 text-sm text-zinc-100 rounded-xl px-3 py-2.5 focus:outline-none cursor-pointer">
-                        <option value="">— No Account —</option>
-                    </select>
-                </div>
                 <button id="import-confirm-btn" onclick="confirmBankImport()"
                     class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl transition-all text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
                 </button>
             </div>
 
-        </div>
-    </div>
-
-    <!-- ACCOUNT MODAL -->
-    <div id="account-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[200]" onclick="if(event.target===this)_closeAccountModal()">
-        <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl max-h-[80vh] overflow-auto">
-            <!-- Drag handle -->
-            <div class="flex justify-center pt-3 pb-0">
-                <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
-            </div>
-            <!-- Header -->
-            <div class="flex items-center justify-between px-5 pt-4 pb-2">
-                <h2 id="acct-modal-title" class="font-semibold text-base">New Account</h2>
-                <button onclick="_closeAccountModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors text-lg leading-none">×</button>
-            </div>
-            <!-- Fields -->
-            <div class="mx-5 mt-3 rounded-3xl overflow-hidden bg-zinc-800/60">
-                <!-- Name -->
-                <div class="px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account Name</div>
-                    <input id="acct-name-input" type="text" placeholder="e.g. RBC Chequing"
-                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
-                </div>
-                <!-- Type -->
-                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account Type</div>
-                    <select id="acct-type-sel" class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer">
-                        <option value="checking">🏦 Checking</option>
-                        <option value="savings">🏧 Savings</option>
-                        <option value="credit">💳 Credit Card</option>
-                        <option value="cash">💵 Cash</option>
-                    </select>
-                </div>
-                <!-- Starting balance -->
-                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Starting Balance</div>
-                    <input id="acct-bal-input" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
-                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
-                    <p class="text-[11px] text-zinc-600 mt-1">The balance before your tracked transactions. Current balance = this + all tagged transactions.</p>
-                </div>
-            </div>
-            <!-- Actions -->
-            <div class="px-5 pt-4 pb-10 space-y-2">
-                <button onclick="saveAccount()" class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-3xl font-semibold text-base transition-colors">Save Account</button>
-                <button id="acct-delete-btn" onclick="deleteAccount(_editingAcctId)" class="hidden w-full py-3 text-sm text-rose-400 hover:text-rose-300 transition-colors">Delete Account</button>
-                <button onclick="_closeAccountModal()" class="w-full py-3 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">Cancel</button>
-            </div>
         </div>
     </div>
