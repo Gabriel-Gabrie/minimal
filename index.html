@@ -299,6 +299,16 @@
                     <!-- home dot — visible when this is the launch tab -->
                     <span id="home-dot-3" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
                 </button>
+                <!-- Accounts -->
+                <button
+                    onclick="_tabTap(4)"
+                    onmousedown="_tabHoldStart(4, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
+                    ontouchstart="_tabHoldStart(4, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
+                    id="tab-4" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h2M13 15h4"/></svg>
+                    <span>Accounts</span>
+                    <span id="home-dot-4" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
+                </button>
 
 
             </div>
@@ -639,6 +649,34 @@
         </div>
 
 
+        <!-- ACCOUNTS -->
+        <div id="screen-4" class="hidden pb-28 overflow-y-auto">
+            <!-- Net Worth header -->
+            <div class="px-5 pt-6 pb-4">
+                <p class="text-[9px] font-black tracking-widest uppercase text-zinc-500 mb-1">Net Worth</p>
+                <div id="acct-net-worth" class="text-3xl font-semibold text-zinc-100">$0.00</div>
+                <div id="acct-net-breakdown" class="text-xs text-zinc-500 mt-1"></div>
+            </div>
+
+            <!-- Account list -->
+            <div id="acct-list" class="px-5 space-y-3"></div>
+
+            <!-- Empty state -->
+            <div id="acct-empty" class="hidden px-5 pt-10 text-center">
+                <div class="text-5xl mb-4">🏦</div>
+                <p class="font-semibold text-zinc-300 mb-1">No accounts yet</p>
+                <p class="text-sm text-zinc-500">Add your bank accounts and credit cards to track balances and tag transactions.</p>
+            </div>
+
+            <!-- Add account button -->
+            <div class="px-5 mt-5">
+                <button onclick="showAccountModal()" class="w-full flex items-center justify-center gap-2 py-4 rounded-3xl border border-zinc-700 border-dashed text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors text-sm font-medium">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                    Add Account
+                </button>
+            </div>
+        </div>
+
         <!-- Floating Add -->
         <button onclick="showAddModal()" class="fixed bottom-8 right-8 w-16 h-16 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-5xl shadow-2xl z-50">+</button>
     </div>
@@ -727,6 +765,16 @@
                         <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
                     </div>
                 </label>
+            </div>
+
+            <!-- Account (optional) -->
+            <div id="tx-account-row" class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-6">
+                <div class="px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account</div>
+                    <select id="tx-account" class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer">
+                        <option value="">— No Account —</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Actions -->
@@ -1105,6 +1153,7 @@
         let transactions = [];
         let expenseCategories = {};
         let monthlyBudgets = {};
+        let accounts = [];
 
         let currentType = 'expense';
         let selectedBudgetMonth = "";
@@ -1177,7 +1226,7 @@
         function saveData() {
             if (_demoMode) return; // never persist demo data
             const snap = {
-                transactions, expenseCategories, monthlyBudgets, itemIcons
+                transactions, expenseCategories, monthlyBudgets, itemIcons, accounts
                 // incomeCats is now derived from expenseCategories['Income'] — not saved separately
             };
             // Always write to localStorage as offline cache
@@ -1201,6 +1250,7 @@
 
             transactions      = d.transactions      || [];
             itemIcons         = d.itemIcons         || {};
+            accounts          = d.accounts          || [];
             incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
             selectedBudgetMonth = getCurrentMonthKey();
 
@@ -1242,6 +1292,7 @@
 
                 transactions:      JSON.parse(localStorage.getItem('transactions')),
                 itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
+                accounts:          JSON.parse(localStorage.getItem('accounts')),
                 incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
             });
         }
@@ -2919,7 +2970,7 @@
             active.classList.add('tab-active');
             active.classList.remove('text-zinc-500');
             active.classList.add('text-white');
-            [renderOverview, renderTransactions, renderBudgets, renderReports][n]?.();
+            [renderOverview, renderTransactions, renderBudgets, renderReports, renderAccounts][n]?.();
         }
 
         function prevBudgetMonth() {
@@ -3356,6 +3407,8 @@ Transactions using it will stay.`)) {
             if (excl) excl.checked = false;
             setType('expense');
             updateExcludeUI();
+            _populateAccountDropdown('tx-account');
+            document.getElementById('tx-account').value = '';
         }
 
         function updateExcludeUI() {
@@ -3450,6 +3503,140 @@ Transactions using it will stay.`)) {
             renderAllReports();
         }
 
+        /* ── Accounts ──────────────────────────────────── */
+
+        const _acctTypes = {
+            checking: { emoji: '🏦', label: 'Checking' },
+            savings:  { emoji: '🏧', label: 'Savings' },
+            credit:   { emoji: '💳', label: 'Credit Card' },
+            cash:     { emoji: '💵', label: 'Cash' },
+        };
+
+        function getAccountBalance(acctId) {
+            const acct = accounts.find(function(a) { return a.id === acctId; });
+            if (!acct) return 0;
+            let bal = acct.startingBalance || 0;
+            transactions.forEach(function(t) {
+                if (t.accountId !== acctId || t.excluded) return;
+                if (t.type === 'income') bal += t.amount;
+                else bal -= t.amount;
+            });
+            return bal;
+        }
+
+        function renderAccounts() {
+            const listEl  = document.getElementById('acct-list');
+            const emptyEl = document.getElementById('acct-empty');
+            const nwEl    = document.getElementById('acct-net-worth');
+            const nwBdEl  = document.getElementById('acct-net-breakdown');
+
+            _populateAccountDropdown('tx-account');
+            _populateAccountDropdown('import-account-sel');
+            const importRow = document.getElementById('import-account-row');
+            if (importRow) importRow.classList.toggle('hidden', accounts.length === 0);
+
+            if (accounts.length === 0) {
+                if (listEl)  listEl.innerHTML = '';
+                if (emptyEl) emptyEl.classList.remove('hidden');
+                if (nwEl)    nwEl.textContent = '$0.00';
+                if (nwBdEl)  nwBdEl.textContent = '';
+                return;
+            }
+            if (emptyEl) emptyEl.classList.add('hidden');
+
+            let assets = 0, liabilities = 0;
+            accounts.forEach(function(a) {
+                const bal = getAccountBalance(a.id);
+                if (a.type === 'credit') liabilities += Math.max(0, -bal);
+                else assets += bal;
+            });
+            const netWorth = assets - liabilities;
+            if (nwEl) {
+                nwEl.textContent = (netWorth < 0 ? '-' : '') + '$' + Math.abs(netWorth).toFixed(2);
+                nwEl.className = 'text-3xl font-semibold ' + (netWorth < 0 ? 'text-rose-400' : 'text-zinc-100');
+            }
+            if (nwBdEl) {
+                nwBdEl.textContent = (assets > 0 || liabilities > 0)
+                    ? 'Assets $' + assets.toFixed(2) + '  ·  Liabilities $' + liabilities.toFixed(2)
+                    : '';
+            }
+            if (listEl) {
+                listEl.innerHTML = accounts.map(function(a) {
+                    const bal  = getAccountBalance(a.id);
+                    const info = _acctTypes[a.type] || { emoji: '🏦', label: a.type };
+                    const balColor = a.type === 'credit'
+                        ? (bal < 0 ? 'text-rose-400' : 'text-emerald-400')
+                        : (bal >= 0 ? 'text-zinc-100' : 'text-rose-400');
+                    return '<div class="bg-zinc-900 rounded-3xl px-5 py-4 flex items-center gap-4 cursor-pointer active:opacity-70 transition-opacity" onclick="showAccountModal(' + a.id + ')">'
+                        + '<div class="w-11 h-11 rounded-2xl bg-zinc-800 flex items-center justify-center text-xl shrink-0">' + info.emoji + '</div>'
+                        + '<div class="flex-1 min-w-0">'
+                        + '<div class="font-semibold text-sm text-zinc-100 truncate">' + _escHtml(a.name) + '</div>'
+                        + '<div class="text-xs text-zinc-500 mt-0.5">' + info.label + '</div>'
+                        + '</div>'
+                        + '<div class="text-right shrink-0">'
+                        + '<div class="font-semibold text-sm ' + balColor + '">' + (bal < 0 ? '-' : '') + '$' + Math.abs(bal).toFixed(2) + '</div>'
+                        + '</div>'
+                        + '</div>';
+                }).join('');
+            }
+        }
+
+        function _populateAccountDropdown(selectId) {
+            const sel = document.getElementById(selectId);
+            if (!sel) return;
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">\u2014 No Account \u2014</option>'
+                + accounts.map(function(a) {
+                    const info = _acctTypes[a.type] || { emoji: '🏦', label: a.type };
+                    return '<option value="' + a.id + '">' + info.emoji + ' ' + _escHtml(a.name) + '</option>';
+                }).join('');
+            if (cur) sel.value = cur;
+        }
+
+        let _editingAcctId = null;
+
+        function showAccountModal(acctId) {
+            _editingAcctId = acctId || null;
+            const acct = acctId ? accounts.find(function(a) { return a.id === acctId; }) : null;
+            document.getElementById('acct-modal-title').textContent = acct ? 'Edit Account' : 'New Account';
+            document.getElementById('acct-name-input').value = acct ? acct.name : '';
+            document.getElementById('acct-type-sel').value  = acct ? acct.type : 'checking';
+            document.getElementById('acct-bal-input').value  = acct ? (acct.startingBalance || '') : '';
+            document.getElementById('acct-delete-btn').classList.toggle('hidden', !acct);
+            document.getElementById('account-modal').classList.remove('hidden');
+            setTimeout(function() { document.getElementById('acct-name-input').focus(); }, 50);
+        }
+
+        function _closeAccountModal() {
+            document.getElementById('account-modal').classList.add('hidden');
+            _editingAcctId = null;
+        }
+
+        function saveAccount() {
+            const name = document.getElementById('acct-name-input').value.trim();
+            if (!name) { alert('Enter an account name'); return; }
+            const type = document.getElementById('acct-type-sel').value;
+            const startingBalance = parseFloat(document.getElementById('acct-bal-input').value) || 0;
+            if (_editingAcctId) {
+                const idx = accounts.findIndex(function(a) { return a.id === _editingAcctId; });
+                if (idx !== -1) accounts[idx] = Object.assign({}, accounts[idx], { name, type, startingBalance });
+            } else {
+                accounts.push({ id: Date.now(), name: name, type: type, startingBalance: startingBalance });
+            }
+            saveData();
+            _closeAccountModal();
+            renderAccounts();
+        }
+
+        function deleteAccount(id) {
+            if (!confirm('Delete this account? Transactions will be kept but unlinked from it.')) return;
+            accounts = accounts.filter(function(a) { return a.id !== id; });
+            transactions.forEach(function(t) { if (t.accountId === id) delete t.accountId; });
+            saveData();
+            _closeAccountModal();
+            renderAccounts();
+        }
+
         function openEditTx(idx) {
             const t = transactions[idx];
             if (!t) return;
@@ -3475,6 +3662,9 @@ Transactions using it will stay.`)) {
             }
             const saveBtn = document.getElementById('save-transaction-btn');
             if (saveBtn) saveBtn.textContent = t.type === 'income' ? 'Update Income' : 'Update Expense';
+            _populateAccountDropdown('tx-account');
+            const acctSel = document.getElementById('tx-account');
+            if (acctSel) acctSel.value = t.accountId ? String(t.accountId) : '';
         }
 
         function addTransaction() {
@@ -3497,6 +3687,9 @@ Transactions using it will stay.`)) {
                 trans.mainCategory = document.getElementById('income-cat').value;
                 trans.subCategory  = '';
             }
+
+            const acctSel = document.getElementById('tx-account');
+            if (acctSel && acctSel.value) trans.accountId = parseInt(acctSel.value);
 
             if (_editingTxIdx !== null) {
                 trans.id = transactions[_editingTxIdx].id;
@@ -3938,7 +4131,7 @@ Transactions using it will stay.`)) {
         }
 
         /* ── Launch screen preference ───────────────────── */
-        const LAUNCH_TABS = ['Overview', 'Transactions', 'Budgets', 'Reports'];
+        const LAUNCH_TABS = ['Overview', 'Transactions', 'Budgets', 'Reports', 'Accounts'];
 
         function getLaunchTab() {
             return parseInt(localStorage.getItem('launchTab') || '0', 10);
@@ -4887,8 +5080,12 @@ Transactions using it will stay.`)) {
             const toImport = _importParsed.filter(function(t) { return !t.isDup; });
             if (toImport.length === 0) { closeBankImport(); return; }
 
+            const importAcctSel = document.getElementById('import-account-sel');
+            const importAcctId = importAcctSel && importAcctSel.value ? parseInt(importAcctSel.value) : null;
+
             toImport.slice().reverse().forEach(function(t) {
                 const base = { id: Date.now() + Math.random(), amount: t.amount, date: t.date, desc: t.desc };
+                if (importAcctId) base.accountId = importAcctId;
                 if (t.type === 'excluded') {
                     transactions.unshift(Object.assign(base, { type: 'expense', excluded: true, mainCategory: '', subCategory: '' }));
                 } else if (t.type === 'income') {
@@ -5657,12 +5854,65 @@ Transactions using it will stay.`)) {
             <!-- Transaction review list -->
             <div id="import-review-list" class="flex-1 overflow-y-auto px-5 py-3"></div>
 
-            <!-- Footer: confirm button -->
+            <!-- Footer: account selector + confirm button -->
             <div class="px-5 pb-8 pt-3 shrink-0 border-t border-zinc-800">
+                <div id="import-account-row" class="hidden mb-3">
+                    <label class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase block mb-1.5">Import to Account</label>
+                    <select id="import-account-sel" class="w-full bg-zinc-800 text-sm text-zinc-100 rounded-xl px-3 py-2.5 focus:outline-none cursor-pointer">
+                        <option value="">— No Account —</option>
+                    </select>
+                </div>
                 <button id="import-confirm-btn" onclick="confirmBankImport()"
                     class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl transition-all text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
                 </button>
             </div>
 
+        </div>
+    </div>
+
+    <!-- ACCOUNT MODAL -->
+    <div id="account-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[200]" onclick="if(event.target===this)_closeAccountModal()">
+        <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl max-h-[80vh] overflow-auto">
+            <!-- Drag handle -->
+            <div class="flex justify-center pt-3 pb-0">
+                <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
+            </div>
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 pt-4 pb-2">
+                <h2 id="acct-modal-title" class="font-semibold text-base">New Account</h2>
+                <button onclick="_closeAccountModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors text-lg leading-none">×</button>
+            </div>
+            <!-- Fields -->
+            <div class="mx-5 mt-3 rounded-3xl overflow-hidden bg-zinc-800/60">
+                <!-- Name -->
+                <div class="px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account Name</div>
+                    <input id="acct-name-input" type="text" placeholder="e.g. RBC Chequing"
+                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
+                </div>
+                <!-- Type -->
+                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account Type</div>
+                    <select id="acct-type-sel" class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer">
+                        <option value="checking">🏦 Checking</option>
+                        <option value="savings">🏧 Savings</option>
+                        <option value="credit">💳 Credit Card</option>
+                        <option value="cash">💵 Cash</option>
+                    </select>
+                </div>
+                <!-- Starting balance -->
+                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Starting Balance</div>
+                    <input id="acct-bal-input" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
+                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
+                    <p class="text-[11px] text-zinc-600 mt-1">The balance before your tracked transactions. Current balance = this + all tagged transactions.</p>
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="px-5 pt-4 pb-10 space-y-2">
+                <button onclick="saveAccount()" class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-3xl font-semibold text-base transition-colors">Save Account</button>
+                <button id="acct-delete-btn" onclick="deleteAccount(_editingAcctId)" class="hidden w-full py-3 text-sm text-rose-400 hover:text-rose-300 transition-colors">Delete Account</button>
+                <button onclick="_closeAccountModal()" class="w-full py-3 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">Cancel</button>
+            </div>
         </div>
     </div>
