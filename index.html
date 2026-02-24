@@ -613,12 +613,12 @@
                         <svg id="rchev-spendBreak" class="w-4 h-4 text-zinc-600 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
                     </button>
                     <div id="rcard-spendBreak">
-                        <!-- Category / Budget Item toggle -->
+                        <!-- Section / Category toggle -->
                         <div class="flex bg-zinc-800 rounded-2xl p-1 mx-4 mb-3">
                             <button onclick="setBreakdownMode('category')" id="bmode-category"
-                                class="flex-1 py-1.5 rounded-xl text-xs font-semibold transition-all bg-zinc-700 text-white">By Category</button>
+                                class="flex-1 py-1.5 rounded-xl text-xs font-semibold transition-all bg-zinc-700 text-white">By Section</button>
                             <button onclick="setBreakdownMode('item')" id="bmode-item"
-                                class="flex-1 py-1.5 rounded-xl text-xs font-semibold transition-all text-zinc-500">By Budget Item</button>
+                                class="flex-1 py-1.5 rounded-xl text-xs font-semibold transition-all text-zinc-500">By Category</button>
                         </div>
                         <div class="px-4 pb-2">
                             <canvas id="rchart-spendBreak"></canvas>
@@ -714,8 +714,8 @@
                 <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
             </div>
 
-            <!-- Expense / Income toggle -->
-            <div class="grid grid-cols-2 mx-5 mt-5 rounded-2xl overflow-hidden bg-zinc-800">
+            <!-- Expense / Income / Transfer toggle -->
+            <div class="grid grid-cols-3 mx-5 mt-5 rounded-2xl overflow-hidden bg-zinc-800" id="type-toggle-bar">
                 <button onclick="setType('expense')" id="type-expense"
                         class="flex flex-col items-center gap-1 py-4 transition-colors">
                     <span class="text-xl font-semibold leading-none">−</span>
@@ -725,6 +725,11 @@
                         class="flex flex-col items-center gap-1 py-4 transition-colors">
                     <span class="text-xl font-semibold leading-none">+</span>
                     <span class="text-xs font-semibold tracking-widest uppercase">Income</span>
+                </button>
+                <button onclick="setType('transfer')" id="type-transfer"
+                        class="flex flex-col items-center gap-1 py-4 transition-colors text-zinc-500">
+                    <span class="text-xl font-semibold leading-none">⇄</span>
+                    <span class="text-xs font-semibold tracking-widest uppercase">Transfer</span>
                 </button>
             </div>
 
@@ -748,12 +753,12 @@
                 <!-- Expense fields -->
                 <div id="expense-fields">
                     <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Category</div>
+                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Section</div>
                         <select id="main-cat" onchange="updateSubOptions()"
                                 class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
                     </div>
                     <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Budget Item</div>
+                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Category</div>
                         <select id="sub-cat"
                                 class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
                     </div>
@@ -764,6 +769,23 @@
                     <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Income Type</div>
                     <select id="income-cat"
                             class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                </div>
+
+                <!-- Transfer fields -->
+                <div id="transfer-fields" class="hidden">
+                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">From Account</div>
+                        <select id="transfer-from"
+                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                    </div>
+                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
+                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">To Account</div>
+                        <select id="transfer-to"
+                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                    </div>
+                    <div id="transfer-budget-info" class="hidden px-5 pb-3">
+                        <div class="text-[10px] text-zinc-600 leading-relaxed"></div>
+                    </div>
                 </div>
             </div>
 
@@ -777,7 +799,7 @@
             </div>
 
             <!-- Exclude toggle -->
-            <div class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-6">
+            <div id="exclude-toggle-wrap" class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-6">
                 <label class="flex items-center justify-between px-5 py-4 cursor-pointer">
                     <div>
                         <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-0.5">Exclude from Budget &amp; Reports</div>
@@ -807,7 +829,7 @@
 
 
 
-    <!-- BUDGET ITEM MODAL (transaction summary + inline editing) -->
+    <!-- BUDGET CATEGORY MODAL (transaction summary + inline editing) -->
     <div id="budget-item-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-50" onclick="_bimBackdrop(event)">
         <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
             <!-- drag handle -->
@@ -853,7 +875,7 @@
                 <!-- Delete -->
                 <button id="bim-delete-btn" onclick="deleteBudgetItemFromModal()"
                         class="w-full py-3.5 rounded-2xl text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all">
-                    Delete Item
+                    Delete Category
                 </button>
             </div>
         </div>
@@ -873,7 +895,7 @@
                     </div>
                     <div class="min-w-0 flex-1">
                         <div class="text-[10px] text-zinc-600 uppercase tracking-widest font-semibold mb-1" id="aim-cat-label"></div>
-                        <input id="aim-name-input" type="text" placeholder="Item name…"
+                        <input id="aim-name-input" type="text" placeholder="Category name…"
                             class="w-full bg-zinc-900 border border-emerald-500 rounded-xl px-3 py-2 text-sm font-semibold text-zinc-100 focus:outline-none mb-2">
                         <div class="flex items-baseline gap-1 cursor-pointer" onclick="_aimFocusAmount()">
                             <span class="text-[11px] text-zinc-600">Planned:</span>
@@ -895,7 +917,7 @@
                 <!-- Add button -->
                 <button onclick="_aimConfirm()"
                     class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all">
-                    Add Item
+                    Add Category
                 </button>
                 <button onclick="closeAddItemModal()"
                     class="mt-3 w-full py-2.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors">
@@ -925,7 +947,7 @@
                             <svg width="17" height="17" fill="none" stroke="#a78bfa" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                         </div>
                         <div class="flex-1 text-left">
-                            <div class="font-semibold text-sm">Edit Categories</div>
+                            <div class="font-semibold text-sm">Edit Sections</div>
                             <div id="cat-editor-count" class="text-[11px] text-zinc-500 mt-0.5"></div>
                         </div>
                         <svg id="cat-editor-chevron" class="acc-chevron w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
@@ -937,7 +959,7 @@
                                 <div class="w-7 h-7 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
                                     <svg class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                                 </div>
-                                <span class="text-sm text-zinc-500 group-hover:text-emerald-400 transition-colors">Add category</span>
+                                <span class="text-sm text-zinc-500 group-hover:text-emerald-400 transition-colors">Add section</span>
                             </button>
                         </div>
                     </div>
@@ -994,7 +1016,7 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="font-semibold text-sm">Budget Alerts</div>
-                                <div class="text-[11px] text-zinc-500 mt-0.5">Warn when a category exceeds its budget</div>
+                                <div class="text-[11px] text-zinc-500 mt-0.5">Warn when a budget category exceeds its limit</div>
                             </div>
                             <label class="tog-wrap"><input type="checkbox" id="notif-budget" onchange="saveNotifSettings()"><span class="tog-track"></span></label>
                         </div>
@@ -1184,7 +1206,7 @@
         let _editingTxIdx = null;
 
 
-        let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Debt":"💳","Banking":"🏛️" };
+        let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Banking":"🏛️","Saving":"🐷","Debt":"💳" };
         let itemIcons = {}; // keyed "main:sub", e.g. "Food:Groceries" → "🛒"
         let _bimMain = null, _bimSub = null, _bimSelectedIcon = null;
         let _balLegendOpen = false;
@@ -1199,8 +1221,6 @@
             "Transportation": ["Car Payment", "Auto Insurance", "Gas/Charging", "Maintenance", "Parking/Tolls"],
             "Health":         ["Supplements", "Medical", "Training"],
             "Banking":        ["Bank Fees", "Transfers", "Cash Withdrawal"],
-            "Debt":           ["Student Loans"],
-
         };
 
         const defaultItemIcons = {
@@ -1229,8 +1249,6 @@
             "Banking:Bank Fees":          "🏦",
             "Banking:Transfers":          "💸",
             "Banking:Cash Withdrawal":    "💵",
-            "Debt:Student Loans":         "🎓",
-
         };
 
         /* ── Persistence helpers ─────────────────────── */
@@ -1389,6 +1407,84 @@
                 .reduce((s, t) => s + parseFloat(t.amount), 0);
         }
 
+        /* ── Transfer budget helpers ──────────────────────────────── */
+
+        // Get account type from wallet by id
+        function _getAccType(id) {
+            const a = walletAccounts.find(x => x.id === id);
+            return a ? a.type : null;
+        }
+        function _getAccById(id) {
+            return walletAccounts.find(x => x.id === id) || null;
+        }
+
+        // Calculate net amount transferred TO a saving/debt account in a given month
+        // Positive = money going into saving/debt (expense-like)
+        // Negative = money pulled back from saving/debt (negative expense)
+        function _calculateTransferToAccount(monthKey, accountId) {
+            return transactions
+                .filter(t => t.type === 'transfer' && t.date.startsWith(monthKey))
+                .reduce((sum, t) => {
+                    const fromType = _getAccType(t.fromAccountId);
+                    const toType   = _getAccType(t.toAccountId);
+                    if (!fromType || !toType) return sum;
+                    // spending → saving/debt: destination = this account → positive
+                    if (fromType === 'spending' && (toType === 'saving' || toType === 'debt') && t.toAccountId === accountId) {
+                        return sum + parseFloat(t.amount);
+                    }
+                    // saving/debt → spending: source = this account → negative
+                    if ((fromType === 'saving' || fromType === 'debt') && toType === 'spending' && t.fromAccountId === accountId) {
+                        return sum - parseFloat(t.amount);
+                    }
+                    return sum;
+                }, 0);
+        }
+
+        // Total savings/debt payments in a month (for overview: expenses + savings)
+        function _calculateTotalSavingsInMonth(monthKey) {
+            return transactions
+                .filter(t => t.type === 'transfer' && t.date.startsWith(monthKey))
+                .reduce((sum, t) => {
+                    const fromType = _getAccType(t.fromAccountId);
+                    const toType   = _getAccType(t.toAccountId);
+                    if (!fromType || !toType) return sum;
+                    // spending → saving/debt counts as positive (outflow from budget)
+                    if (fromType === 'spending' && (toType === 'saving' || toType === 'debt')) {
+                        return sum + parseFloat(t.amount);
+                    }
+                    // saving/debt → spending counts as negative (inflow back to budget)
+                    if ((fromType === 'saving' || fromType === 'debt') && toType === 'spending') {
+                        return sum - parseFloat(t.amount);
+                    }
+                    return sum;
+                }, 0);
+        }
+
+        // All-time total savings (no month filter)
+        function _calculateTotalSavingsAllTime() {
+            return transactions
+                .filter(t => t.type === 'transfer')
+                .reduce((sum, t) => {
+                    const fromType = _getAccType(t.fromAccountId);
+                    const toType   = _getAccType(t.toAccountId);
+                    if (!fromType || !toType) return sum;
+                    if (fromType === 'spending' && (toType === 'saving' || toType === 'debt'))
+                        return sum + parseFloat(t.amount);
+                    if ((fromType === 'saving' || fromType === 'debt') && toType === 'spending')
+                        return sum - parseFloat(t.amount);
+                    return sum;
+                }, 0);
+        }
+
+        // Check if a transfer is excluded from budget (same-type transfer)
+        function _isTransferExcluded(t) {
+            if (t.type !== 'transfer') return false;
+            const fromType = _getAccType(t.fromAccountId);
+            const toType   = _getAccType(t.toAccountId);
+            if (!fromType || !toType) return true;
+            return fromType === toType;
+        }
+
 
         function renderOverview() {
             const monthKey  = getCurrentMonthKey();
@@ -1399,17 +1495,21 @@
             const daysLeft  = daysInMo - todayDay;
 
             // ── Totals ────────────────────────────────────────────────
-            const mExp = calculateSpentInMonth(monthKey);
+            const mExpPure = calculateSpentInMonth(monthKey);
+            const mSavings = _calculateTotalSavingsInMonth(monthKey);
+            const mExp = mExpPure + Math.max(0, mSavings);  // expenses + savings outflow
             const mInc = transactions
                 .filter(t => t.type === 'income' && !t.excluded && t.date.startsWith(monthKey))
                 .reduce((s, t) => s + parseFloat(t.amount), 0);
 
+            const _allTimeSav = _calculateTotalSavingsAllTime();
             const allExp = transactions.filter(t => t.type === 'expense' && !t.excluded)
-                .reduce((s, t) => s + parseFloat(t.amount), 0);
+                .reduce((s, t) => s + parseFloat(t.amount), 0)
+                + Math.max(0, _allTimeSav);
             const allInc = transactions.filter(t => t.type === 'income' && !t.excluded)
                 .reduce((s, t) => s + parseFloat(t.amount), 0);
 
-            // Budget this month — exclude Income category from expense pace
+            // Budget this month — exclude Income section from expense pace, include Saving/Debt
             const mb = monthlyBudgets[monthKey] || {};
             let totalBudget = 0;
             Object.entries(mb).forEach(([cat, items]) => {
@@ -1434,15 +1534,25 @@
             if (incEl) incEl.textContent = '$' + Math.round(mInc);
             if (expEl) expEl.textContent = '$' + Math.round(mExp);
 
-            // ── Build cumulative daily spending array ──────────────────
+            // ── Build cumulative daily spending array (includes savings outflows) ──
             const cumActual = [];
             let running = 0;
             for (let d = 1; d <= daysInMo; d++) {
                 if (d <= todayDay) {
                     const dayStr = `${monthKey}-${String(d).padStart(2, '0')}`;
+                    // Regular expenses
                     running += transactions
                         .filter(t => t.type === 'expense' && !t.excluded && t.date === dayStr)
                         .reduce((s, t) => s + parseFloat(t.amount), 0);
+                    // Transfer outflows (spending→saving/debt) minus inflows (saving/debt→spending)
+                    running += transactions
+                        .filter(t => t.type === 'transfer' && t.date === dayStr)
+                        .reduce((s, t) => {
+                            const ft = _getAccType(t.fromAccountId), tt = _getAccType(t.toAccountId);
+                            if (ft === 'spending' && (tt === 'saving' || tt === 'debt')) return s + parseFloat(t.amount);
+                            if ((ft === 'saving' || ft === 'debt') && tt === 'spending') return s - parseFloat(t.amount);
+                            return s;
+                        }, 0);
                     cumActual.push(parseFloat(running.toFixed(2)));
                 } else {
                     cumActual.push(null);
@@ -1559,12 +1669,24 @@
             let html = '';
             recent.forEach(t => {
                 const isInc  = t.type === 'income';
-                const bar    = isInc ? '#10b981' : '#f43f5e';
-                const emoji  = isInc ? '\uD83D\uDCB0' : (CAT_EMOJI[t.mainCategory] || '\uD83D\uDCB8');
-                const amtCls = isInc ? 'text-emerald-400' : 'text-rose-400';
-                const sign   = isInc ? '+' : '\u2212';
-                const title  = t.desc || (t.mainCategory + (t.subCategory ? ' \u00B7 ' + t.subCategory : ''));
-                const meta   = t.desc ? (t.mainCategory + (t.subCategory ? ' \u00B7 ' + t.subCategory : '')) : t.date;
+                const isTrf  = t.type === 'transfer';
+                let bar, emoji, amtCls, sign, title, meta;
+                if (isTrf) {
+                    const fA = _getAccById(t.fromAccountId), tA = _getAccById(t.toAccountId);
+                    bar    = '#0ea5e9';
+                    emoji  = '🔄';
+                    amtCls = 'text-sky-400';
+                    sign   = '⇄';
+                    title  = t.desc || ((fA ? fA.name : '?') + ' → ' + (tA ? tA.name : '?'));
+                    meta   = (fA ? fA.name : '?') + ' → ' + (tA ? tA.name : '?');
+                } else {
+                    bar    = isInc ? '#10b981' : '#f43f5e';
+                    emoji  = isInc ? '\uD83D\uDCB0' : (CAT_EMOJI[t.mainCategory] || '\uD83D\uDCB8');
+                    amtCls = isInc ? 'text-emerald-400' : 'text-rose-400';
+                    sign   = isInc ? '+' : '\u2212';
+                    title  = t.desc || (t.mainCategory + (t.subCategory ? ' \u00B7 ' + t.subCategory : ''));
+                    meta   = t.desc ? (t.mainCategory + (t.subCategory ? ' \u00B7 ' + t.subCategory : '')) : t.date;
+                }
                 html += `<div class="flex items-stretch bg-zinc-900 rounded-2xl overflow-hidden">
                     <div style="width:3px;background:${bar};flex-shrink:0;margin:8px 0 8px 8px;border-radius:2px"></div>
                     <div class="flex items-center w-10 shrink-0 justify-center text-lg">${emoji}</div>
@@ -1681,7 +1803,7 @@
         /* ── Filter / search helpers ─────────────────────── */
         function setTxFilter(f) { txFilter = f; renderTransactions(); }
         function cycleTxFilter() {
-            const order = ['all', 'expense', 'income'];
+            const order = ['all', 'expense', 'income', 'transfer'];
             txFilter = order[(order.indexOf(txFilter) + 1) % order.length];
             renderTransactions();
         }
@@ -1691,17 +1813,17 @@
             renderTransactions();
         }
 
-        function _updatePills(nAll, nExp, nInc) {
-            const LABELS = { all: 'All', expense: 'Exp', income: 'Inc' };
-            const COUNTS = { all: nAll, expense: nExp, income: nInc };
+        function _updatePills(nAll, nExp, nInc, nTrf) {
+            const LABELS = { all: 'All', expense: 'Exp', income: 'Inc', transfer: 'Trf' };
             const btn = document.getElementById('tx-filter-btn');
             const lbl = document.getElementById('tx-filter-label');
             if (lbl) lbl.textContent = LABELS[txFilter] || 'All';
             if (btn) {
                 const activeClass =
-                    txFilter === 'expense' ? 'bg-rose-500/20 text-rose-400' :
-                    txFilter === 'income'  ? 'bg-emerald-500/20 text-emerald-400' :
-                                            'bg-zinc-900 text-zinc-400 hover:bg-zinc-800';
+                    txFilter === 'expense'  ? 'bg-rose-500/20 text-rose-400' :
+                    txFilter === 'income'   ? 'bg-emerald-500/20 text-emerald-400' :
+                    txFilter === 'transfer' ? 'bg-sky-500/20 text-sky-400' :
+                                              'bg-zinc-900 text-zinc-400 hover:bg-zinc-800';
                 btn.className = 'shrink-0 flex items-center gap-1 px-3 py-3 rounded-2xl text-xs font-semibold transition-colors ' + activeClass;
             }
         }
@@ -1749,9 +1871,9 @@
             if (clr) clr.classList.toggle('hidden', !q);
 
             // Pill counts (this month only)
-            let nAll = 0, nExp = 0, nInc = 0;
-            monthTx.forEach(t => { nAll++; t.type === 'expense' ? nExp++ : nInc++; });
-            _updatePills(nAll, nExp, nInc);
+            let nAll = 0, nExp = 0, nInc = 0, nTrf = 0;
+            monthTx.forEach(t => { nAll++; if (t.type === 'transfer') nTrf++; else if (t.type === 'expense') nExp++; else nInc++; });
+            _updatePills(nAll, nExp, nInc, nTrf);
 
             // Sort
             const sorted = monthTx.slice().sort((a, b) => {
@@ -1806,13 +1928,28 @@
             const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳' };
             const realIdx = transactions.indexOf(t);
             const isInc   = t.type === 'income';
+            const isTrf   = t.type === 'transfer';
             const isExcl  = !!t.excluded;
-            const bar     = isExcl ? '#3f3f46' : isInc ? '#10b981' : '#f43f5e';
-            const amtCls  = isExcl ? 'text-zinc-600 line-through' : isInc ? 'text-emerald-400' : 'text-rose-400';
-            const sign    = isInc ? '+' : '−';
-            const emoji   = isExcl ? '🚫' : isInc ? '💰' : (CAT_EMOJI[t.mainCategory] || '💸');
-            const title   = t.desc || (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : ''));
-            const meta    = isExcl ? 'Excluded from budget' : (t.desc ? (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : '')) : '');
+
+            let bar, amtCls, sign, emoji, title, meta;
+            if (isTrf) {
+                const fromAcc = _getAccById(t.fromAccountId);
+                const toAcc   = _getAccById(t.toAccountId);
+                bar     = '#0ea5e9'; // sky
+                amtCls  = _isTransferExcluded(t) ? 'text-zinc-600' : 'text-sky-400';
+                sign    = '⇄';
+                emoji   = '🔄';
+                title   = t.desc || ((fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?'));
+                meta    = (fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?');
+                if (_isTransferExcluded(t)) meta += ' · Excluded';
+            } else {
+                bar     = isExcl ? '#3f3f46' : isInc ? '#10b981' : '#f43f5e';
+                amtCls  = isExcl ? 'text-zinc-600 line-through' : isInc ? 'text-emerald-400' : 'text-rose-400';
+                sign    = isInc ? '+' : '−';
+                emoji   = isExcl ? '🚫' : isInc ? '💰' : (CAT_EMOJI[t.mainCategory] || '💸');
+                title   = t.desc || (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : ''));
+                meta    = isExcl ? 'Excluded from budget' : (t.desc ? (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : '')) : '');
+            }
             return `<div class="tx-item mb-1.5" data-index="${realIdx}">
                 <div class="tx-content flex items-stretch" onclick="openEditTx(${realIdx})" style="cursor:pointer">
                     <div style="width:3px;background:${bar};border-radius:2px 0 0 2px;flex-shrink:0;margin:8px 0 8px 8px"></div>
@@ -1957,6 +2094,14 @@
                     monthlyBudgets[monthKey][cat][item] = 0;
                 });
             });
+            // Include dynamic Saving/Debt sections
+            ['Saving', 'Debt'].forEach(secType => {
+                const accs = walletAccounts.filter(a => a.type === secType.toLowerCase());
+                if (accs.length) {
+                    monthlyBudgets[monthKey][secType] = {};
+                    accs.forEach(acc => { monthlyBudgets[monthKey][secType][acc.name] = 0; });
+                }
+            });
             saveData();
             renderBudgets();
         }
@@ -2054,6 +2199,12 @@
                     expBudgeted += (monthBudgets[cat] || {})[item] || 0;
                 });
             });
+            // Include dynamic Saving/Debt section budgets
+            ['Saving', 'Debt'].forEach(secType => {
+                walletAccounts.filter(a => a.type === secType.toLowerCase()).forEach(acc => {
+                    expBudgeted += (monthBudgets[secType] || {})[acc.name] || 0;
+                });
+            });
             const balance = incomePlanned - expBudgeted;
             const balPct  = incomePlanned > 0 ? Math.min(100, Math.round(expBudgeted / incomePlanned * 100)) : 0;
             const isBalanced  = Math.abs(balance) < 5;
@@ -2084,8 +2235,16 @@
                         cat,
                         catBudget: expenseCategories[cat].reduce((s, item) => s + ((monthBudgets[cat]||{})[item]||0), 0)
                     }))
-                    .filter(x => x.catBudget > 0 && incomePlanned > 0)
-                    .sort((a, b) => b.catBudget - a.catBudget);
+                    .filter(x => x.catBudget > 0 && incomePlanned > 0);
+                // Add dynamic Saving/Debt to donut
+                ['Saving', 'Debt'].forEach(secType => {
+                    const secBudget = walletAccounts.filter(a => a.type === secType.toLowerCase())
+                        .reduce((s, acc) => s + ((monthBudgets[secType]||{})[acc.name]||0), 0);
+                    if (secBudget > 0 && incomePlanned > 0) {
+                        catEntries.push({ cat: secType, catBudget: secBudget });
+                    }
+                });
+                catEntries.sort((a, b) => b.catBudget - a.catBudget);
 
                 // Assign shades: rank 0 (largest) = lightest, rank N-1 (smallest) = darkest
                 const numCats = catEntries.length;
@@ -2137,7 +2296,7 @@
                     ? `<p style="font-size:11px;color:#52525b;line-height:1.6">Set a planned<br>income amount<br>to get started.</p>`
                     : `<div style="display:flex;flex-direction:column;gap:12px">
                         <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Expected Income</div><div style="font-size:14px;font-weight:700;color:#34d399;font-variant-numeric:tabular-nums">$${Math.round(incomePlanned)}</div></div>
-                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Planned Expenses</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${Math.round(expBudgeted)}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Planned Outflows</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${Math.round(expBudgeted)}</div></div>
                         <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${isBalanced ? 'Balanced' : balance >= 0 ? 'Left to Budget' : 'Over Income'}</div><div style="font-size:14px;font-weight:700;color:${cAmtFill};font-variant-numeric:tabular-nums">$${Math.round(Math.abs(balance))}</div></div>
                        </div>`;
 
@@ -2263,7 +2422,93 @@
                 html += `</div></div>`;
             });
 
-            document.getElementById('budgets-list').innerHTML = html || '<p class="text-center text-zinc-600 text-sm py-10">No categories yet</p>';
+            // ── Dynamic Saving & Debt sections (driven by wallet accounts) ──
+            ['Saving', 'Debt'].forEach(secType => {
+                const wType = secType.toLowerCase();  // 'saving' or 'debt'
+                const accs = walletAccounts.filter(a => a.type === wType);
+                if (!accs.length) return;
+
+                const isDebt = wType === 'debt';
+                const R = 28, CX = 36, CY = 36;
+                const CIRC = 2 * Math.PI * R;
+
+                html += `<div class="mb-5">`;
+                html += `<div class="flex items-center gap-2 px-1 mb-3">
+                    <span class="text-lg">${mainEmojis[secType] || '📂'}</span>
+                    <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase">${secType}</span>
+                </div>`;
+                html += `<div class="grid grid-cols-3 gap-3">`;
+
+                accs.forEach(acc => {
+                    const sub = acc.name;
+                    monthBudgets[secType] = monthBudgets[secType] || {};
+                    const budget = monthBudgets[secType][sub] || 0;
+                    const actual = _calculateTransferToAccount(selectedBudgetMonth, acc.id);
+                    const pct = budget > 0 ? actual / budget * 100 : 0;
+                    const donutColor = _budgetItemColor(pct, false);
+                    const icon = acc.icon || (isDebt ? '💳' : '🐷');
+                    const mEsc = secType.replace(/'/g,"\\'");
+                    const sEsc = sub.replace(/'/g,"\\'");
+
+                    if (_budgetViewMode === 'plan') {
+                        const planAmtText = budget === 0 ? 'Set amount' : `$${Math.round(budget)}`;
+                        const planAmtCls  = budget === 0 ? 'text-zinc-600' : 'text-zinc-300';
+                        html += `<div class="bg-zinc-900 rounded-3xl p-3 flex flex-col items-center cursor-pointer active:scale-95 transition-transform select-none"
+                                     onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
+                            <div class="text-[36px] leading-none mb-2 mt-1">${icon}</div>
+                            <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-1 w-full truncate px-1">${sub}</div>
+                            <div class="text-[12px] font-bold text-center ${planAmtCls} w-full truncate px-1"
+                                 onclick="event.stopPropagation();_bimInlinePlanAmount('${mEsc}','${sEsc}',this)">${planAmtText}</div>
+                        </div>`;
+                    } else {
+                        const dashFill = Math.min(pct / 100, 1) * CIRC;
+                        const arcSVG = dashFill > 0
+                            ? `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${donutColor}" stroke-width="8"
+                                stroke-dasharray="${dashFill.toFixed(2)} ${(CIRC - dashFill).toFixed(2)}"
+                                stroke-linecap="round" transform="rotate(-90 ${CX} ${CY})"/>`
+                            : '';
+                        let centerTxt, centerColor;
+                        if (budget === 0) {
+                            centerTxt = '—'; centerColor = '#52525b';
+                        } else {
+                            const left = budget - actual;
+                            centerTxt  = left >= 0 ? `$${Math.round(left)}` : `-$${Math.round(-left)}`;
+                            centerColor = donutColor;
+                        }
+                        let amtLabel, amtCls;
+                        if (budget === 0) {
+                            amtLabel = 'No budget'; amtCls = 'text-zinc-600';
+                        } else {
+                            amtLabel = `$${Math.round(actual)} / $${Math.round(budget)}`;
+                            amtCls = 'text-zinc-500';
+                        }
+                        html += `<div class="bg-zinc-900 rounded-3xl p-3 flex flex-col items-center cursor-pointer active:scale-95 transition-transform select-none"
+                                     onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
+                            <div class="relative mb-2" style="width:72px;height:72px">
+                                <svg width="72" height="72" viewBox="0 0 72 72">
+                                    <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#27272a" stroke-width="8"/>
+                                    ${arcSVG}
+                                    <text x="${CX}" y="${CY+5}" text-anchor="middle" fill="${centerColor}" font-size="10" font-weight="700" font-family="system-ui,sans-serif">${centerTxt}</text>
+                                </svg>
+                            </div>
+                            <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-0.5 w-full truncate px-1">${sub}</div>
+                            <div class="text-[11px] text-center ${amtCls} w-full truncate px-1">${amtLabel}</div>
+                        </div>`;
+                    }
+                });
+
+                // Add account card (redirects to wallet)
+                html += `<button onclick="switchTab(4);showWalletAddModal();setWalletType('${wType}')" class="bg-zinc-900/40 border border-dashed border-zinc-800 hover:border-emerald-500/40 rounded-3xl p-3 flex flex-col items-center justify-center active:scale-95 transition-all">
+                    <div class="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center mb-1.5">
+                        <svg class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                    </div>
+                    <div class="text-[11px] text-zinc-600">Add Account</div>
+                </button>`;
+
+                html += `</div></div>`;
+            });
+
+            document.getElementById('budgets-list').innerHTML = html || '<p class="text-center text-zinc-600 text-sm py-10">No sections yet</p>';
             attachBudgetItemListeners();
             attachBudgetSwipe();
             // Show/hide footer and view toggle
@@ -2526,7 +2771,7 @@
             return transactions.filter(t => t.type === 'income' && !t.excluded && t.date.startsWith(m))
                 .reduce((s,t) => s + parseFloat(t.amount), 0);
         }
-        function _getExp(m) { return calculateSpentInMonth(m); }
+        function _getExp(m) { return calculateSpentInMonth(m) + Math.max(0, _calculateTotalSavingsInMonth(m)); }
 
         function _destroyChart(id) {
             if (_rCharts[id]) { try { _rCharts[id].destroy(); } catch(e){} delete _rCharts[id]; }
@@ -2707,14 +2952,29 @@
                     .map((cat, i) => ({ cat, val: calculateSpentInMonth(month, cat), i }))
                     .filter(x => x.val > 0)
                     .sort((a, b) => b.val - a.val);
+                // Add Saving/Debt as sections
+                let ci = pairs.length;
+                ['Saving', 'Debt'].forEach(secType => {
+                    const val = walletAccounts.filter(a => a.type === secType.toLowerCase())
+                        .reduce((s, acc) => s + Math.max(0, _calculateTransferToAccount(month, acc.id)), 0);
+                    if (val > 0) pairs.push({ cat: secType, val, i: ci++ });
+                });
+                pairs.sort((a, b) => b.val - a.val);
                 return { labels: pairs.map(x=>x.cat), values: pairs.map(x=>x.val), colors: pairs.map(x=>_catColor(x.cat, x.i)) };
             } else {
-                // By budget item — collect all then sort
+                // By category — collect all then sort
                 const entries = [];
                 Object.entries(expenseCategories).forEach(([cat, items]) => {
                     (items || []).forEach(item => {
                         const v = calculateSpentInMonth(month, cat, item);
                         if (v > 0) entries.push({ label: item, v, color: _catColor(cat, entries.length) });
+                    });
+                });
+                // Add individual saving/debt accounts
+                ['Saving', 'Debt'].forEach(secType => {
+                    walletAccounts.filter(a => a.type === secType.toLowerCase()).forEach(acc => {
+                        const v = Math.max(0, _calculateTransferToAccount(month, acc.id));
+                        if (v > 0) entries.push({ label: acc.name, v, color: _catColor(secType, entries.length) });
                     });
                 });
                 entries.sort((a, b) => b.v - a.v);
@@ -2724,14 +2984,24 @@
 
         function _spendBreakDatasets(months) {
             if (_breakdownMode === 'category') {
-                return Object.keys(expenseCategories).map((cat, i) => ({
+                const ds = Object.keys(expenseCategories).map((cat, i) => ({
                     label: cat,
                     data: months.map(m => calculateSpentInMonth(m, cat)),
                     backgroundColor: _catColor(cat, i),
                     borderWidth: 0, borderRadius: 2, stack: 'spend'
-                }))
-                .filter(ds => ds.data.some(v => v > 0))
-                .sort((a, b) => b.data.reduce((s,v)=>s+v,0) - a.data.reduce((s,v)=>s+v,0));
+                }));
+                // Add Saving/Debt sections
+                let ci = ds.length;
+                ['Saving', 'Debt'].forEach(secType => {
+                    const data = months.map(m => walletAccounts.filter(a => a.type === secType.toLowerCase())
+                        .reduce((s, acc) => s + Math.max(0, _calculateTransferToAccount(m, acc.id)), 0));
+                    if (data.some(v => v > 0)) {
+                        ds.push({ label: secType, data, backgroundColor: _catColor(secType, ci++),
+                            borderWidth: 0, borderRadius: 2, stack: 'spend' });
+                    }
+                });
+                return ds.filter(d => d.data.some(v => v > 0))
+                    .sort((a, b) => b.data.reduce((s,v)=>s+v,0) - a.data.reduce((s,v)=>s+v,0));
             } else {
                 const datasets = [];
                 let ci = 0;
@@ -2742,6 +3012,16 @@
                             datasets.push({ label: item, data, backgroundColor: _catColor(cat, ci),
                                 borderWidth: 0, borderRadius: 2, stack: 'spend' });
                             ci++;
+                        }
+                    });
+                });
+                // Add individual saving/debt accounts
+                ['Saving', 'Debt'].forEach(secType => {
+                    walletAccounts.filter(a => a.type === secType.toLowerCase()).forEach(acc => {
+                        const data = months.map(m => Math.max(0, _calculateTransferToAccount(m, acc.id)));
+                        if (data.some(v => v > 0)) {
+                            datasets.push({ label: acc.name, data, backgroundColor: _catColor(secType, ci++),
+                                borderWidth: 0, borderRadius: 2, stack: 'spend' });
                         }
                     });
                 });
@@ -3110,7 +3390,7 @@
         }
 
         function deleteBudgetItem(main, sub) {
-            if (confirm(`Delete budget item "${sub}" from ${main}?
+            if (confirm(`Delete category "${sub}" from ${main}?
 Transactions using it will stay.`)) {
                 expenseCategories[main] = expenseCategories[main].filter(s => s !== sub);
                 Object.keys(monthlyBudgets).forEach(k => {
@@ -3139,13 +3419,29 @@ Transactions using it will stay.`)) {
             _bimSub  = sub;
             _bimSelectedIcon = null;
 
+            const isDynamic = (main === 'Saving' || main === 'Debt');
             const mb     = monthlyBudgets[selectedBudgetMonth] || {};
             const budget = (mb[main] || {})[sub] || 0;
             const isInc  = main === 'Income';
-            const actual = isInc ? calculateIncomeInMonth(selectedBudgetMonth, sub)
-                                 : calculateSpentInMonth(selectedBudgetMonth, main, sub);
-            const icon   = itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || (isInc ? '💵' : '💸');
-            const pct    = budget > 0 ? actual / budget * 100 : 0;
+
+            let actual;
+            if (isDynamic) {
+                const acc = walletAccounts.find(a => a.name === sub && a.type === main.toLowerCase());
+                actual = acc ? _calculateTransferToAccount(selectedBudgetMonth, acc.id) : 0;
+            } else {
+                actual = isInc ? calculateIncomeInMonth(selectedBudgetMonth, sub)
+                               : calculateSpentInMonth(selectedBudgetMonth, main, sub);
+            }
+
+            let icon;
+            if (isDynamic) {
+                const acc = walletAccounts.find(a => a.name === sub && a.type === main.toLowerCase());
+                icon = acc ? (acc.icon || (main === 'Debt' ? '💳' : '🐷')) : '💸';
+            } else {
+                icon = itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || (isInc ? '💵' : '💸');
+            }
+
+            const pct    = budget > 0 ? Math.abs(actual) / budget * 100 : 0;
             const color  = _budgetItemColor(pct, isInc);
             const CIRC   = 175.93;
             const fill   = Math.min(pct / 100, 1) * CIRC;
@@ -3161,43 +3457,68 @@ Transactions using it will stay.`)) {
 
             // Name + category + amount
             const nameEl = document.getElementById('bim-name-display');
-            if (nameEl) { nameEl.textContent = sub; nameEl.onclick = function() { _bimInlineEditName(this); }; }
+            if (nameEl) {
+                nameEl.textContent = sub;
+                // Dynamic sections: name not editable (managed by wallet)
+                nameEl.onclick = isDynamic ? null : function() { _bimInlineEditName(this); };
+                nameEl.style.cursor = isDynamic ? 'default' : 'pointer';
+            }
             const catEl = document.getElementById('bim-cat-label');
             if (catEl) catEl.textContent = main;
             const amtEl = document.getElementById('bim-amt-val');
             if (amtEl) amtEl.textContent = `$${Math.round(budget)}`;
 
-            // Icon picker — hidden by default, populate grid
+            // Icon picker — hidden for dynamic sections, populate grid for others
             const pickerEl = document.getElementById('bim-icon-picker');
             if (pickerEl) pickerEl.classList.add('hidden');
             const grid = document.getElementById('bim-icon-grid');
-            if (grid) {
+            if (grid && !isDynamic) {
                 grid.innerHTML = BUDGET_ICONS.map(e =>
                     `<button type="button" onclick="_bimSelectIcon('${e}')"
                         class="text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all ${e === icon ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700'}">${e}</button>`
                 ).join('');
             }
 
-            // Show/hide delete (hide if it's the last item in category)
-            const arr = expenseCategories[main] || [];
+            // Show/hide delete — hidden for dynamic sections (managed by wallet)
             const del = document.getElementById('bim-delete-btn');
-            if (del) del.classList.toggle('hidden', arr.length <= 1);
+            if (isDynamic) {
+                if (del) del.classList.add('hidden');
+            } else {
+                const arr = expenseCategories[main] || [];
+                if (del) del.classList.toggle('hidden', arr.length <= 1);
+            }
 
             // Populate transaction list
-            _bimPopulateTxList(main, sub, isInc);
+            _bimPopulateTxList(main, sub, isInc, isDynamic);
 
             document.getElementById('budget-item-modal').classList.remove('hidden');
         }
 
-        function _bimPopulateTxList(main, sub, isInc) {
+        function _bimPopulateTxList(main, sub, isInc, isDynamic) {
             const [year, month] = selectedBudgetMonth.split('-').map(Number);
-            const monthTxs = transactions.filter(t => {
-                const d = new Date(t.date + 'T00:00:00');
-                if (d.getFullYear() !== year || (d.getMonth() + 1) !== month) return false;
-                if (t.excluded) return false;
-                if (isInc) return t.type === 'income' && t.mainCategory === sub;
-                return t.type === 'expense' && t.mainCategory === main && t.subCategory === sub;
-            }).sort((a, b) => new Date(b.date) - new Date(a.date));
+            let monthTxs;
+            if (isDynamic) {
+                // Show transfers involving this account
+                const acc = walletAccounts.find(a => a.name === sub && a.type === main.toLowerCase());
+                monthTxs = acc ? transactions.filter(t => {
+                    if (t.type !== 'transfer') return false;
+                    const d = new Date(t.date + 'T00:00:00');
+                    if (d.getFullYear() !== year || (d.getMonth() + 1) !== month) return false;
+                    const fromType = _getAccType(t.fromAccountId);
+                    const toType   = _getAccType(t.toAccountId);
+                    // spending→saving/debt to this account, or this account→spending
+                    return (fromType === 'spending' && t.toAccountId === acc.id) ||
+                           (t.fromAccountId === acc.id && toType === 'spending');
+                }).sort((a, b) => new Date(b.date) - new Date(a.date)) : [];
+            } else {
+                monthTxs = transactions.filter(t => {
+                    const d = new Date(t.date + 'T00:00:00');
+                    if (d.getFullYear() !== year || (d.getMonth() + 1) !== month) return false;
+                    if (t.excluded) return false;
+                    if (isInc) return t.type === 'income' && t.mainCategory === sub;
+                    return t.type === 'expense' && t.mainCategory === main && t.subCategory === sub;
+                }).sort((a, b) => new Date(b.date) - new Date(a.date));
+            }
 
             const listEl  = document.getElementById('bim-tx-list');
             const emptyEl = document.getElementById('bim-tx-empty');
@@ -3401,7 +3722,7 @@ Transactions using it will stay.`)) {
 
         function deleteBudgetItemFromModal() {
             if (!_bimMain || !_bimSub) return;
-            if (!confirm(`Delete "${_bimSub}" from ${_bimMain}?\nTransactions using it will stay.`)) return;
+            if (!confirm(`Delete category "${_bimSub}" from ${_bimMain}?\nTransactions using it will stay.`)) return;
             expenseCategories[_bimMain] = (expenseCategories[_bimMain] || []).filter(s => s !== _bimSub);
             Object.keys(monthlyBudgets).forEach(k => {
                 if (monthlyBudgets[k]?.[_bimMain]) delete monthlyBudgets[k][_bimMain][_bimSub];
@@ -3427,13 +3748,19 @@ Transactions using it will stay.`)) {
             const excl    = !!document.getElementById('tx-exclude')?.checked;
             const fields  = document.getElementById('expense-fields');
             const incRow  = document.getElementById('income-cat-row');
-            const typeBar = document.querySelector('#add-modal .flex.bg-zinc-800\\/60');
+            const trfFields = document.getElementById('transfer-fields');
+            const typeBar = document.getElementById('type-toggle-bar');
             if (fields)  fields.style.opacity  = excl ? '0.3' : '';
             if (incRow)  incRow.style.opacity   = excl ? '0.3' : '';
             if (typeBar) typeBar.style.opacity  = excl ? '0.3' : '';
             // Disable category interaction when excluded
             if (fields)  fields.querySelectorAll('select,input').forEach(function(el) { el.disabled = excl; });
             if (incRow)  incRow.querySelectorAll('select,input').forEach(function(el) { el.disabled = excl; });
+            // Transfer mode: exclude checkbox not applicable, but handle gracefully
+            if (trfFields && currentType === 'transfer') {
+                const exclCb = document.getElementById('tx-exclude');
+                if (exclCb) exclCb.checked = false;
+            }
         }
 
         function hideModal() {
@@ -3443,10 +3770,12 @@ Transactions using it will stay.`)) {
 
         function setType(type) {
             currentType = type;
-            const expBtn   = document.getElementById('type-expense');
-            const incBtn   = document.getElementById('type-income');
+            const expBtn    = document.getElementById('type-expense');
+            const incBtn    = document.getElementById('type-income');
+            const trfBtn    = document.getElementById('type-transfer');
             const expFields = document.getElementById('expense-fields');
             const incCatRow = document.getElementById('income-cat-row');
+            const trfFields = document.getElementById('transfer-fields');
             const incSelect = document.getElementById('income-cat');
             const amtInput  = document.getElementById('amount');
             const amtPrefix = document.getElementById('amount-prefix');
@@ -3455,41 +3784,120 @@ Transactions using it will stay.`)) {
             const BASE_BTN    = 'flex flex-col items-center gap-1 py-4 transition-colors ';
             const EXP_ACTIVE  = BASE_BTN + 'bg-rose-500/20 text-rose-400';
             const INC_ACTIVE  = BASE_BTN + 'bg-emerald-500/20 text-emerald-400';
+            const TRF_ACTIVE  = BASE_BTN + 'bg-sky-500/20 text-sky-400';
             const INACTIVE    = BASE_BTN + 'text-zinc-500';
+
+            // Reset all
+            expBtn.className = INACTIVE;
+            incBtn.className = INACTIVE;
+            if (trfBtn) trfBtn.className = INACTIVE;
+            expFields.classList.add('hidden');
+            incCatRow.classList.add('hidden');
+            if (trfFields) trfFields.classList.add('hidden');
+
+            // Hide exclude toggle for transfers
+            const exclWrap = document.getElementById('exclude-toggle-wrap');
+            if (exclWrap) exclWrap.classList.toggle('hidden', type === 'transfer');
 
             if (type === 'expense') {
                 expBtn.className = EXP_ACTIVE;
-                incBtn.className = INACTIVE;
                 expFields.classList.remove('hidden');
-                incCatRow.classList.add('hidden');
-                amtInput.classList.remove('text-emerald-400'); amtInput.classList.add('text-rose-400');
-                amtPrefix.classList.remove('text-emerald-400'); amtPrefix.classList.add('text-rose-400');
+                amtInput.classList.remove('text-emerald-400','text-sky-400'); amtInput.classList.add('text-rose-400');
+                amtPrefix.classList.remove('text-emerald-400','text-sky-400'); amtPrefix.classList.add('text-rose-400');
                 if (saveBtn) {
-                    saveBtn.classList.remove('bg-emerald-500','hover:bg-emerald-600');
-                    saveBtn.classList.add('bg-rose-500','hover:bg-rose-600');
+                    saveBtn.className = 'w-full bg-rose-500 hover:bg-rose-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
                     saveBtn.textContent = 'Save Expense';
                 }
                 updateMainOptions();
-            } else {
+            } else if (type === 'income') {
                 incBtn.className = INC_ACTIVE;
-                expBtn.className = INACTIVE;
-                expFields.classList.add('hidden');
                 incCatRow.classList.remove('hidden');
-                amtInput.classList.remove('text-rose-400'); amtInput.classList.add('text-emerald-400');
-                amtPrefix.classList.remove('text-rose-400'); amtPrefix.classList.add('text-emerald-400');
+                amtInput.classList.remove('text-rose-400','text-sky-400'); amtInput.classList.add('text-emerald-400');
+                amtPrefix.classList.remove('text-rose-400','text-sky-400'); amtPrefix.classList.add('text-emerald-400');
                 if (saveBtn) {
-                    saveBtn.classList.remove('bg-rose-500','hover:bg-rose-600');
-                    saveBtn.classList.add('bg-emerald-500','hover:bg-emerald-600');
+                    saveBtn.className = 'w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
                     saveBtn.textContent = 'Save Income';
                 }
                 incSelect.innerHTML = '';
                 (expenseCategories['Income'] || incomeCats).forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; incSelect.appendChild(opt); });
+            } else if (type === 'transfer') {
+                if (trfBtn) trfBtn.className = TRF_ACTIVE;
+                if (trfFields) trfFields.classList.remove('hidden');
+                amtInput.classList.remove('text-rose-400','text-emerald-400'); amtInput.classList.add('text-sky-400');
+                amtPrefix.classList.remove('text-rose-400','text-emerald-400'); amtPrefix.classList.add('text-sky-400');
+                if (saveBtn) {
+                    saveBtn.className = 'w-full bg-sky-500 hover:bg-sky-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
+                    saveBtn.textContent = 'Save Transfer';
+                }
+                _populateTransferAccounts();
+            }
+        }
+
+        function _populateTransferAccounts() {
+            const fromSel = document.getElementById('transfer-from');
+            const toSel   = document.getElementById('transfer-to');
+            if (!fromSel || !toSel) return;
+
+            const accounts = walletAccounts;
+            if (accounts.length < 2) {
+                fromSel.innerHTML = '<option value="">Need at least 2 accounts</option>';
+                toSel.innerHTML   = '<option value="">Need at least 2 accounts</option>';
+                return;
+            }
+
+            const buildOpts = (excludeId) => {
+                return accounts
+                    .filter(a => a.id !== excludeId)
+                    .map(a => `<option value="${a.id}">${a.icon || '🏦'} ${a.name}</option>`)
+                    .join('');
+            };
+
+            fromSel.innerHTML = accounts.map(a =>
+                `<option value="${a.id}">${a.icon || '🏦'} ${a.name}</option>`
+            ).join('');
+
+            const updateTo = () => {
+                const fromId = fromSel.value;
+                toSel.innerHTML = buildOpts(fromId);
+                _updateTransferBudgetInfo();
+            };
+
+            fromSel.onchange = updateTo;
+            toSel.onchange = _updateTransferBudgetInfo;
+            updateTo();
+        }
+
+        function _updateTransferBudgetInfo() {
+            const fromSel = document.getElementById('transfer-from');
+            const toSel   = document.getElementById('transfer-to');
+            const infoEl  = document.getElementById('transfer-budget-info');
+            if (!fromSel || !toSel || !infoEl) return;
+
+            const fromAcc = walletAccounts.find(a => a.id === fromSel.value);
+            const toAcc   = walletAccounts.find(a => a.id === toSel.value);
+            if (!fromAcc || !toAcc) { infoEl.classList.add('hidden'); return; }
+
+            const fromType = fromAcc.type;
+            const toType   = toAcc.type;
+            const msgEl    = infoEl.querySelector('div');
+
+            if (fromType === toType) {
+                msgEl.textContent = 'Same-type transfer — excluded from budget & reports.';
+                infoEl.classList.remove('hidden');
+            } else if (fromType === 'spending' && (toType === 'saving' || toType === 'debt')) {
+                msgEl.textContent = `Budget category: ${toAcc.name} (${toType === 'saving' ? 'Saving' : 'Debt'} section)`;
+                infoEl.classList.remove('hidden');
+            } else if ((fromType === 'saving' || fromType === 'debt') && toType === 'spending') {
+                msgEl.textContent = `Counts as -$amount from ${fromAcc.name} (${fromType === 'saving' ? 'Saving' : 'Debt'} section)`;
+                infoEl.classList.remove('hidden');
+            } else {
+                infoEl.classList.add('hidden');
             }
         }
 
         function updateMainOptions() {
             const sel = document.getElementById('main-cat');
-            sel.innerHTML = '<option value="">Select category</option>';
+            sel.innerHTML = '<option value="">Select section</option>';
             Object.keys(expenseCategories).forEach(m => {
                 const opt = document.createElement('option');
                 opt.value = m; opt.textContent = `${mainEmojis[m]} ${m}`;
@@ -3806,9 +4214,35 @@ Transactions using it will stay.`)) {
                 });
             }
 
+            // Sync dynamic budget sections when saving/debt account changes
+            if (_walletType === 'saving' || _walletType === 'debt') {
+                const secType = _walletType === 'saving' ? 'Saving' : 'Debt';
+                // If editing and name changed, rename in all monthly budgets
+                if (_walletEditId && _walletEditOldName) {
+                    const oldName = _walletEditOldName;
+                    if (oldName !== name) {
+                        Object.keys(monthlyBudgets).forEach(mk => {
+                            if (monthlyBudgets[mk][secType] && monthlyBudgets[mk][secType][oldName] !== undefined) {
+                                monthlyBudgets[mk][secType][name] = monthlyBudgets[mk][secType][oldName];
+                                delete monthlyBudgets[mk][secType][oldName];
+                            }
+                        });
+                    }
+                } else {
+                    // New account: add to existing month budgets
+                    Object.keys(monthlyBudgets).forEach(mk => {
+                        if (!monthlyBudgets[mk][secType]) monthlyBudgets[mk][secType] = {};
+                        if (monthlyBudgets[mk][secType][name] === undefined) {
+                            monthlyBudgets[mk][secType][name] = 0;
+                        }
+                    });
+                }
+            }
+
             saveData();
             hideWalletModal();
             renderWallet();
+            renderBudgets();
             showToast(_walletEditId ? 'Account updated' : 'Account added', 'emerald');
         }
 
@@ -3879,20 +4313,25 @@ Transactions using it will stay.`)) {
                 progWrap.classList.add('hidden');
             }
 
-            // Transactions linked to this account
+            // Transactions linked to this account (transfers involving this account)
             const txList  = document.getElementById('wd-tx-list');
             const txEmpty = document.getElementById('wd-tx-empty');
-            const linked = transactions.filter(t => t.walletAccountId === id).slice(-10).reverse();
+            const linked = transactions.filter(t =>
+                t.type === 'transfer' && (t.fromAccountId === id || t.toAccountId === id)
+            ).slice(-10).reverse();
             if (linked.length) {
                 txEmpty.classList.add('hidden');
                 txList.innerHTML = linked.map(t => {
-                    const isExp = t.type === 'expense';
+                    const isOutgoing = t.fromAccountId === id;
+                    const otherAcc = _getAccById(isOutgoing ? t.toAccountId : t.fromAccountId);
+                    const otherName = otherAcc ? otherAcc.name : '?';
+                    const label = isOutgoing ? `→ ${otherName}` : `← ${otherName}`;
                     return `<div class="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3">
                         <div class="min-w-0">
-                            <div class="text-sm font-medium truncate">${t.desc || t.subCategory || t.mainCategory || 'Transaction'}</div>
-                            <div class="text-[10px] text-zinc-600 mt-0.5">${t.date}</div>
+                            <div class="text-sm font-medium truncate">${t.desc || label}</div>
+                            <div class="text-[10px] text-zinc-600 mt-0.5">${t.date} · ${label}</div>
                         </div>
-                        <div class="text-sm font-semibold tabular-nums ${isExp ? 'text-rose-400' : 'text-emerald-400'}">${isExp ? '-' : '+'}${_walletFmt(parseFloat(t.amount))}</div>
+                        <div class="text-sm font-semibold tabular-nums ${isOutgoing ? 'text-rose-400' : 'text-emerald-400'}">${isOutgoing ? '-' : '+'}${_walletFmt(parseFloat(t.amount))}</div>
                     </div>`;
                 }).join('');
             } else {
@@ -3909,12 +4348,15 @@ Transactions using it will stay.`)) {
             }
         }
 
+        let _walletEditOldName = null;
+
         function editWalletAccount() {
             const acc = walletAccounts.find(a => a.id === _walletDetailId);
             if (!acc) return;
             document.getElementById('wallet-detail-modal').classList.add('hidden');
 
             _walletEditId = acc.id;
+            _walletEditOldName = acc.name;
             _walletType = acc.type;
             _walletSelectedIcon = acc.icon || '🏦';
             _walletSelectedColour = acc.colour || '#10b981';
@@ -3931,11 +4373,28 @@ Transactions using it will stay.`)) {
         }
 
         function deleteWalletAccount() {
+            const acc = walletAccounts.find(a => a.id === _walletDetailId);
+            if (!acc) return;
             if (!confirm('Delete this account? This cannot be undone.')) return;
+
+            // Clean up budget data for saving/debt accounts
+            if (acc.type === 'saving' || acc.type === 'debt') {
+                const secType = acc.type === 'saving' ? 'Saving' : 'Debt';
+                Object.keys(monthlyBudgets).forEach(mk => {
+                    if (monthlyBudgets[mk][secType]) {
+                        delete monthlyBudgets[mk][secType][acc.name];
+                        if (Object.keys(monthlyBudgets[mk][secType]).length === 0) {
+                            delete monthlyBudgets[mk][secType];
+                        }
+                    }
+                });
+            }
+
             walletAccounts = walletAccounts.filter(a => a.id !== _walletDetailId);
             saveData();
             document.getElementById('wallet-detail-modal').classList.add('hidden');
             renderWallet();
+            renderBudgets();
             showToast('Account deleted', 'rose');
         }
 
@@ -3950,10 +4409,31 @@ Transactions using it will stay.`)) {
             // Restore exclude state
             const exclCb = document.getElementById('tx-exclude');
             if (exclCb) exclCb.checked = !!t.excluded;
-            setType(t.type === 'expense' || t.excluded ? 'expense' : t.type);
+            setType(t.type === 'transfer' ? 'transfer' : (t.type === 'expense' || t.excluded ? 'expense' : t.type));
             updateExcludeUI();
             // After setType populates selects, set values
-            if (t.type === 'expense' && !t.excluded) {
+            if (t.type === 'transfer') {
+                setTimeout(() => {
+                    const fromSel = document.getElementById('transfer-from');
+                    const toSel   = document.getElementById('transfer-to');
+                    if (fromSel) fromSel.value = t.fromAccountId || '';
+                    // Re-populate to options based on from selection
+                    _populateTransferAccounts();
+                    if (fromSel) fromSel.value = t.fromAccountId || '';
+                    if (toSel) {
+                        // Rebuild to options excluding selected from
+                        const fromId = fromSel.value;
+                        toSel.innerHTML = walletAccounts
+                            .filter(a => a.id !== fromId)
+                            .map(a => `<option value="${a.id}">${a.icon || '🏦'} ${a.name}</option>`)
+                            .join('');
+                        toSel.value = t.toAccountId || '';
+                    }
+                    _updateTransferBudgetInfo();
+                }, 0);
+                const saveBtn = document.getElementById('save-transaction-btn');
+                if (saveBtn) saveBtn.textContent = 'Update Transfer';
+            } else if (t.type === 'expense' && !t.excluded) {
                 document.getElementById('main-cat').value = t.mainCategory || '';
                 updateSubOptions();
                 setTimeout(() => {
@@ -3962,8 +4442,10 @@ Transactions using it will stay.`)) {
             } else if (t.type === 'income') {
                 document.getElementById('income-cat').value = t.mainCategory || '';
             }
-            const saveBtn = document.getElementById('save-transaction-btn');
-            if (saveBtn) saveBtn.textContent = t.type === 'income' ? 'Update Income' : 'Update Expense';
+            if (t.type !== 'transfer') {
+                const saveBtn = document.getElementById('save-transaction-btn');
+                if (saveBtn) saveBtn.textContent = t.type === 'income' ? 'Update Income' : 'Update Expense';
+            }
         }
 
         function addTransaction() {
@@ -3974,14 +4456,24 @@ Transactions using it will stay.`)) {
             const exclude = !!(document.getElementById('tx-exclude')?.checked);
 
             let trans = { type: currentType, amount, date, desc };
-            if (exclude) {
+
+            if (currentType === 'transfer') {
+                const fromId = document.getElementById('transfer-from')?.value;
+                const toId   = document.getElementById('transfer-to')?.value;
+                if (!fromId || !toId) return alert("Select From and To accounts");
+                if (fromId === toId) return alert("From and To accounts must be different");
+                trans.fromAccountId = fromId;
+                trans.toAccountId   = toId;
+                trans.mainCategory  = '';
+                trans.subCategory   = '';
+            } else if (exclude) {
                 trans.excluded     = true;
                 trans.mainCategory = '';
                 trans.subCategory  = '';
             } else if (currentType === 'expense') {
                 trans.mainCategory = document.getElementById('main-cat').value;
                 trans.subCategory  = document.getElementById('sub-cat').value;
-                if (!trans.mainCategory || !trans.subCategory) return alert("Choose category & budget item");
+                if (!trans.mainCategory || !trans.subCategory) return alert("Choose section & category");
             } else {
                 trans.mainCategory = document.getElementById('income-cat').value;
                 trans.subCategory  = '';
@@ -4049,7 +4541,7 @@ Transactions using it will stay.`)) {
             const catCount = Object.values(expenseCategories).reduce((s, arr) => s + arr.length, 0);
             const stats = [
                 ['Transactions', transactions.length,  '#10b981'],
-                ['Budget Items', catCount,              '#10b981'],
+                ['Categories', catCount,              '#10b981'],
             ];
             el.innerHTML = stats.map(([label, val, color]) => `
                 <div class="bg-zinc-900 rounded-2xl py-3 px-3 text-center">
@@ -4064,7 +4556,7 @@ Transactions using it will stay.`)) {
         function renderCategoryEditorCount() {
             const el = document.getElementById('cat-editor-count');
             const n  = Object.keys(expenseCategories).length;
-            if (el) el.textContent = `${n} categor${n !== 1 ? 'ies' : 'y'}`;
+            if (el) el.textContent = `${n} section${n !== 1 ? 's' : ''}`;
         }
 
         function renderCategoryEditor() {
@@ -4098,14 +4590,14 @@ Transactions using it will stay.`)) {
                         <button onclick="moveCategoryDown('${cat.replace(/'/g,"\\'")}' )" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isLast?'opacity-20 pointer-events-none':''}" title="Move down">
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
                         </button>
-                        <button onclick="deleteCategory('${cat.replace(/'/g,"\\'")}' )" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-rose-400 hover:bg-rose-500/10 rounded-full transition-colors" title="Delete category">
+                        <button onclick="deleteCategory('${cat.replace(/'/g,"\\'")}' )" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-rose-400 hover:bg-rose-500/10 rounded-full transition-colors" title="Delete section">
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                         </button>
                     </div>
                     ${itemsHTML}
                     <button onclick="addCatItemInline('${cat.replace(/'/g,"\\'")}' )" class="w-full flex items-center gap-3 pl-14 pr-4 py-2.5 border-t border-zinc-800/60 hover:bg-zinc-800/40 transition-colors group">
                         <svg class="w-3.5 h-3.5 text-zinc-700 group-hover:text-emerald-500 transition-colors shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                        <span class="text-xs text-zinc-700 group-hover:text-emerald-500 transition-colors">Add item</span>
+                        <span class="text-xs text-zinc-700 group-hover:text-emerald-500 transition-colors">Add category</span>
                     </button>
                 </div>`;
             }).join('');
@@ -4211,7 +4703,7 @@ Transactions using it will stay.`)) {
 
         function deleteCategory(cat) {
             if (Object.keys(expenseCategories).length <= 1) return;
-            if (!confirm(`Delete category "${cat}" and all its items?\nBudget data will be removed. Transactions are kept.`)) return;
+            if (!confirm(`Delete section "${cat}" and all its categories?\nBudget data will be removed. Transactions are kept.`)) return;
             delete expenseCategories[cat];
             Object.keys(monthlyBudgets).forEach(m => { delete monthlyBudgets[m][cat]; });
             _syncIncomeCats(); saveData(); renderCategoryEditor(); renderCategoryEditorCount();
@@ -4220,7 +4712,7 @@ Transactions using it will stay.`)) {
         function deleteCatItem(cat, idx) {
             const arr = expenseCategories[cat]; if (!arr || arr.length <= 1) return;
             const oldName = arr[idx];
-            if (!confirm(`Delete "${oldName}" from ${cat}?\nBudget data will be removed. Transactions are kept.`)) return;
+            if (!confirm(`Delete category "${oldName}" from ${cat}?\nBudget data will be removed. Transactions are kept.`)) return;
             arr.splice(idx, 1);
             Object.keys(monthlyBudgets).forEach(m => { if (monthlyBudgets[m][cat]) delete monthlyBudgets[m][cat][oldName]; });
             _syncIncomeCats(); saveData(); renderCategoryEditor();
@@ -4232,7 +4724,7 @@ Transactions using it will stay.`)) {
             const tempRow = document.createElement('div');
             tempRow.className = 'flex items-center gap-3 px-5 py-3.5 border-t border-zinc-800';
             tempRow.innerHTML = `<span class="text-lg">📂</span>
-                <input id="new-cat-input" type="text" placeholder="Category name…" class="flex-1 bg-zinc-800 border border-emerald-500 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
+                <input id="new-cat-input" type="text" placeholder="Section name…" class="flex-1 bg-zinc-800 border border-emerald-500 rounded-lg px-3 py-1.5 text-sm focus:outline-none">
                 <button onclick="confirmAddCategory()" class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/30 transition-colors shrink-0">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                 </button>`;
@@ -4259,7 +4751,7 @@ Transactions using it will stay.`)) {
             const addBtn = sec.querySelector('button:last-child');
             const tempRow = document.createElement('div');
             tempRow.className = 'flex items-center gap-3 pl-14 pr-4 py-2.5 border-t border-zinc-800/60';
-            tempRow.innerHTML = `<input id="new-item-input-${CSS.escape(cat)}" type="text" placeholder="Item name…" class="flex-1 bg-zinc-800 border border-emerald-500 rounded-lg px-2 py-1 text-xs focus:outline-none">
+            tempRow.innerHTML = `<input id="new-item-input-${CSS.escape(cat)}" type="text" placeholder="Category name…" class="flex-1 bg-zinc-800 border border-emerald-500 rounded-lg px-2 py-1 text-xs focus:outline-none">
                 <button onclick="confirmAddCatItem('${cat.replace(/'/g,"\\'")}' )" class="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 hover:bg-emerald-500/30 transition-colors shrink-0">
                     <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                 </button>`;
@@ -4290,7 +4782,7 @@ Transactions using it will stay.`)) {
         function deleteIncomeType(i)     { deleteCatItem('Income', i); }
 
         function clearAllData() {
-            if (!confirm('Reset app to factory defaults?\nThis clears ALL transactions, budgets and categories — and restores the default category list.\nThis cannot be undone.')) return;
+            if (!confirm('Reset app to factory defaults?\nThis clears ALL transactions, budgets and sections — and restores the default section list.\nThis cannot be undone.')) return;
             // Full factory reset: wipe everything and restore defaults
             transactions      = [];
             monthlyBudgets    = {};
@@ -5327,7 +5819,7 @@ Transactions using it will stay.`)) {
             const opts = (expenseCategories[main] || []).map(function(s) {
                 return '<option value="' + s + '">' + s + '</option>';
             }).join('');
-            return opts + '<option value="__new__">✚ New budget item…</option>';
+            return opts + '<option value="__new__">✚ New category…</option>';
         }
 
         function _importSubChange(sel) {
@@ -5337,7 +5829,7 @@ Transactions using it will stay.`)) {
             const row    = sel.closest('.rounded-2xl');
             const mainS  = row ? row.querySelector('.import-main-sel') : null;
             const main   = (mainS && mainS.value) || t._main;
-            const name   = prompt('New budget item under "' + main + '":');
+            const name   = prompt('New category under "' + main + '":');
             if (!name || !name.trim()) {
                 sel.value = (expenseCategories[main] || [])[0] || '';
                 return;
@@ -5860,7 +6352,7 @@ Transactions using it will stay.`)) {
                     <text x="110" y="150" text-anchor="middle" font-size="7.5" fill="#3f3f46" font-family="system-ui,sans-serif">← navigate by month →</text>
                 </svg>
                 <h2 class="text-2xl font-semibold tracking-tight text-white mb-3">Budgets</h2>
-                <p class="text-zinc-400 text-sm leading-relaxed" style="max-width:18rem">Set monthly limits per category.<br>Budgets glow <span class="text-emerald-400 font-medium">green</span> when on-track, <span class="text-amber-400 font-medium">amber</span> when tight, and <span class="text-rose-400 font-medium">red</span> when over-budget.<br>Simply tap any budget to edit.</p>
+                <p class="text-zinc-400 text-sm leading-relaxed" style="max-width:18rem">Set monthly limits per category in each section.<br>Budgets glow <span class="text-emerald-400 font-medium">green</span> when on-track, <span class="text-amber-400 font-medium">amber</span> when tight, and <span class="text-rose-400 font-medium">red</span> when over-budget.<br>Simply tap any budget to edit.</p>
             </div>
 
 
