@@ -679,7 +679,7 @@
                     <h3 class="font-semibold text-base">Goals</h3>
                     <p class="text-[10px] text-zinc-600 mt-0.5 uppercase tracking-widest font-bold">Track your targets</p>
                 </div>
-                <button onclick="showAddGoalModal()" class="flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold px-3.5 py-2 rounded-full transition-colors">
+                <button onclick="showAddGoalModal()" class="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-3.5 py-2 rounded-full transition-colors">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                     New Goal
                 </button>
@@ -1113,6 +1113,22 @@
                         <div id="gsm-bar" class="progress-bar h-full rounded-full bg-emerald-500" style="width:0%"></div>
                     </div>
                     <div id="gsm-footer-info" class="flex items-center justify-between text-[11px] text-zinc-500"></div>
+                </div>
+
+                <!-- Manual progress update (shown only when no linked account) -->
+                <div id="gsm-manual-update" class="hidden mb-5 bg-zinc-900 rounded-2xl p-4">
+                    <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-3">Update Progress</div>
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 flex items-baseline gap-1 bg-zinc-800 rounded-xl px-4 py-3">
+                            <span class="text-zinc-500 font-semibold text-sm">$</span>
+                            <input id="gsm-manual-amount" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
+                                   class="flex-1 bg-transparent text-sm font-semibold text-zinc-100 focus:outline-none placeholder-zinc-600">
+                        </div>
+                        <button onclick="_gsmSaveManualProgress()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold px-4 py-3 rounded-xl active:scale-95 transition-all shrink-0">
+                            Save
+                        </button>
+                    </div>
+                    <div class="text-[11px] text-zinc-600 mt-2.5 text-center">💡 Link to an account for automatic tracking</div>
                 </div>
 
                 <!-- Linked Transactions -->
@@ -1855,16 +1871,31 @@
             const isLiab = def.isLiability;
             const balColor = isLiab ? '#f87171' : '#10b981';
             const balStr   = isLiab ? `-${_fmtCurrency(bal)}` : _fmtCurrency(bal);
-            return `<div class="bg-zinc-900 rounded-2xl p-4 flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-all" onclick="showAccountSummary('${a.id}')">
-                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0" style="background:${def.color}22">${a.emoji || def.emoji}</div>
-                <div class="flex-1 min-w-0">
-                    <div class="font-semibold text-sm truncate text-zinc-100">${a.name}</div>
-                    <div class="text-[11px] text-zinc-500 mt-0.5">${def.label}${a.note ? ' · ' + a.note : ''}</div>
+            const linkedGoals = goals.filter(g => String(g.linkedAccountId) === String(a.id));
+            const goalBadgesHtml = linkedGoals.length
+                ? `<div class="mt-2.5 pt-2.5 border-t border-zinc-800 flex flex-wrap gap-1.5">
+                       ${linkedGoals.map(g => {
+                           const p = calculateGoalProgress(g);
+                           const done = p.percent >= 100;
+                           const badgeColor = done ? '#10b981' : '#a78bfa';
+                           const bgColor    = done ? 'rgba(16,185,129,.12)' : 'rgba(167,139,250,.12)';
+                           return `<span class="inline-flex items-center gap-1 text-[10px] font-bold rounded-full px-2.5 py-1" style="color:${badgeColor};background:${bgColor}">${g.emoji || '🎯'} ${g.name} · ${p.percent}%</span>`;
+                       }).join('')}
+                   </div>`
+                : '';
+            return `<div class="bg-zinc-900 rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-all" onclick="showAccountSummary('${a.id}')">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0" style="background:${def.color}22">${a.emoji || def.emoji}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-semibold text-sm truncate text-zinc-100">${a.name}</div>
+                        <div class="text-[11px] text-zinc-500 mt-0.5">${def.label}${a.note ? ' · ' + a.note : ''}</div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="font-semibold text-sm tabular-nums" style="color:${balColor}">${balStr}</div>
+                        <div class="text-[10px] text-zinc-600 mt-0.5">${isLiab ? 'owed' : 'balance'}</div>
+                    </div>
                 </div>
-                <div class="text-right shrink-0">
-                    <div class="font-semibold text-sm tabular-nums" style="color:${balColor}">${balStr}</div>
-                    <div class="text-[10px] text-zinc-600 mt-0.5">${isLiab ? 'owed' : 'balance'}</div>
-                </div>
+                ${goalBadgesHtml}
             </div>`;
         }
 
@@ -1904,6 +1935,7 @@
         }
 
         function editAccount(id) {
+            id = parseInt(id);
             const a = accounts.find(x => x.id === id);
             if (!a) return;
             _editingAccountId = id;
@@ -2188,7 +2220,30 @@
                 }
             }
 
+            // Show/hide manual progress update panel
+            const manualEl = document.getElementById('gsm-manual-update');
+            if (manualEl) {
+                const isManual = !g.linkedAccountId;
+                manualEl.classList.toggle('hidden', !isManual);
+                if (isManual) {
+                    const amtEl = document.getElementById('gsm-manual-amount');
+                    if (amtEl) amtEl.value = g.currentAmount || '';
+                }
+            }
+
             document.getElementById('goal-summary-modal').classList.remove('hidden');
+        }
+
+        function _gsmSaveManualProgress() {
+            if (_gsmGoalIdx === null) return;
+            const g = goals[_gsmGoalIdx];
+            if (!g) return;
+            const val = parseFloat(document.getElementById('gsm-manual-amount')?.value);
+            if (isNaN(val) || val < 0) return;
+            g.currentAmount = val;
+            saveData();
+            showGoalSummary(_gsmGoalIdx);
+            renderGoals();
         }
 
         function hideGoalSummary() {
@@ -2264,6 +2319,7 @@
         }
 
         function deleteAccount(id) {
+            id = parseInt(id);
             const a = accounts.find(x => x.id === id);
             if (!a) return;
             if (!confirm(`Delete "${a.name}"? Goals linked to this account will lose their progress tracking.`)) return;
@@ -2817,7 +2873,10 @@
 
         /* ── Undo snackbar ───────────────────────────────── */
         function _showUndo(idx) {
-            _undoData = { t: transactions[idx], idx };
+            const t = transactions[idx];
+            _undoData = { t, idx };
+            // Reverse account balance effect when deleting
+            if (t.accountId) _adjustAccountBal(t.accountId, t.type, t.amount, true);
             transactions.splice(idx, 1);
             saveData();
 
@@ -2840,7 +2899,10 @@
         function undoTxDelete() {
             if (!_undoData) return;
             clearTimeout(_undoTimer);
-            transactions.splice(_undoData.idx, 0, _undoData.t);
+            const t = _undoData.t;
+            // Re-apply account balance effect when restoring
+            if (t.accountId) _adjustAccountBal(t.accountId, t.type, t.amount, false);
+            transactions.splice(_undoData.idx, 0, t);
             _undoData = null;
             saveData();
             const bar = document.getElementById('_undo');
@@ -4584,6 +4646,14 @@ Transactions using it will stay.`)) {
             if (txAcct) txAcct.value = t.accountId || '';
         }
 
+        function _adjustAccountBal(accountId, type, amount, reverse) {
+            if (!accountId) return;
+            const acct = accounts.find(a => a.id == accountId);
+            if (!acct) return;
+            const sign = (type === 'income' ? 1 : -1) * (reverse ? -1 : 1);
+            acct.balance = Math.round(((acct.balance || 0) + sign * parseFloat(amount)) * 100) / 100;
+        }
+
         function addTransaction() {
             const amount  = parseFloat(document.getElementById('amount').value);
             if (!amount || amount <= 0) return alert("Enter amount");
@@ -4607,13 +4677,21 @@ Transactions using it will stay.`)) {
                 trans.subCategory  = '';
             }
 
+            // Capture old transaction BEFORE modifying the array
+            const oldTx = _editingTxIdx !== null ? transactions[_editingTxIdx] : null;
+
             if (_editingTxIdx !== null) {
-                trans.id = transactions[_editingTxIdx].id;
+                trans.id = oldTx.id;
                 transactions[_editingTxIdx] = trans;
             } else {
                 trans.id = Date.now();
                 transactions.unshift(trans);
             }
+
+            // Auto-sync account balances
+            if (oldTx?.accountId) _adjustAccountBal(oldTx.accountId, oldTx.type, oldTx.amount, true);  // reverse old
+            if (accountId)        _adjustAccountBal(accountId, currentType, amount, false);              // apply new
+
             saveData();
             hideModal();
             renderAll();
