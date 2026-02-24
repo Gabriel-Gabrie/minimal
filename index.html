@@ -299,17 +299,7 @@
                     <!-- home dot — visible when this is the launch tab -->
                     <span id="home-dot-3" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
                 </button>
-                <!-- Goals -->
-                <button
-                    onclick="_tabTap(4)"
-                    onmousedown="_tabHoldStart(4, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
-                    ontouchstart="_tabHoldStart(4, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
-                    id="tab-4" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>
-                    <span>Goals</span>
-                    <!-- home dot — visible when this is the launch tab -->
-                    <span id="home-dot-4" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
-                </button>
+
 
             </div>
         </div>
@@ -647,20 +637,7 @@
 
             </div>
         </div>
-        <!-- GOALS -->
-        <div id="screen-4" class="hidden pb-12">
-            <div class="px-5 pt-5 pb-4 flex justify-between items-center">
-                <div>
-                    <h2 class="font-semibold text-lg">Savings Goals</h2>
-                    <p class="text-[10px] text-zinc-600 mt-0.5 uppercase tracking-widest font-bold">Track your progress</p>
-                </div>
-                <button onclick="showAddGoalModal()" class="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-full transition-colors">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                    New Goal
-                </button>
-            </div>
-            <div id="goals-list" class="px-5 space-y-4"></div>
-        </div>
+
 
         <!-- Floating Add -->
         <button onclick="showAddModal()" class="fixed bottom-8 right-8 w-16 h-16 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-5xl shadow-2xl z-50">+</button>
@@ -766,60 +743,7 @@
         </div>
     </div>
 
-    <!-- NEW GOAL MODAL -->
-    <div id="goal-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50">
-        <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl">
 
-            <!-- Drag handle -->
-            <div class="flex justify-center pt-3 pb-0">
-                <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
-            </div>
-
-            <!-- Header -->
-            <div class="text-center pt-7 pb-5">
-                <div class="text-5xl mb-3 leading-none">🏦</div>
-                <h2 class="text-2xl font-semibold tracking-tight">New Savings Goal</h2>
-                <p class="text-zinc-500 text-sm mt-1">Set a target and track your progress</p>
-            </div>
-
-            <!-- Fields card -->
-            <div class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-6">
-
-                <div class="px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Savings Item</div>
-                    <select id="goal-sub"
-                            class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
-                </div>
-
-                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Target Amount</div>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-emerald-400 font-semibold">$</span>
-                        <input id="goal-target" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
-                               class="flex-1 bg-transparent text-sm font-semibold text-zinc-100 focus:outline-none placeholder-zinc-600">
-                    </div>
-                </div>
-
-                <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Target Date</div>
-                    <input id="goal-deadline" type="date"
-                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none">
-                </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="px-5 pb-10 space-y-2">
-                <button onclick="addGoal()"
-                        class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-3xl font-semibold text-base transition-colors">
-                    Create Goal
-                </button>
-                <button onclick="hideModal()"
-                        class="w-full py-3 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- BUDGET ITEM MODAL (transaction summary + inline editing) -->
     <div id="budget-item-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-50" onclick="_bimBackdrop(event)">
@@ -1014,17 +938,6 @@
                         </div>
                         <div class="h-px bg-zinc-800 mx-5"></div>
                         <div class="flex items-center gap-4 px-5 py-4">
-                            <div class="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
-                                <svg width="16" height="16" fill="none" stroke="#34d399" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="font-semibold text-sm">Goal Milestones</div>
-                                <div class="text-[11px] text-zinc-500 mt-0.5">Celebrate 50% and 100% progress</div>
-                            </div>
-                            <label class="tog-wrap"><input type="checkbox" id="notif-goals" onchange="saveNotifSettings()"><span class="tog-track"></span></label>
-                        </div>
-                        <div class="h-px bg-zinc-800 mx-5"></div>
-                        <div class="flex items-center gap-4 px-5 py-4">
                             <div class="w-9 h-9 rounded-xl bg-blue-500/15 flex items-center justify-center shrink-0">
                                 <svg width="16" height="16" fill="none" stroke="#60a5fa" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             </div>
@@ -1192,7 +1105,7 @@
         let transactions = [];
         let expenseCategories = {};
         let monthlyBudgets = {};
-        let goals = [];
+
         let currentType = 'expense';
         let selectedBudgetMonth = "";
         let _rCharts = {};  // report chart instances keyed by card id
@@ -1206,9 +1119,9 @@
         let txSort = 'date-desc';     // 'date-desc'|'date-asc'|'amount-desc'|'amount-asc'
         let _undoData = null, _undoTimer = null;
         let _editingTxIdx = null;
-        let _editingGoalIdx = null;
 
-        let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Debt":"💳","Savings":"🏦","Banking":"🏛️" };
+
+        let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Debt":"💳","Banking":"🏛️" };
         let itemIcons = {}; // keyed "main:sub", e.g. "Food:Groceries" → "🛒"
         let _bimMain = null, _bimSub = null, _bimSelectedIcon = null;
         let _balLegendOpen = false;
@@ -1224,7 +1137,7 @@
             "Health":         ["Supplements", "Medical", "Training"],
             "Banking":        ["Bank Fees", "Transfers", "Cash Withdrawal"],
             "Debt":           ["Student Loans"],
-            "Savings":        ["Emergency Fund", "Tuition"],
+
         };
 
         const defaultItemIcons = {
@@ -1254,8 +1167,7 @@
             "Banking:Transfers":          "💸",
             "Banking:Cash Withdrawal":    "💵",
             "Debt:Student Loans":         "🎓",
-            "Savings:Emergency Fund":     "🔐",
-            "Savings:Tuition":            "📖",
+
         };
 
         /* ── Persistence helpers ─────────────────────── */
@@ -1265,7 +1177,7 @@
         function saveData() {
             if (_demoMode) return; // never persist demo data
             const snap = {
-                transactions, expenseCategories, monthlyBudgets, goals, itemIcons
+                transactions, expenseCategories, monthlyBudgets, itemIcons
                 // incomeCats is now derived from expenseCategories['Income'] — not saved separately
             };
             // Always write to localStorage as offline cache
@@ -1286,7 +1198,7 @@
         function _applyData(d) {
             expenseCategories = d.expenseCategories || {...defaultCategories};
             monthlyBudgets    = d.monthlyBudgets    || {};
-            goals             = d.goals             || [];
+
             transactions      = d.transactions      || [];
             itemIcons         = d.itemIcons         || {};
             incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
@@ -1327,7 +1239,7 @@
             _applyData({
                 expenseCategories: JSON.parse(localStorage.getItem('expenseCategories')),
                 monthlyBudgets:    JSON.parse(localStorage.getItem('monthlyBudgets')),
-                goals:             JSON.parse(localStorage.getItem('goals')),
+
                 transactions:      JSON.parse(localStorage.getItem('transactions')),
                 itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
                 incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
@@ -1412,10 +1324,6 @@
                 .reduce((s, t) => s + parseFloat(t.amount), 0);
         }
 
-        function calculateGoalProgress(linkedSub) {
-            return transactions.filter(t => t.type === 'expense' && t.mainCategory === 'Savings' && t.subCategory === linkedSub)
-                .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-        }
 
         function renderOverview() {
             const monthKey  = getCurrentMonthKey();
@@ -1579,7 +1487,7 @@
             }
 
             // ── Recent transactions ────────────────────────────────────
-            const CAT_EMOJI = { Food:'\uD83C\uDF54', Living:'\uD83C\uDFE0', Personal:'\uD83D\uDC64', Health:'\uD83E\uDE7A', Transportation:'\uD83D\uDE97', Debt:'\uD83D\uDCB3', Savings:'\uD83C\uDFE6' };
+            const CAT_EMOJI = { Food:'\uD83C\uDF54', Living:'\uD83C\uDFE0', Personal:'\uD83D\uDC64', Health:'\uD83E\uDE7A', Transportation:'\uD83D\uDE97', Debt:'\uD83D\uDCB3' };
             const recent = transactions.slice()
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 6);
@@ -1792,7 +1700,7 @@
             if (sortLbl) sortLbl.textContent = SORT_LABELS[txSort] || 'Date ↓';
 
             // Filter by type + search query
-            const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳', Savings:'🏦' };
+            const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳' };
             const filtered = sorted.filter(t => {
                 if (txFilter !== 'all' && t.type !== txFilter) return false;
                 if (!q) return true;
@@ -1830,7 +1738,7 @@
         }
 
         function _txRowHTML(t) {
-            const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳', Savings:'🏦' };
+            const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳' };
             const realIdx = transactions.indexOf(t);
             const isInc   = t.type === 'income';
             const isExcl  = !!t.excluded;
@@ -2335,7 +2243,7 @@
                     if (mb[main] && sub in mb[main]) { mb[main][newName] = mb[main][sub]; delete mb[main][sub]; }
                 });
                 transactions.forEach(t => { if (t.mainCategory === main && t.subCategory === sub) t.subCategory = newName; });
-                goals.forEach(g => { if (g.linkedSub === sub) { g.linkedSub = newName; g.name = newName; } });
+
                 saveData();
                 renderBudgets();
             }
@@ -2451,7 +2359,7 @@
         const CAT_PALETTE = {
             'Food':'#f59e0b','Living':'#818cf8','Personal':'#c084fc',
             'Health':'#34d399','Transportation':'#38bdf8',
-            'Debt':'#fb923c','Savings':'#a3e635','Banking':'#94a3b8'
+            'Debt':'#fb923c','Banking':'#94a3b8'
         };
         const _FB_COLORS = ['#f87171','#fb923c','#fbbf24','#a3e635','#34d399',
                             '#22d3ee','#818cf8','#c084fc','#f472b6','#e879f9'];
@@ -2968,82 +2876,6 @@
             document.getElementById('history-list').innerHTML = listHTML || '<p class="text-center text-zinc-600 text-sm py-8">No data yet</p>';
         }
 
-        function renderGoals() {
-            const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳', Savings:'🏦' };
-            let html = '';
-            goals.forEach((g, i) => {
-                const saved   = calculateGoalProgress(g.linkedSub);
-                const percent = g.target > 0 ? Math.min(100, Math.round(saved / g.target * 100)) : 0;
-                const done    = percent >= 100;
-                const daysLeft = Math.ceil((new Date(g.deadline) - new Date()) / 86400000);
-
-                // SVG arc
-                const R = 28, CX = 34, CY = 34;
-                const circ = 2 * Math.PI * R;
-                const offset = circ * (1 - percent / 100);
-                const arcColor  = done ? '#10b981' : percent > 80 ? '#f59e0b' : '#10b981';
-                const trackColor = '#27272a';
-
-                // Days badge
-                let daysBadge;
-                if (done) {
-                    daysBadge = `<span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full">Complete 🎉</span>`;
-                } else if (daysLeft <= 0) {
-                    daysBadge = `<span class="bg-rose-500/20 text-rose-400 text-[10px] font-bold px-2.5 py-1 rounded-full">Past due</span>`;
-                } else if (daysLeft <= 30) {
-                    daysBadge = `<span class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full">${daysLeft}d left</span>`;
-                } else {
-                    const months = Math.round(daysLeft / 30);
-                    daysBadge = `<span class="bg-zinc-800 text-zinc-400 text-[10px] font-bold px-2.5 py-1 rounded-full">~${months}mo left</span>`;
-                }
-
-                const glowCls = done ? 'ring-1 ring-emerald-500/30' : '';
-
-                html += `<div class="bg-zinc-900 rounded-3xl p-5 ${glowCls}">
-                    <div class="flex items-center gap-4">
-                        <!-- Arc progress -->
-                        <div class="shrink-0">
-                            <svg width="68" height="68" viewBox="0 0 68 68">
-                                <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${trackColor}" stroke-width="5"/>
-                                <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${arcColor}" stroke-width="5"
-                                        stroke-linecap="round"
-                                        stroke-dasharray="${circ.toFixed(1)}"
-                                        stroke-dashoffset="${offset.toFixed(1)}"
-                                        transform="rotate(-90 ${CX} ${CY})"/>
-                                <text x="${CX}" y="${CY}" text-anchor="middle" dominant-baseline="central"
-                                      font-size="11" font-weight="700" fill="${arcColor}">${percent}%</text>
-                            </svg>
-                        </div>
-                        <!-- Info -->
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between mb-1">
-                                <div class="font-semibold text-base leading-tight truncate">${g.name}</div>
-                                ${daysBadge}
-                            </div>
-                            <div class="text-emerald-400 font-semibold text-sm tabular-nums mb-2">
-                                $${Math.round(saved)} <span class="text-zinc-600 font-normal">/ $${Math.round(g.target)}</span>
-                            </div>
-                            <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                                <div class="progress-bar h-full rounded-full" style="width:${percent}%;background:${arcColor}"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4 pt-3.5 border-t border-zinc-800 flex justify-between items-center">
-                        <div class="text-[10px] text-zinc-600 uppercase font-bold tracking-widest">Target: ${g.deadline}</div>
-                        <div class="flex items-center gap-4">
-                            <button onclick="editGoal(${i})" class="text-zinc-400 hover:text-emerald-400 text-xs font-semibold transition-colors">Edit</button>
-                            <button onclick="deleteGoal(${i})" class="text-zinc-700 hover:text-rose-400 text-xs font-semibold transition-colors">Delete</button>
-                        </div>
-                    </div>
-                </div>`;
-            });
-            document.getElementById('goals-list').innerHTML = html ||
-                `<div class="text-center py-16">
-                    <div class="text-5xl mb-4">🏦</div>
-                    <div class="font-semibold text-zinc-400 mb-1">No savings goals yet</div>
-                    <div class="text-xs text-zinc-600">Tap "New Goal" to get started</div>
-                </div>`;
-        }
 
         // ── Tab long-press: set home screen ─────────────────
         let _tabHoldTimer = null;
@@ -3087,7 +2919,7 @@
             active.classList.add('tab-active');
             active.classList.remove('text-zinc-500');
             active.classList.add('text-white');
-            [renderOverview, renderTransactions, renderBudgets, renderReports, renderGoals][n]?.();
+            [renderOverview, renderTransactions, renderBudgets, renderReports][n]?.();
         }
 
         function prevBudgetMonth() {
@@ -3222,7 +3054,6 @@ Transactions using it will stay.`)) {
                 delete itemIcons[`${main}:${sub}`];
                 saveData();
                 renderBudgets();
-                renderGoals();
             }
         }
 
@@ -3379,9 +3210,7 @@ Transactions using it will stay.`)) {
                         transactions.forEach(t => {
                             if (t.mainCategory === _bimMain && t.subCategory === _bimSub) t.subCategory = newName;
                         });
-                        goals.forEach(g => {
-                            if (g.linkedSub === _bimSub) { g.linkedSub = newName; g.name = newName; }
-                        });
+
                         if (itemIcons[`${_bimMain}:${_bimSub}`]) {
                             itemIcons[`${_bimMain}:${newName}`] = itemIcons[`${_bimMain}:${_bimSub}`];
                             delete itemIcons[`${_bimMain}:${_bimSub}`];
@@ -3516,7 +3345,6 @@ Transactions using it will stay.`)) {
             saveData();
             closeBudgetItemModal();
             renderBudgets();
-            renderGoals();
         }
 
         function showAddModal() {
@@ -3545,9 +3373,7 @@ Transactions using it will stay.`)) {
 
         function hideModal() {
             document.getElementById('add-modal').classList.add('hidden');
-            document.getElementById('goal-modal').classList.add('hidden');
             _editingTxIdx = null;
-            _editingGoalIdx = null;
         }
 
         function setType(type) {
@@ -3622,7 +3448,6 @@ Transactions using it will stay.`)) {
             renderTransactions();
             renderBudgets();
             renderAllReports();
-            renderGoals();
         }
 
         function openEditTx(idx) {
@@ -3689,77 +3514,6 @@ Transactions using it will stay.`)) {
             _showUndo(index);
         }
 
-        function showAddGoalModal() {
-            const usedSubs = new Set(goals.map(g => g.linkedSub));
-            const available = (expenseCategories["Savings"] || []).filter(s => !usedSubs.has(s));
-            if (available.length === 0) {
-                return alert("All savings budget items already have a goal. Delete an existing goal or add a new savings budget item first.");
-            }
-            const sel = document.getElementById('goal-sub'); sel.innerHTML = '';
-            available.forEach(sub => {
-                const opt = document.createElement('option'); opt.value = sub; opt.textContent = sub; sel.appendChild(opt);
-            });
-            document.getElementById('goal-target').value = '';
-            document.getElementById('goal-deadline').value = '';
-            document.getElementById('goal-modal').classList.remove('hidden');
-        }
-
-        function editGoal(i) {
-            const g = goals[i];
-            if (!g) return;
-            _editingGoalIdx = i;
-            // Populate the goal modal for editing
-            const sel = document.getElementById('goal-sub');
-            sel.innerHTML = `<option value="${g.linkedSub}">${g.linkedSub}</option>`;
-            sel.disabled = true;
-            document.getElementById('goal-target').value = Math.round(g.target);
-            document.getElementById('goal-deadline').value = g.deadline;
-            // Update modal header
-            const hdr = document.querySelector('#goal-modal h2');
-            if (hdr) hdr.textContent = 'Edit Goal';
-            const sub = document.querySelector('#goal-modal p');
-            if (sub) sub.textContent = 'Update your target or deadline';
-            const btn = document.querySelector('#goal-modal button[onclick="addGoal()"]');
-            if (btn) btn.textContent = 'Save Changes';
-            document.getElementById('goal-modal').classList.remove('hidden');
-        }
-
-        function addGoal() {
-            const linkedSub = document.getElementById('goal-sub').value;
-            const target = parseFloat(document.getElementById('goal-target').value);
-            const deadline = document.getElementById('goal-deadline').value;
-            if (!linkedSub || !target || !deadline) return alert("Fill all fields");
-
-            if (_editingGoalIdx !== null) {
-                // Editing existing goal
-                goals[_editingGoalIdx].target   = target;
-                goals[_editingGoalIdx].deadline = deadline;
-            } else {
-                // New goal
-                if (goals.some(g => g.linkedSub === linkedSub)) return alert(`A goal for "${linkedSub}" already exists.`);
-                goals.push({ id: Date.now(), name: linkedSub, linkedSub, target, deadline });
-            }
-            saveData();
-            hideModal();
-            // Reset goal modal to "New" state for next time
-            const sel = document.getElementById('goal-sub');
-            if (sel) sel.disabled = false;
-            const hdr = document.querySelector('#goal-modal h2');
-            if (hdr) hdr.textContent = 'New Savings Goal';
-            const sub = document.querySelector('#goal-modal p');
-            if (sub) sub.textContent = 'Set a target and track your progress';
-            const btn = document.querySelector('#goal-modal button[onclick="addGoal()"]');
-            if (btn) btn.textContent = 'Create Goal';
-            renderGoals();
-        }
-
-        function deleteGoal(index) {
-            if (confirm("Delete this goal?")) {
-                goals.splice(index, 1);
-                saveData();
-                renderGoals();
-            }
-        }
 
         /* ── Settings modal ─────────────────────────────── */
         function showDataModal() {
@@ -3806,7 +3560,6 @@ Transactions using it will stay.`)) {
             const catCount = Object.values(expenseCategories).reduce((s, arr) => s + arr.length, 0);
             const stats = [
                 ['Transactions', transactions.length,  '#10b981'],
-                ['Goals',        goals.length,          '#10b981'],
                 ['Budget Items', catCount,              '#10b981'],
             ];
             el.innerHTML = stats.map(([label, val, color]) => `
@@ -4048,15 +3801,14 @@ Transactions using it will stay.`)) {
         function deleteIncomeType(i)     { deleteCatItem('Income', i); }
 
         function clearAllData() {
-            if (!confirm('Reset app to factory defaults?\nThis clears ALL transactions, goals, budgets and categories — and restores the default category list.\nThis cannot be undone.')) return;
+            if (!confirm('Reset app to factory defaults?\nThis clears ALL transactions, budgets and categories — and restores the default category list.\nThis cannot be undone.')) return;
             // Full factory reset: wipe everything and restore defaults
             transactions      = [];
-            goals             = [];
             monthlyBudgets    = {};
             expenseCategories = {...defaultCategories};
             _syncIncomeCats();
             // Wipe localStorage completely for this app
-            ['transactions','goals','monthlyBudgets','expenseCategories','incomeCats','tutDone']
+            ['transactions','monthlyBudgets','expenseCategories','incomeCats','tutDone']
                 .forEach(function(k) { localStorage.removeItem(k); });
             // Delete from Firestore if signed in
             const user = _fbAuth ? _fbAuth.currentUser : null;
@@ -4074,7 +3826,6 @@ Transactions using it will stay.`)) {
                 transactions,
                 expenseCategories,
                 monthlyBudgets,
-                goals,
                 exportedAt: new Date().toISOString()
             };
             const filename = `Minimal-Budget-Backup-${new Date().toISOString().slice(0,10)}.json`;
@@ -4096,7 +3847,6 @@ Transactions using it will stay.`)) {
                     if (imported.transactions) transactions = imported.transactions;
                     if (imported.expenseCategories) expenseCategories = imported.expenseCategories;
                     if (imported.monthlyBudgets) monthlyBudgets = imported.monthlyBudgets;
-                    if (imported.goals) goals = imported.goals;
                     saveData();
                     alert("Backup restored successfully!");
                     hideDataModal();
@@ -4115,12 +3865,10 @@ Transactions using it will stay.`)) {
             const prefs = JSON.parse(localStorage.getItem('notifPrefs') || '{}');
             const masterEl  = document.getElementById('notif-master');
             const budgetEl  = document.getElementById('notif-budget');
-            const goalsEl   = document.getElementById('notif-goals');
             const monthlyEl = document.getElementById('notif-monthly');
             const master = prefs.master !== false;
             if (masterEl)  masterEl.checked  = master;
             if (budgetEl)  budgetEl.checked  = prefs.budget  !== false;
-            if (goalsEl)   goalsEl.checked   = prefs.goals   !== false;
             if (monthlyEl) monthlyEl.checked = prefs.monthly !== false;
             // Dim sub-items if master off
             const body = document.getElementById('notif-acc-body');
@@ -4132,7 +3880,6 @@ Transactions using it will stay.`)) {
             const prefs = {
                 master,
                 budget:  document.getElementById('notif-budget')?.checked  ?? true,
-                goals:   document.getElementById('notif-goals')?.checked   ?? true,
                 monthly: document.getElementById('notif-monthly')?.checked ?? true,
             };
             localStorage.setItem('notifPrefs', JSON.stringify(prefs));
@@ -4172,22 +3919,6 @@ Transactions using it will stay.`)) {
                 });
             }
 
-            // Goal milestones
-            if (prefs.goals !== false) {
-                goals.forEach(g => {
-                    const saved   = calculateGoalProgress(g.linkedSub);
-                    const percent = g.target > 0 ? Math.round(saved / g.target * 100) : 0;
-                    const key50   = `milestone_50_${g.id}`;
-                    const key100  = `milestone_100_${g.id}`;
-                    if (percent >= 100 && !sessionStorage.getItem(key100)) {
-                        sessionStorage.setItem(key100, '1');
-                        showToast(`🎉 Goal complete: ${g.name}!`, 'emerald');
-                    } else if (percent >= 50 && !sessionStorage.getItem(key50)) {
-                        sessionStorage.setItem(key50, '1');
-                        showToast(`🏆 Halfway there on ${g.name}!`, 'emerald');
-                    }
-                });
-            }
         }
 
         function showToast(msg, color) {
@@ -4207,7 +3938,7 @@ Transactions using it will stay.`)) {
         }
 
         /* ── Launch screen preference ───────────────────── */
-        const LAUNCH_TABS = ['Overview', 'Transactions', 'Budgets', 'Reports', 'Goals'];
+        const LAUNCH_TABS = ['Overview', 'Transactions', 'Budgets', 'Reports'];
 
         function getLaunchTab() {
             return parseInt(localStorage.getItem('launchTab') || '0', 10);
@@ -5176,7 +4907,7 @@ Transactions using it will stay.`)) {
         /* ══════════════════════════════════════════════
            TUTORIAL
         ══════════════════════════════════════════════ */
-        const TUT_TOTAL = 7;
+        const TUT_TOTAL = 6;
         let _tutIdx = 0;
 
         function tutOpen() {
@@ -5427,7 +5158,6 @@ Transactions using it will stay.`)) {
             _demoMode = true;
             // Load fresh default state — no localStorage, no Firestore
             transactions      = [];
-            goals             = [];
             monthlyBudgets    = {};
             expenseCategories = {...defaultCategories};
             incomeCats        = ["Salary","Freelance","Investments","Gifts","Other"];
@@ -5446,7 +5176,6 @@ Transactions using it will stay.`)) {
             _updateDemoBannerPadding();
             // Clear any changes made in demo mode then go back to auth
             transactions      = [];
-            goals             = [];
             monthlyBudgets    = {};
             expenseCategories = {...defaultCategories};
             incomeCats        = ["Salary","Freelance","Investments","Gifts","Other"];
@@ -5638,41 +5367,6 @@ Transactions using it will stay.`)) {
                 </svg>
                 <h2 class="text-2xl font-semibold tracking-tight text-white mb-3">Budgets</h2>
                 <p class="text-zinc-400 text-sm leading-relaxed" style="max-width:18rem">Set monthly limits per category.<br>Budgets glow <span class="text-emerald-400 font-medium">green</span> when on-track, <span class="text-amber-400 font-medium">amber</span> when tight, and <span class="text-rose-400 font-medium">red</span> when over-budget.<br>Simply tap any budget to edit.</p>
-            </div>
-
-            <!-- ── SLIDE 4 · Goals ────────────────────── -->
-            <div class="tut-slide" id="tut-4">
-                <svg width="220" height="160" viewBox="0 0 220 160" fill="none" class="mb-8">
-                    <!-- Goal 1 -->
-                    <rect x="20" y="8" width="180" height="64" rx="16" fill="#18181b" stroke="#27272a" stroke-width="1"/>
-                    <!-- Arc -->
-                    <circle cx="62" cy="40" r="24" stroke="#27272a" stroke-width="4.5"/>
-                    <circle cx="62" cy="40" r="24" stroke="#10b981" stroke-width="4.5"
-                            stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="45.2"
-                            transform="rotate(-90 62 40)"/>
-                    <text x="62" y="45" text-anchor="middle" font-size="10" fill="#10b981" font-family="system-ui,sans-serif" font-weight="700">70%</text>
-                    <!-- Info -->
-                    <text x="100" y="33" font-size="10" fill="#f4f4f5" font-family="system-ui,sans-serif" font-weight="600">Emergency Fund</text>
-                    <text x="100" y="47" font-size="9" fill="#10b981" font-family="system-ui,sans-serif">$7,000 <tspan fill="#52525b">/ $10,000</tspan></text>
-                    <rect x="100" y="55" width="88" height="3" rx="1.5" fill="#27272a"/>
-                    <rect x="100" y="55" width="62" height="3" rx="1.5" fill="#10b981"/>
-                    <!-- Goal 2 — nearly done -->
-                    <rect x="20" y="88" width="180" height="64" rx="16" fill="#18181b" stroke="#27272a" stroke-width="1"/>
-                    <circle cx="62" cy="120" r="24" stroke="#27272a" stroke-width="4.5"/>
-                    <circle cx="62" cy="120" r="24" stroke="#f59e0b" stroke-width="4.5"
-                            stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="22.6"
-                            transform="rotate(-90 62 120)"/>
-                    <text x="62" y="125" text-anchor="middle" font-size="10" fill="#f59e0b" font-family="system-ui,sans-serif" font-weight="700">85%</text>
-                    <text x="100" y="113" font-size="10" fill="#f4f4f5" font-family="system-ui,sans-serif" font-weight="600">New Laptop</text>
-                    <text x="100" y="127" font-size="9" fill="#10b981" font-family="system-ui,sans-serif">$1,700 <tspan fill="#52525b">/ $2,000</tspan></text>
-                    <rect x="100" y="135" width="88" height="3" rx="1.5" fill="#27272a"/>
-                    <rect x="100" y="135" width="75" height="3" rx="1.5" fill="#f59e0b"/>
-                    <!-- countdown badge -->
-                    <rect x="162" y="104" width="34" height="13" rx="6.5" fill="rgba(245,158,11,.15)"/>
-                    <text x="179" y="114" text-anchor="middle" font-size="7.5" fill="#fbbf24" font-family="system-ui,sans-serif" font-weight="700">30d left</text>
-                </svg>
-                <h2 class="text-2xl font-semibold tracking-tight text-white mb-3">Goals</h2>
-                <p class="text-zinc-400 text-sm leading-relaxed" style="max-width:17rem">Create a savings Goal to help you track your progress towards a major expense or fund. You got this!</p>
             </div>
 
 
