@@ -2251,104 +2251,137 @@
                 const emeraldShades = ['#a7f3d0','#6ee7b7','#34d399','#10b981','#059669','#047857'];
                 const amberShades   = ['#fde68a','#fcd34d','#fbbf24','#f59e0b','#d97706','#b45309'];
                 const roseShades    = ['#fecdd3','#fda4af','#fb7185','#f43f5e','#e11d48','#be123c'];
-                const palette = isBalanced ? emeraldShades : (balance > 0 ? amberShades : roseShades);
+                const spentShades   = ['#93c5fd','#60a5fa','#3b82f6','#2563eb','#1d4ed8','#1e40af'];
 
-                // Collect and sort categories by budget amount (largest first)
-                const catEntries = Object.keys(expenseCategories)
-                    .filter(k => k !== 'Income')
-                    .map(cat => ({
-                        cat,
-                        catBudget: expenseCategories[cat].reduce((s, item) => s + ((monthBudgets[cat]||{})[item]||0), 0)
-                    }))
-                    .filter(x => x.catBudget > 0 && incomePlanned > 0);
-                // Add dynamic Saving/Debt to donut
-                ['Saving', 'Debt'].forEach(secType => {
-                    const secBudget = walletAccounts.filter(a => a.type === secType.toLowerCase())
-                        .reduce((s, acc) => s + ((monthBudgets[secType]||{})[acc.name]||0), 0);
-                    if (secBudget > 0 && incomePlanned > 0) {
-                        catEntries.push({ cat: secType, catBudget: secBudget });
-                    }
-                });
-                catEntries.sort((a, b) => b.catBudget - a.catBudget);
+                let segs = '', legendItems = [], centerSVG, statsHTML;
 
-                // Assign shades: rank 0 (largest) = lightest, rank N-1 (smallest) = darkest
-                const numCats = catEntries.length;
-                catEntries.forEach((entry, rank) => {
-                    const colorIdx = numCats <= 1 ? 2 : Math.round(rank / (numCats - 1) * 5);
-                    entry.color = palette[colorIdx];
-                });
+                if (_budgetViewMode === 'remaining' && expBudgeted > 0) {
+                    // ── REMAINING MODE RING: spent by section / total budgeted ──
+                    const totalSpentR = calculateSpentInMonth(selectedBudgetMonth) + Math.max(0, _calculateTotalSavingsInMonth(selectedBudgetMonth));
+                    const leftToSpendR = expBudgeted - totalSpentR;
 
-                // Build arc segments and legend items
-                let offsetArc = 0;
-                let segs = '';
-                let legendItems = [];
-                catEntries.forEach(entry => {
-                    const { cat, catBudget, color } = entry;
-                    const arcLen = Math.min((catBudget / incomePlanned) * circ, circ - offsetArc);
-                    if (arcLen <= 0) return;
-                    segs += `<circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-dasharray="${arcLen.toFixed(3)} ${(circ-arcLen).toFixed(3)}" stroke-dashoffset="${(circ-offsetArc).toFixed(3)}" transform="rotate(-90,${cxD},${cyD})"/>`;
-                    const pctLbl = Math.round(catBudget / incomePlanned * 100);
-                    legendItems.push(
-                        `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">` +
-                        `<span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0"></span>` +
-                        `<span style="font-size:14px;color:#a1a1aa;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cat} <span style="color:#71717a;font-size:12px">${pctLbl}%</span></span>` +
-                        `<span style="font-size:14px;color:#a1a1aa;font-variant-numeric:tabular-nums">$${Math.round(catBudget)}</span>` +
-                        `</div>`
-                    );
-                    offsetArc += arcLen;
-                });
+                    // Build spent-by-section entries
+                    const spentEntries = [];
+                    Object.keys(expenseCategories).filter(k => k !== 'Income').forEach(cat => {
+                        const spent = expenseCategories[cat].reduce((s, item) => s + calculateSpentInMonth(selectedBudgetMonth, cat, item), 0);
+                        if (spent > 0) spentEntries.push({ cat, spent });
+                    });
+                    ['Saving', 'Debt'].forEach(secType => {
+                        const spent = walletAccounts.filter(a => a.type === secType.toLowerCase())
+                            .reduce((s, acc) => {
+                                const net = _calculateTransferToAccount(selectedBudgetMonth, acc.id);
+                                return s + Math.max(0, net);
+                            }, 0);
+                        if (spent > 0) spentEntries.push({ cat: secType, spent });
+                    });
+                    spentEntries.sort((a, b) => b.spent - a.spent);
 
-                // Unallocated arc when under budget (not balanced)
-                if (!isBalanced && balance > 0 && incomePlanned > 0) {
-                    const unallocArc = Math.min((balance / incomePlanned) * circ, circ - offsetArc);
-                    if (unallocArc > 0.5) {
-                        segs += `<circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="${palette[0]}" stroke-width="10" opacity="0.35" stroke-dasharray="${unallocArc.toFixed(3)} ${(circ-unallocArc).toFixed(3)}" stroke-dashoffset="${(circ-offsetArc).toFixed(3)}" transform="rotate(-90,${cxD},${cyD})"/>`;
-                    }
-                }
+                    // Assign colors
+                    const nSp = spentEntries.length;
+                    spentEntries.forEach((entry, rank) => {
+                        const ci = nSp <= 1 ? 2 : Math.round(rank / (nSp - 1) * 5);
+                        entry.color = spentShades[ci];
+                    });
 
-                // Center label values
-                const cAmt  = incomePlanned === 0 ? '' : `${balSign}$${Math.round(Math.abs(balance))}`;
-                const cLbl  = incomePlanned === 0 ? 'no income set' : balLabel.toUpperCase();
-                const cAmtFill = isBalanced ? '#10b981' : balance > 0 ? '#f59e0b' : '#ef4444';
-                const cLblFill = isBalanced ? '#34d399' : balance > 0 ? '#d97706' : '#f87171';
+                    // Build arcs: full circle = expBudgeted
+                    let offsetArc = 0;
+                    spentEntries.forEach(entry => {
+                        const arcLen = Math.min((entry.spent / expBudgeted) * circ, circ - offsetArc);
+                        if (arcLen <= 0) return;
+                        segs += `<circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="${entry.color}" stroke-width="${sw}" stroke-dasharray="${arcLen.toFixed(3)} ${(circ-arcLen).toFixed(3)}" stroke-dashoffset="${(circ-offsetArc).toFixed(3)}" transform="rotate(-90,${cxD},${cyD})"/>`;
+                        const pctLbl = Math.round(entry.spent / expBudgeted * 100);
+                        legendItems.push(
+                            `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">` +
+                            `<span style="width:8px;height:8px;border-radius:50%;background:${entry.color};display:inline-block;flex-shrink:0"></span>` +
+                            `<span style="font-size:14px;color:#a1a1aa;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${entry.cat} <span style="color:#71717a;font-size:12px">${pctLbl}%</span></span>` +
+                            `<span style="font-size:14px;color:#a1a1aa;font-variant-numeric:tabular-nums">$${Math.round(entry.spent)}</span>` +
+                            `</div>`
+                        );
+                        offsetArc += arcLen;
+                    });
 
-                let centerSVG;
-                if (incomePlanned === 0) {
-                    centerSVG = `<text x="${cxD}" y="${cyD+4}" text-anchor="middle" fill="#52525b" font-size="10" font-family="system-ui,sans-serif">No income set</text>`;
-                } else if (_budgetViewMode === 'remaining') {
-                    const mExpPure2 = calculateSpentInMonth(selectedBudgetMonth);
-                    const mSavings2 = _calculateTotalSavingsInMonth(selectedBudgetMonth);
-                    const totalSpent2 = mExpPure2 + Math.max(0, mSavings2);
-                    const leftToSpend2 = expBudgeted - totalSpent2;
-                    const ltsFill = leftToSpend2 >= 0 ? '#34d399' : '#ef4444';
-                    centerSVG = `<text x="${cxD}" y="${cyD-7}" text-anchor="middle" fill="${ltsFill}" font-size="22" font-weight="700" font-family="system-ui,sans-serif">${leftToSpend2 >= 0 ? '' : '-'}$${Math.round(Math.abs(leftToSpend2))}</text><text x="${cxD}" y="${cyD+12}" text-anchor="middle" fill="${ltsFill}" font-size="9" font-family="system-ui,sans-serif" letter-spacing="0.08em">${leftToSpend2 >= 0 ? 'LEFT TO SPEND' : 'OVER BUDGET'}</text>`;
-                } else {
-                    centerSVG = `<text x="${cxD}" y="${cyD-7}" text-anchor="middle" fill="${cAmtFill}" font-size="22" font-weight="700" font-family="system-ui,sans-serif">${cAmt}</text><text x="${cxD}" y="${cyD+12}" text-anchor="middle" fill="${cLblFill}" font-size="9" font-family="system-ui,sans-serif" letter-spacing="0.08em">${cLbl}</text>`;
-                }
+                    // Center text
+                    const ltsFill = leftToSpendR >= 0 ? '#34d399' : '#ef4444';
+                    centerSVG = `<text x="${cxD}" y="${cyD-7}" text-anchor="middle" fill="${ltsFill}" font-size="22" font-weight="700" font-family="system-ui,sans-serif">${leftToSpendR >= 0 ? '' : '-'}$${Math.round(Math.abs(leftToSpendR))}</text><text x="${cxD}" y="${cyD+12}" text-anchor="middle" fill="${ltsFill}" font-size="9" font-family="system-ui,sans-serif" letter-spacing="0.08em">${leftToSpendR >= 0 ? 'LEFT TO SPEND' : 'OVER BUDGET'}</text>`;
 
-                // Right-side stats differ by view mode
-                let statsHTML;
-                if (incomePlanned === 0) {
-                    statsHTML = `<p style="font-size:11px;color:#52525b;line-height:1.6">Set a planned<br>income amount<br>to get started.</p>`;
-                } else if (_budgetViewMode === 'remaining') {
-                    // Remaining mode: Spent vs Budgeted, Left to Spend
-                    const mExpPure = calculateSpentInMonth(selectedBudgetMonth);
-                    const mSavings = _calculateTotalSavingsInMonth(selectedBudgetMonth);
-                    const totalSpent = mExpPure + Math.max(0, mSavings);
-                    const leftToSpend = expBudgeted - totalSpent;
-                    const ltsColor = leftToSpend >= 0 ? '#34d399' : '#ef4444';
+                    // Right-side stats
+                    const ltsColor = leftToSpendR >= 0 ? '#34d399' : '#ef4444';
                     statsHTML = `<div style="display:flex;flex-direction:column;gap:12px">
-                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Spent</div><div style="font-size:14px;font-weight:700;color:#f87171;font-variant-numeric:tabular-nums">$${Math.round(totalSpent)}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Spent</div><div style="font-size:14px;font-weight:700;color:#f87171;font-variant-numeric:tabular-nums">$${Math.round(totalSpentR)}</div></div>
                         <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Budgeted</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${Math.round(expBudgeted)}</div></div>
-                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${leftToSpend >= 0 ? 'Left to Spend' : 'Over Budget'}</div><div style="font-size:14px;font-weight:700;color:${ltsColor};font-variant-numeric:tabular-nums">$${Math.round(Math.abs(leftToSpend))}</div></div>
+                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${leftToSpendR >= 0 ? 'Left to Spend' : 'Over Budget'}</div><div style="font-size:14px;font-weight:700;color:${ltsColor};font-variant-numeric:tabular-nums">$${Math.round(Math.abs(leftToSpendR))}</div></div>
                        </div>`;
+
                 } else {
-                    // Plan mode: Expected Income vs Planned Outflows
-                    statsHTML = `<div style="display:flex;flex-direction:column;gap:12px">
-                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Expected Income</div><div style="font-size:14px;font-weight:700;color:#34d399;font-variant-numeric:tabular-nums">$${Math.round(incomePlanned)}</div></div>
-                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Planned Outflows</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${Math.round(expBudgeted)}</div></div>
-                        <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${isBalanced ? 'Balanced' : balance >= 0 ? 'Left to Budget' : 'Over Income'}</div><div style="font-size:14px;font-weight:700;color:${cAmtFill};font-variant-numeric:tabular-nums">$${Math.round(Math.abs(balance))}</div></div>
-                       </div>`;
+                    // ── PLAN MODE RING: budgeted by section / income ──
+                    const palette = isBalanced ? emeraldShades : (balance > 0 ? amberShades : roseShades);
+
+                    const catEntries = Object.keys(expenseCategories)
+                        .filter(k => k !== 'Income')
+                        .map(cat => ({
+                            cat,
+                            catBudget: expenseCategories[cat].reduce((s, item) => s + ((monthBudgets[cat]||{})[item]||0), 0)
+                        }))
+                        .filter(x => x.catBudget > 0 && incomePlanned > 0);
+                    ['Saving', 'Debt'].forEach(secType => {
+                        const secBudget = walletAccounts.filter(a => a.type === secType.toLowerCase())
+                            .reduce((s, acc) => s + ((monthBudgets[secType]||{})[acc.name]||0), 0);
+                        if (secBudget > 0 && incomePlanned > 0) {
+                            catEntries.push({ cat: secType, catBudget: secBudget });
+                        }
+                    });
+                    catEntries.sort((a, b) => b.catBudget - a.catBudget);
+
+                    const numCats = catEntries.length;
+                    catEntries.forEach((entry, rank) => {
+                        const colorIdx = numCats <= 1 ? 2 : Math.round(rank / (numCats - 1) * 5);
+                        entry.color = palette[colorIdx];
+                    });
+
+                    let offsetArc = 0;
+                    catEntries.forEach(entry => {
+                        const { cat, catBudget, color } = entry;
+                        const arcLen = Math.min((catBudget / incomePlanned) * circ, circ - offsetArc);
+                        if (arcLen <= 0) return;
+                        segs += `<circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-dasharray="${arcLen.toFixed(3)} ${(circ-arcLen).toFixed(3)}" stroke-dashoffset="${(circ-offsetArc).toFixed(3)}" transform="rotate(-90,${cxD},${cyD})"/>`;
+                        const pctLbl = Math.round(catBudget / incomePlanned * 100);
+                        legendItems.push(
+                            `<div style="display:flex;align-items:center;gap:8px;padding:3px 0">` +
+                            `<span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0"></span>` +
+                            `<span style="font-size:14px;color:#a1a1aa;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${cat} <span style="color:#71717a;font-size:12px">${pctLbl}%</span></span>` +
+                            `<span style="font-size:14px;color:#a1a1aa;font-variant-numeric:tabular-nums">$${Math.round(catBudget)}</span>` +
+                            `</div>`
+                        );
+                        offsetArc += arcLen;
+                    });
+
+                    if (!isBalanced && balance > 0 && incomePlanned > 0) {
+                        const unallocArc = Math.min((balance / incomePlanned) * circ, circ - offsetArc);
+                        if (unallocArc > 0.5) {
+                            segs += `<circle cx="${cxD}" cy="${cyD}" r="${r}" fill="none" stroke="${palette[0]}" stroke-width="10" opacity="0.35" stroke-dasharray="${unallocArc.toFixed(3)} ${(circ-unallocArc).toFixed(3)}" stroke-dashoffset="${(circ-offsetArc).toFixed(3)}" transform="rotate(-90,${cxD},${cyD})"/>`;
+                        }
+                    }
+
+                    const cAmt  = incomePlanned === 0 ? '' : `${balSign}$${Math.round(Math.abs(balance))}`;
+                    const cLbl  = incomePlanned === 0 ? 'no income set' : balLabel.toUpperCase();
+                    const cAmtFill = isBalanced ? '#10b981' : balance > 0 ? '#f59e0b' : '#ef4444';
+                    const cLblFill = isBalanced ? '#34d399' : balance > 0 ? '#d97706' : '#f87171';
+
+                    if (incomePlanned === 0) {
+                        centerSVG = `<text x="${cxD}" y="${cyD+4}" text-anchor="middle" fill="#52525b" font-size="10" font-family="system-ui,sans-serif">No income set</text>`;
+                    } else {
+                        centerSVG = `<text x="${cxD}" y="${cyD-7}" text-anchor="middle" fill="${cAmtFill}" font-size="22" font-weight="700" font-family="system-ui,sans-serif">${cAmt}</text><text x="${cxD}" y="${cyD+12}" text-anchor="middle" fill="${cLblFill}" font-size="9" font-family="system-ui,sans-serif" letter-spacing="0.08em">${cLbl}</text>`;
+                    }
+
+                    if (incomePlanned === 0) {
+                        statsHTML = `<p style="font-size:11px;color:#52525b;line-height:1.6">Set a planned<br>income amount<br>to get started.</p>`;
+                    } else {
+                        statsHTML = `<div style="display:flex;flex-direction:column;gap:12px">
+                            <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Expected Income</div><div style="font-size:14px;font-weight:700;color:#34d399;font-variant-numeric:tabular-nums">$${Math.round(incomePlanned)}</div></div>
+                            <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Planned Outflows</div><div style="font-size:14px;font-weight:700;color:#e4e4e7;font-variant-numeric:tabular-nums">$${Math.round(expBudgeted)}</div></div>
+                            <div><div style="font-size:9px;color:#52525b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">${isBalanced ? 'Balanced' : balance >= 0 ? 'Left to Budget' : 'Over Income'}</div><div style="font-size:14px;font-weight:700;color:${cAmtFill};font-variant-numeric:tabular-nums">$${Math.round(Math.abs(balance))}</div></div>
+                           </div>`;
+                    }
                 }
 
                 // Category legend — collapsible single column
@@ -3503,11 +3536,9 @@
                 if (!expenseCategories[main]) expenseCategories[main] = [];
                 expenseCategories[main].push(name);
                 if (_aimSelectedIcon) itemIcons[`${main}:${name}`] = _aimSelectedIcon;
-                if (planned > 0) {
-                    if (!monthlyBudgets[selectedBudgetMonth]) monthlyBudgets[selectedBudgetMonth] = {};
-                    if (!monthlyBudgets[selectedBudgetMonth][main]) monthlyBudgets[selectedBudgetMonth][main] = {};
-                    monthlyBudgets[selectedBudgetMonth][main][name] = planned;
-                }
+                if (!monthlyBudgets[selectedBudgetMonth]) monthlyBudgets[selectedBudgetMonth] = {};
+                if (!monthlyBudgets[selectedBudgetMonth][main]) monthlyBudgets[selectedBudgetMonth][main] = {};
+                monthlyBudgets[selectedBudgetMonth][main][name] = planned;
             }
 
             _aimEditingMain = null;
@@ -5535,6 +5566,7 @@ Transactions using it will stay.`)) {
         ══════════════════════════════════════════════ */
 
         let _importParsed = [];   // [{date, desc, amount, type}]
+        let _importAccountId = ''; // wallet account to link imported transactions to
 
         /* ── File entry point (called from Settings AND Tx tab) ─────── */
         function openBankImport(e) {
@@ -5561,6 +5593,9 @@ Transactions using it will stay.`)) {
                     console.error('Import error:', err);
                     showToast('Could not read file: ' + err.message, 'rose');
                 }
+            };
+            reader.onerror = () => {
+                showToast('Failed to read file.', 'rose');
             };
             reader.readAsText(file, 'utf-8');
             // Close any open modals
@@ -5599,27 +5634,27 @@ Transactions using it will stay.`)) {
             if (txns.length === 0) {
                 const lines = body.split('\n');
                 let cur = null;
+                const emitCur = () => {
+                    if (!cur || !cur.TRNAMT) return;
+                    const amt  = parseFloat(cur.TRNAMT.replace(/[^\d.\-]/g,''));
+                    const date = _ofxDate(cur.DTPOSTED || cur.DTUSER || '');
+                    if (!isNaN(amt) && amt !== 0 && date) {
+                        const desc = [cur.NAME, cur.MEMO].filter(Boolean)
+                                      .filter((v,i,a)=>a.indexOf(v)===i).join(' – ') || 'Transaction';
+                        txns.push({ date, desc, amount: Math.abs(amt),
+                                    type: amt < 0 ? 'expense' : 'income',
+                                    raw: `${amt}|${desc}` });
+                    }
+                };
                 for (const line of lines) {
                     const tag = line.match(/^<([A-Z]+)>(.*)/i);
                     if (!tag) continue;
                     const [, k, v] = tag;
-                    if (k === 'STMTTRN') { cur = {}; continue; }
+                    if (k.toUpperCase() === 'STMTTRN') { emitCur(); cur = {}; continue; }
                     if (!cur) continue;
                     cur[k.toUpperCase()] = v.trim();
-                    // Emit when we have both amount and date
-                    if (cur.TRNAMT && (cur.DTPOSTED || cur.DTUSER)) {
-                        const amt  = parseFloat(cur.TRNAMT.replace(/[^\d.\-]/g,''));
-                        const date = _ofxDate(cur.DTPOSTED || cur.DTUSER || '');
-                        if (!isNaN(amt) && amt !== 0 && date) {
-                            const desc = [cur.NAME, cur.MEMO].filter(Boolean)
-                                          .filter((v,i,a)=>a.indexOf(v)===i).join(' – ') || 'Transaction';
-                            txns.push({ date, desc, amount: Math.abs(amt),
-                                        type: amt < 0 ? 'expense' : 'income',
-                                        raw: `${amt}|${desc}` });
-                        }
-                        cur = {};
-                    }
                 }
+                emitCur(); // emit last transaction
             }
             return txns;
         }
@@ -5664,6 +5699,9 @@ Transactions using it will stay.`)) {
                 }
             }
 
+            // Auto-detect delimiter from header row
+            _csvDelim = _detectDelimiter(lines[headerIdx]);
+
             const header = _csvRow(lines[headerIdx]).map(h => h.toLowerCase().trim());
             const rows   = lines.slice(headerIdx + 1).map(_csvRow).filter(r => r.some(v => v.trim()));
             const bank   = _detectBank(header, lines.slice(0, headerIdx));
@@ -5672,15 +5710,25 @@ Transactions using it will stay.`)) {
             return parsed;
         }
 
-        /* ── RFC-4180 CSV row parser (handles quoted fields with commas) ── */
+        /* ── CSV row parser (handles quoted fields, comma/tab/semicolon delimiters) ── */
+        let _csvDelim = ',';
+        function _detectDelimiter(headerLine) {
+            const tabs = (headerLine.match(/\t/g) || []).length;
+            const semis = (headerLine.match(/;/g) || []).length;
+            const commas = (headerLine.match(/,/g) || []).length;
+            if (tabs > commas && tabs > semis) return '\t';
+            if (semis > commas && semis > tabs) return ';';
+            return ',';
+        }
         function _csvRow(line) {
+            const delim = _csvDelim;
             const out = []; let cur = ''; let inQ = false;
             for (let i = 0; i < line.length; i++) {
                 const ch = line[i];
                 if (ch === '"') {
                     if (inQ && line[i+1] === '"') { cur += '"'; i++; }
                     else inQ = !inQ;
-                } else if (ch === ',' && !inQ) { out.push(cur); cur = ''; }
+                } else if (ch === delim && !inQ) { out.push(cur); cur = ''; }
                 else cur += ch;
             }
             out.push(cur);
@@ -5691,23 +5739,34 @@ Transactions using it will stay.`)) {
         function _normDate(s) {
             s = (s || '').trim().replace(/['"]/g,'');
             if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;                    // ISO
-            // YYYY-MM-DD HH:MM:SS [AM/PM]  (Meridian datetime export)
-            var dtm = s.match(/^(\d{4}-\d{2}-\d{2})\s+\d{1,2}:\d{2}/);
+            // YYYY-MM-DD HH:MM:SS or with T separator
+            var dtm = s.match(/^(\d{4}-\d{2}-\d{2})[T\s]\d{1,2}:\d{2}/);
             if (dtm) return dtm[1];
+            // MM/DD/YYYY HH:MM:SS
+            var dtm2 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+\d{1,2}:\d{2}/);
+            if (dtm2) return `${dtm2[3]}-${dtm2[1].padStart(2,'0')}-${dtm2[2].padStart(2,'0')}`;
             if (/^\d{8}$/.test(s)) return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;  // YYYYMMDD
             let m;
             m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);                 // MM/DD/YYYY
             if (m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
-            m = s.match(/^(\d{4})\/(\d{2})\/(\d{2})$/);                     // YYYY/MM/DD (CIBC)
+            m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})$/);                 // MM/DD/YY
+            if (m) { const yr = parseInt(m[3]) > 50 ? '19'+m[3] : '20'+m[3]; return `${yr}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`; }
+            m = s.match(/^(\d{4})\/(\d{2})\/(\d{2})$/);                     // YYYY/MM/DD
             if (m) return `${m[1]}-${m[2]}-${m[3]}`;
             m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);                   // DD-MM-YYYY or MM-DD-YYYY
             if (m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+            m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);                 // DD.MM.YYYY
+            if (m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
             m = s.match(/^([A-Za-z]+)\.?\s+(\d{1,2}),?\s+(\d{4})$/);        // Jan 15, 2025
             if (m) { const mo = _moNum(m[1]); if (mo) return `${m[3]}-${mo}-${m[2].padStart(2,'0')}`; }
-            m = s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);              // 15-Jan-2025 (Meridian)
+            m = s.match(/^(\d{1,2})\s+([A-Za-z]+)\.?\s+(\d{4})$/);          // 15 Jan 2025
+            if (m) { const mo = _moNum(m[2]); if (mo) return `${m[3]}-${mo}-${m[1].padStart(2,'0')}`; }
+            m = s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);              // 15-Jan-2025
             if (m) { const mo = _moNum(m[2]); if (mo) return `${m[3]}-${mo}-${m[1].padStart(2,'0')}`; }
             m = s.match(/^([A-Za-z]+)\.?\s+(\d{1,2})\/(\d{4})$/);          // Jan 15/2025
             if (m) { const mo = _moNum(m[1]); if (mo) return `${m[3]}-${mo}-${m[2].padStart(2,'0')}`; }
+            m = s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{2})$/);              // 15-Jan-25
+            if (m) { const mo = _moNum(m[2]); const yr = parseInt(m[3]) > 50 ? '19'+m[3] : '20'+m[3]; if (mo) return `${yr}-${mo}-${m[1].padStart(2,'0')}`; }
             return null;
         }
         function _moNum(s) {
@@ -5926,26 +5985,28 @@ Transactions using it will stay.`)) {
             return {
                 name: 'Unknown Bank',
                 parse(h, rows) {
-                    const iDate   = h.findIndex(c => c.includes('date'));
-                    const iDesc   = h.findIndex(c => c.includes('description') || c.includes('details') || c.includes('memo') || c.includes('payee') || c.includes('name'));
-                    const iAmt    = h.findIndex(c => c.includes('amount') || c.includes('cad') || c.includes('usd'));
-                    const iDebit  = h.findIndex(c => c.includes('debit') || c.includes('withdrawal'));
-                    const iCredit = h.findIndex(c => c.includes('credit') || c.includes('deposit'));
-                    if (iDate === -1 || iDesc === -1)
-                        throw new Error('Could not find date or description columns. Columns found: ' + h.join(', '));
+                    const iDate   = h.findIndex(c => c.includes('date') || c.includes('posted'));
+                    const iDesc   = h.findIndex(c => c.includes('description') || c.includes('details') || c.includes('memo') || c.includes('payee') || c.includes('name') || c.includes('reference') || c.includes('narrative'));
+                    const iAmt    = h.findIndex(c => c.includes('amount') || c.includes('cad') || c.includes('usd') || c.includes('value') || c.includes('sum'));
+                    const iDebit  = h.findIndex(c => c.includes('debit') || c.includes('withdrawal') || c.includes('out'));
+                    const iCredit = h.findIndex(c => c.includes('credit') || c.includes('deposit') || c.includes('in'));
+                    if (iDate === -1)
+                        throw new Error('Could not find a date column. Columns found: ' + h.join(', '));
+                    if (iAmt === -1 && iDebit === -1 && iCredit === -1)
+                        throw new Error('Could not find amount, debit, or credit columns. Columns found: ' + h.join(', '));
                     return rows.map(r => {
                         let amount, type;
                         if (iAmt !== -1) {
                             amount = _amt(r[iAmt]);
                             type = amount < 0 ? 'expense' : 'income';
                             amount = Math.abs(amount);
-                        } else if (iDebit !== -1 || iCredit !== -1) {
-                            const d = _amt(r[iDebit]), cr = _amt(r[iCredit]);
-                            amount = d || cr; type = d ? 'expense' : 'income';
                         } else {
-                            return null;
+                            const d = iDebit !== -1 ? _amt(r[iDebit]) : 0;
+                            const cr = iCredit !== -1 ? _amt(r[iCredit]) : 0;
+                            amount = d || cr; type = d ? 'expense' : 'income';
                         }
-                        return { date: _normDate(r[iDate]), desc: r[iDesc] || 'Transaction',
+                        const desc = iDesc !== -1 ? (r[iDesc] || 'Transaction') : 'Transaction';
+                        return { date: _normDate(r[iDate]), desc,
                                  amount: Math.abs(amount), type, raw: r.join(',') };
                     }).filter(t => t && t.date && t.amount > 0);
                 }
@@ -5957,7 +6018,7 @@ Transactions using it will stay.`)) {
         ════════════════════════════════════════════ */
 
         function _txFingerprint(t) {
-            return `${t.date}|${Math.round(t.amount * 100)}|${(t.desc||'').slice(0,30).toLowerCase()}`;
+            return `${t.date}|${Math.round(t.amount * 100)}|${(t.desc||'').trim().toLowerCase()}`;
         }
 
         // Build category options HTML
@@ -5980,12 +6041,15 @@ Transactions using it will stay.`)) {
             var dupCount = _importParsed.filter(function(t) { return  t.isDup; }).length;
             var bankName = _importParsed._bank || 'Unknown Bank';
 
-            var firstMain = Object.keys(expenseCategories)[0] || '';
+            var firstMain = Object.keys(expenseCategories).filter(k => k !== 'Income')[0] || '';
             var firstSub  = (expenseCategories[firstMain] || [])[0] || '';
             _importParsed.forEach(function(t) {
                 if (!t._main) t._main = firstMain;
                 if (!t._sub)  t._sub  = firstSub;
             });
+
+            // Reset account selection
+            _importAccountId = '';
 
             document.getElementById('import-modal-subtitle').textContent = filename;
             document.getElementById('import-bank-label').textContent = '🏦 ' + bankName;
@@ -5993,15 +6057,32 @@ Transactions using it will stay.`)) {
             document.getElementById('import-count-dup').textContent = dupCount > 0
                 ? dupCount + ' duplicate' + (dupCount > 1 ? 's' : '') : '';
 
-            var btn = document.getElementById('import-confirm-btn');
-            btn.textContent = newCount === 0
-                ? 'Nothing new to import'
-                : 'Import ' + newCount + ' Transaction' + (newCount > 1 ? 's' : '');
-            btn.disabled = newCount === 0;
+            _importUpdateBtn();
 
-            var catOpts = Object.keys(expenseCategories).map(function(m) {
+            // Build expense category options (exclude Income section)
+            var catOpts = Object.keys(expenseCategories).filter(k => k !== 'Income').map(function(m) {
                 return '<option value="' + m + '">' + (mainEmojis[m] || '📁') + ' ' + m + '</option>';
             }).join('');
+
+            // Build account selector
+            var acctSel = document.getElementById('import-account-sel');
+            if (acctSel) {
+                var acctHtml = '<option value="">None</option>';
+                walletAccounts.forEach(function(a) {
+                    acctHtml += '<option value="' + a.id + '">' + (a.icon || '🏦') + ' ' + a.name + '</option>';
+                });
+                acctSel.innerHTML = acctHtml;
+                acctSel.value = '';
+            }
+
+            // Build batch category selectors
+            var batchMainSel = document.getElementById('import-batch-main');
+            if (batchMainSel) {
+                batchMainSel.innerHTML = '<option value="">—</option>' + catOpts;
+                batchMainSel.value = '';
+            }
+            var batchSubSel = document.getElementById('import-batch-sub');
+            if (batchSubSel) { batchSubSel.innerHTML = '<option value="">—</option>'; batchSubSel.value = ''; }
 
             var list = document.getElementById('import-review-list');
             list.innerHTML = '';
@@ -6014,14 +6095,17 @@ Transactions using it will stay.`)) {
 
             var byDate = {};
             _importParsed.forEach(function(t, i) {
-                if (!byDate[t.date]) byDate[t.date] = [];
-                byDate[t.date].push({ t: t, i: i });
+                var d = t.date || 'unknown';
+                if (!byDate[d]) byDate[d] = [];
+                byDate[d].push({ t: t, i: i });
             });
 
             Object.keys(byDate).sort().reverse().forEach(function(date) {
                 var label = document.createElement('p');
                 label.className = 'text-[10px] font-black tracking-widest text-zinc-600 uppercase px-1 py-2 mt-1';
-                label.textContent = new Date(date + 'T12:00:00').toLocaleDateString('en-CA', {weekday:'short', month:'short', day:'numeric'});
+                try {
+                    label.textContent = new Date(date + 'T12:00:00').toLocaleDateString('en-CA', {weekday:'short', month:'short', day:'numeric'});
+                } catch(e) { label.textContent = date; }
                 list.appendChild(label);
 
                 byDate[date].forEach(function(entry) {
@@ -6029,6 +6113,7 @@ Transactions using it will stay.`)) {
                     var isExp = (t.type === 'expense');
                     var row = document.createElement('div');
                     row.className = 'rounded-2xl mb-2 overflow-hidden ' + (t.isDup ? 'opacity-30' : 'bg-zinc-900');
+                    row.id = 'import-row-' + idx;
 
                     var topRow = '<div class="flex items-center gap-3 px-3 pt-3 ' + (t.isDup ? '' : 'pb-2') + '">'
                         + '<div class="w-1 h-9 rounded-full shrink-0 ' + (isExp ? 'bg-rose-500' : 'bg-emerald-500') + '"></div>'
@@ -6044,7 +6129,7 @@ Transactions using it will stay.`)) {
                     if (!t.isDup) {
                         var subOptsNew = _subOptHtmlWithNew(t._main);
                         var incOpts = (expenseCategories['Income'] || incomeCats).map(function(ic) {
-                            return '<option value="' + ic + '">' + ic + '</option>';
+                            return '<option value="' + ic + '"' + (t._incCat === ic ? ' selected' : '') + '>' + ic + '</option>';
                         }).join('');
                         selRow = '<div class="px-5 pb-3 pt-1 flex flex-wrap gap-2">'
                             + '<select class="import-type-sel flex-none w-24 bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" data-idx="' + idx + '" onchange="_importTypeChange(this)">'
@@ -6074,6 +6159,55 @@ Transactions using it will stay.`)) {
             });
 
             document.getElementById('bank-import-modal').classList.remove('hidden');
+        }
+
+        function _importUpdateBtn() {
+            var newCount = _importParsed.filter(function(t) { return !t.isDup; }).length;
+            var btn = document.getElementById('import-confirm-btn');
+            if (!btn) return;
+            btn.textContent = newCount === 0
+                ? 'Nothing new to import'
+                : 'Import ' + newCount + ' Transaction' + (newCount > 1 ? 's' : '');
+            btn.disabled = newCount === 0;
+        }
+
+        function _importBatchMain(sel) {
+            if (!sel.value) return;
+            var main = sel.value;
+            var subSel = document.getElementById('import-batch-sub');
+            if (subSel) { subSel.innerHTML = '<option value="">—</option>' + _subOptHtmlWithNew(main); subSel.value = ''; }
+            // Apply to all non-duplicate expense rows
+            _importParsed.forEach(function(t, i) {
+                if (t.isDup || t.type !== 'expense') return;
+                t._main = main;
+                t._sub = (expenseCategories[main] || [])[0] || '';
+                var row = document.getElementById('import-row-' + i);
+                if (!row) return;
+                var ms = row.querySelector('.import-main-sel');
+                var ss = row.querySelector('.import-sub-sel');
+                if (ms) ms.value = main;
+                if (ss) { ss.innerHTML = _subOptHtmlWithNew(main); ss.value = t._sub; }
+            });
+        }
+
+        function _importBatchSub(sel) {
+            if (!sel.value || sel.value === '__new__') return;
+            var sub = sel.value;
+            var batchMain = document.getElementById('import-batch-main');
+            var main = batchMain ? batchMain.value : '';
+            if (!main) return;
+            _importParsed.forEach(function(t, i) {
+                if (t.isDup || t.type !== 'expense' || t._main !== main) return;
+                t._sub = sub;
+                var row = document.getElementById('import-row-' + i);
+                if (!row) return;
+                var ss = row.querySelector('.import-sub-sel');
+                if (ss) ss.value = sub;
+            });
+        }
+
+        function _importAccountChange(sel) {
+            _importAccountId = sel.value;
         }
 
         function _escHtml(s) {
@@ -6150,41 +6284,70 @@ Transactions using it will stay.`)) {
         }
 
         function confirmBankImport() {
+            // Sync final state from DOM selectors
             document.querySelectorAll('.import-type-sel').forEach(function(sel) {
                 const i = parseInt(sel.dataset.idx);
-                if (i >= 0) _importParsed[i].type = sel.value;
+                if (i >= 0 && !isNaN(i)) _importParsed[i].type = sel.value;
             });
             document.querySelectorAll('.import-main-sel').forEach(function(sel) {
                 const i = parseInt(sel.dataset.idx);
-                if (i >= 0) _importParsed[i]._main = sel.value;
+                if (i >= 0 && !isNaN(i)) _importParsed[i]._main = sel.value;
             });
             document.querySelectorAll('.import-sub-sel').forEach(function(sel) {
                 const i = parseInt(sel.dataset.idx);
-                if (i >= 0 && sel.value !== '__new__') _importParsed[i]._sub = sel.value;
+                if (i >= 0 && !isNaN(i) && sel.value !== '__new__') _importParsed[i]._sub = sel.value;
             });
             document.querySelectorAll('.import-inc-sel').forEach(function(sel) {
                 const i = parseInt(sel.dataset.idx);
-                if (i >= 0) _importParsed[i]._incCat = sel.value;
+                if (i >= 0 && !isNaN(i)) _importParsed[i]._incCat = sel.value;
             });
 
-            const toImport = _importParsed.filter(function(t) { return !t.isDup; });
-            if (toImport.length === 0) { closeBankImport(); return; }
+            const toImport = _importParsed.filter(function(t) { return !t.isDup && t.type !== 'excluded'; });
+            const toExclude = _importParsed.filter(function(t) { return !t.isDup && t.type === 'excluded'; });
+            if (toImport.length === 0 && toExclude.length === 0) { closeBankImport(); return; }
 
-            toImport.slice().reverse().forEach(function(t) {
-                const base = { id: Date.now() + Math.random(), amount: t.amount, date: t.date, desc: t.desc };
-                if (t.type === 'excluded') {
-                    transactions.unshift(Object.assign(base, { type: 'expense', excluded: true, mainCategory: '', subCategory: '' }));
-                } else if (t.type === 'income') {
-                    transactions.unshift(Object.assign(base, { type: 'income', mainCategory: t._incCat || incomeCats[0] || 'Other', subCategory: '' }));
+            // Get linked account
+            var acctSel = document.getElementById('import-account-sel');
+            var linkedAccId = (acctSel && acctSel.value) || _importAccountId || '';
+
+            // Use incrementing IDs to avoid collision in tight loop
+            let idBase = Date.now();
+
+            // Import excluded transactions
+            toExclude.slice().reverse().forEach(function(t, idx) {
+                const tx = { id: idBase + idx + 0.5, amount: t.amount, date: t.date, desc: t.desc,
+                             type: 'expense', excluded: true,
+                             mainCategory: t._main || '', subCategory: t._sub || '' };
+                if (linkedAccId) tx.walletAccountId = linkedAccId;
+                transactions.unshift(tx);
+            });
+
+            // Import regular transactions
+            toImport.slice().reverse().forEach(function(t, idx) {
+                const tx = { id: idBase + idx + toExclude.length + 1,
+                             amount: t.amount, date: t.date, desc: t.desc };
+                if (t.type === 'income') {
+                    tx.type = 'income';
+                    tx.mainCategory = t._incCat || incomeCats[0] || 'Other';
+                    tx.subCategory = '';
                 } else {
-                    transactions.unshift(Object.assign(base, { type: 'expense', mainCategory: t._main || '', subCategory: t._sub || '' }));
+                    tx.type = 'expense';
+                    tx.mainCategory = t._main || '';
+                    tx.subCategory = t._sub || '';
                 }
+                if (linkedAccId) {
+                    tx.walletAccountId = linkedAccId;
+                    // Update account balance
+                    if (!tx.excluded) _updateAccountBalances(tx, false);
+                }
+                transactions.unshift(tx);
             });
 
+            const totalImported = toImport.length + toExclude.length;
             saveData();
             renderAll();
             closeBankImport();
-            showToast('✓ Imported ' + toImport.length + ' transaction' + (toImport.length > 1 ? 's' : ''), 'emerald');
+            showToast('Imported ' + totalImported + ' transaction' + (totalImported > 1 ? 's' : ''), 'emerald');
         }
 
         /* ══════════════════════════════════════════════
@@ -6910,7 +7073,7 @@ Transactions using it will stay.`)) {
          BANK IMPORT REVIEW MODAL
     ═══════════════════════════════════════════════════ -->
     
-    <div id="bank-import-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[160]">
+    <div id="bank-import-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[160]" onclick="if(event.target===this)closeBankImport()">
         <div class="modal-panel w-full max-w-md mx-auto bg-zinc-950 rounded-t-3xl flex flex-col" style="max-height:90vh">
 
             <!-- Handle + header -->
@@ -6934,9 +7097,22 @@ Transactions using it will stay.`)) {
                 </div>
             </div>
 
+            <!-- Account + batch category -->
+            <div class="px-5 py-3 border-b border-zinc-800 shrink-0 space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold tracking-widest text-zinc-600 uppercase shrink-0">Account</span>
+                    <select id="import-account-sel" onchange="_importAccountChange(this)" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500"></select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold tracking-widest text-zinc-600 uppercase shrink-0">Set all</span>
+                    <select id="import-batch-main" onchange="_importBatchMain(this)" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500"></select>
+                    <select id="import-batch-sub" onchange="_importBatchSub(this)" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500"></select>
+                </div>
+            </div>
+
             <!-- Hint -->
             <div class="px-5 py-2 shrink-0">
-                <p class="text-[10px] text-zinc-600">Assign a type and category to each transaction before importing. Strikethrough rows are already in your history.</p>
+                <p class="text-[10px] text-zinc-600">Assign a type and category to each transaction. Duplicates are struck through.</p>
             </div>
 
             <!-- Transaction review list -->
