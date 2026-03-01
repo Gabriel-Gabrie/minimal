@@ -288,25 +288,25 @@
                     <!-- home dot — visible when this is the launch tab -->
                     <span id="home-dot-2" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
                 </button>
-                <!-- Reports -->
+                <!-- Wallet -->
                 <button
                     onclick="_tabTap(3)"
                     onmousedown="_tabHoldStart(3, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
                     ontouchstart="_tabHoldStart(3, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
                     id="tab-3" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    <span>Reports</span>
-                    <!-- home dot — visible when this is the launch tab -->
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 4H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M16 12h.01"/><path d="M1 10h22"/></svg>
+                    <span>Wallet</span>
                     <span id="home-dot-3" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
                 </button>
-                <!-- Wallet -->
+                <!-- Reports -->
                 <button
                     onclick="_tabTap(4)"
                     onmousedown="_tabHoldStart(4, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
                     ontouchstart="_tabHoldStart(4, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
                     id="tab-4" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 4H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M16 12h.01"/><path d="M1 10h22"/></svg>
-                    <span>Wallet</span>
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <span>Reports</span>
+                    <!-- home dot — visible when this is the launch tab -->
                     <span id="home-dot-4" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
                 </button>
 
@@ -519,7 +519,7 @@
         </div>
 
         <!-- REPORTS -->
-        <div id="screen-3" class="hidden pb-12">
+        <div id="screen-4" class="hidden pb-12">
 
             <!-- ══ TRENDS SECTION ══ -->
             <div class="px-5 pt-5 mb-1">
@@ -649,7 +649,7 @@
 
 
         <!-- WALLET -->
-        <div id="screen-4" class="hidden pb-12">
+        <div id="screen-3" class="hidden pb-12">
 
             <!-- Net Worth Header -->
             <div class="px-5 pt-6 pb-5">
@@ -706,12 +706,15 @@
     </div>
 
     <!-- NEW TRANSACTION MODAL -->
-    <div id="add-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50">
+    <div id="add-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50" onclick="if(event.target===this)hideModal()">
         <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
 
-            <!-- Drag handle -->
-            <div class="flex justify-center pt-3 pb-0">
+            <!-- Drag handle + close -->
+            <div class="flex justify-center pt-3 pb-0 relative">
                 <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
+                <button onclick="hideModal()" class="absolute right-3 top-2 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors" title="Close">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
             </div>
 
             <!-- Expense / Income / Transfer toggle -->
@@ -844,9 +847,12 @@
     <!-- BUDGET CATEGORY MODAL (redesigned like wallet detail modal) -->
     <div id="budget-item-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-50" onclick="_bimBackdrop(event)">
         <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
-            <!-- drag handle -->
-            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10">
+            <!-- drag handle + close -->
+            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10 relative">
                 <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
+                <button onclick="closeBudgetItemModal()" class="absolute right-3 top-2 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors" title="Close">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
             </div>
             <div class="px-5 pt-3 pb-8">
                 <!-- Centered header: large icon + name -->
@@ -922,8 +928,11 @@
     <!-- ADD BUDGET ITEM MODAL -->
     <div id="add-budget-item-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-50" onclick="_aimBackdrop(event)">
         <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
-            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10">
+            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10 relative">
                 <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
+                <button onclick="closeAddItemModal()" class="absolute right-3 top-2 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors" title="Close">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
             </div>
             <div class="px-5 pt-3 pb-8">
                 <!-- Header: plan-mode style card with icon picker -->
@@ -2550,7 +2559,7 @@
                 });
 
                 // Add account card (redirects to wallet)
-                html += `<button onclick="switchTab(4);showWalletAddModal();setWalletType('${wType}')" class="bg-zinc-900/40 border border-dashed border-zinc-800 hover:border-emerald-500/40 rounded-3xl p-3 flex flex-col items-center justify-center active:scale-95 transition-all">
+                html += `<button onclick="switchTab(3);showWalletAddModal();setWalletType('${wType}')" class="bg-zinc-900/40 border border-dashed border-zinc-800 hover:border-emerald-500/40 rounded-3xl p-3 flex flex-col items-center justify-center active:scale-95 transition-all">
                     <div class="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center mb-1.5">
                         <svg class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                     </div>
@@ -3347,7 +3356,7 @@
             active.classList.add('tab-active');
             active.classList.remove('text-zinc-500');
             active.classList.add('text-white');
-            [renderOverview, renderTransactions, renderBudgets, renderReports, renderWallet][n]?.();
+            [renderOverview, renderTransactions, renderBudgets, renderWallet, renderReports][n]?.();
         }
 
         function prevBudgetMonth() {
@@ -4278,17 +4287,17 @@ Transactions using it will stay.`)) {
                     const isFirstInType = accIdx === 0;
                     const isLastInType = accIdx === sec.items.length - 1;
                     const reorderBtns = sec.items.length > 1 ? `
-                        <div class="flex flex-col gap-0.5 ml-1 shrink-0">
-                            <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','up')" class="w-5 h-5 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isFirstInType?'opacity-20 pointer-events-none':''}" title="Move up">
+                        <div class="flex flex-col shrink-0 -mr-1">
+                            <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','up')" class="w-6 h-4 flex items-center justify-center text-zinc-600 hover:text-zinc-300 transition-colors ${isFirstInType?'opacity-20 pointer-events-none':''}" title="Move up">
                                 <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
                             </button>
-                            <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','down')" class="w-5 h-5 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isLastInType?'opacity-20 pointer-events-none':''}" title="Move down">
+                            <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','down')" class="w-6 h-4 flex items-center justify-center text-zinc-600 hover:text-zinc-300 transition-colors ${isLastInType?'opacity-20 pointer-events-none':''}" title="Move down">
                                 <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
                             </button>
                         </div>` : '';
 
-                    html += `<button onclick="openWalletDetail('${acc.id}')" class="w-full text-left bg-zinc-900 rounded-2xl p-4 hover:bg-zinc-800/80 transition-colors active:scale-[.99]">
-                        <div class="flex items-center gap-3 mb-2">
+                    html += `<div onclick="openWalletDetail('${acc.id}')" class="w-full text-left bg-zinc-900 rounded-2xl p-4 hover:bg-zinc-800/80 transition-colors active:scale-[.99] cursor-pointer">
+                        <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style="background:${colour}20">
                                 <span>${acc.icon || '🏦'}</span>
                             </div>
@@ -4311,7 +4320,7 @@ Transactions using it will stay.`)) {
                             <div class="h-full rounded-full progress-bar" style="width:${Math.max(pct,0)}%;background:${colour}"></div>
                         </div>`;
                     }
-                    html += `</button>`;
+                    html += `</div>`;
                 });
 
                 html += `</div></div>`;
@@ -6946,12 +6955,15 @@ Transactions using it will stay.`)) {
     <!-- ═══════════════════════════════════════════════════
          WALLET — ADD / EDIT ACCOUNT MODAL
     ═══════════════════════════════════════════════════ -->
-    <div id="wallet-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[160]">
+    <div id="wallet-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[160]" onclick="if(event.target===this)hideWalletModal()">
         <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
 
-            <!-- Drag handle -->
-            <div class="flex justify-center pt-3 pb-0">
+            <!-- Drag handle + close -->
+            <div class="flex justify-center pt-3 pb-0 relative">
                 <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
+                <button onclick="hideWalletModal()" class="absolute right-3 top-2 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors" title="Close">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
             </div>
 
             <!-- Title -->
@@ -7054,8 +7066,11 @@ Transactions using it will stay.`)) {
     ═══════════════════════════════════════════════════ -->
     <div id="wallet-detail-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-[160]" onclick="walletDetailBackdrop(event)">
         <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
-            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10">
+            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10 relative">
                 <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
+                <button onclick="document.getElementById('wallet-detail-modal').classList.add('hidden')" class="absolute right-3 top-2 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors" title="Close">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
             </div>
             <div class="px-5 pt-3 pb-8">
                 <!-- Header -->
