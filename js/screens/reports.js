@@ -507,7 +507,7 @@ function _tabHoldEnd() {
     if (_tabHoldTimer) { clearTimeout(_tabHoldTimer); _tabHoldTimer = null; }
 }
 
-        function switchTab(n) {
+function switchTab(n) {
     document.querySelectorAll('[id^="screen-"]').forEach(s => s.classList.add('hidden'));
     document.getElementById(`screen-${n}`).classList.remove('hidden');
     document.querySelectorAll('[id^="tab-"]').forEach(t => {
