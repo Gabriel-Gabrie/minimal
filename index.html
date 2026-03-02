@@ -321,20 +321,14 @@
         <!-- OVERVIEW -->
         <div id="screen-0" class="pb-16 overflow-y-auto">
 
-            <!-- ── Month Header ── -->
-            <div class="px-5 pt-6 pb-1 flex items-start justify-between">
-                <div>
-                    <p id="ov-month-label" class="text-[9px] font-black tracking-[.18em] text-zinc-600 uppercase">This Month</p>
-                    <div id="balance" class="text-3xl font-semibold tracking-tighter mt-0.5">$0.00</div>
-                </div>
-                <div class="text-right pt-1 space-y-1.5">
-                    <div class="flex items-center justify-end gap-2">
-                        <span class="text-[11px] text-zinc-500">Income</span>
-                        <span id="total-income" class="text-[11px] font-semibold text-emerald-400">$0.00</span>
-                    </div>
-                    <div class="flex items-center justify-end gap-2">
-                        <span class="text-[11px] text-zinc-500">Spent</span>
-                        <span id="total-expense" class="text-[11px] font-semibold text-rose-400">$0.00</span>
+            <!-- ── Month Header with On-Track Message ── -->
+            <div class="px-5 pt-6 pb-1">
+                <p id="ov-month-label" class="text-[9px] font-black tracking-[.18em] text-zinc-600 uppercase mb-2">This Month</p>
+                <div id="ov-track-msg" class="rounded-2xl px-4 py-3 flex items-center gap-3">
+                    <span id="ov-track-icon" class="text-xl shrink-0 leading-none"></span>
+                    <div class="min-w-0">
+                        <p id="ov-track-title" class="text-sm font-semibold leading-snug"></p>
+                        <p id="ov-track-sub" class="text-[11px] text-zinc-500 mt-0.5 leading-snug"></p>
                     </div>
                 </div>
             </div>
@@ -912,9 +906,9 @@
 
                 <!-- Action buttons (like wallet detail) -->
                 <div class="space-y-2">
-                    <button id="bim-edit-btn" onclick="_bimStartEdit()"
-                            class="w-full py-3.5 rounded-2xl text-sm font-bold text-white bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all">
-                        Edit Category
+                    <button id="bim-edit-btn" onclick="closeBudgetItemModal()"
+                            class="w-full py-3.5 rounded-2xl text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all">
+                        Save
                     </button>
                     <button id="bim-delete-btn" onclick="deleteBudgetItemFromModal()"
                             class="w-full py-3.5 rounded-2xl text-sm font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all">
@@ -1537,21 +1531,47 @@
             });
             const hasBudget = totalBudget > 0;
 
-            // ── Header ────────────────────────────────────────────────
-            const netBal = allInc - allExp;
-            const balEl  = document.getElementById('balance');
-            if (balEl) {
-                balEl.className = 'text-3xl font-semibold tracking-tighter mt-0.5 ' +
-                    (netBal >= 0 ? 'text-emerald-400' : 'text-rose-400');
-                balEl.textContent = (netBal < 0 ? '-' : '') + '$' + Math.round(Math.abs(netBal));
-            }
+            // ── Header: on-track message ─────────────────────────────
             const lbl = document.getElementById('ov-month-label');
             if (lbl) lbl.textContent = new Date(yr, mo - 1)
                 .toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
-            const incEl = document.getElementById('total-income');
-            const expEl = document.getElementById('total-expense');
-            if (incEl) incEl.textContent = '$' + Math.round(mInc);
-            if (expEl) expEl.textContent = '$' + Math.round(mExp);
+
+            const trackMsg  = document.getElementById('ov-track-msg');
+            const trackIcon = document.getElementById('ov-track-icon');
+            const trackTitle = document.getElementById('ov-track-title');
+            const trackSub  = document.getElementById('ov-track-sub');
+            if (trackMsg) {
+                let icon, title, sub, cls;
+                if (!hasBudget) {
+                    icon = '📊'; cls = 'bg-zinc-800/60';
+                    title = '$' + Math.round(mExp) + ' spent so far';
+                    sub = 'Set up a budget to track your pace';
+                } else if (todayDay > 0) {
+                    const expectedNow = (todayDay / daysInMo) * totalBudget;
+                    const projected = (mExp / todayDay) * daysInMo;
+                    if (mExp <= expectedNow * 0.95) {
+                        icon = '🟢'; cls = 'bg-emerald-500/10 border border-emerald-500/20';
+                        title = 'You\'re on track!';
+                        sub = '$' + Math.round(totalBudget - mExp) + ' left · $' + Math.round(mExp) + ' of $' + Math.round(totalBudget) + ' budget';
+                    } else if (mExp <= expectedNow * 1.08) {
+                        icon = '🟡'; cls = 'bg-amber-500/10 border border-amber-500/20';
+                        title = 'Close to your limit — watch your pace';
+                        sub = '$' + Math.round(totalBudget - mExp) + ' left · $' + Math.round(mExp) + ' of $' + Math.round(totalBudget) + ' budget';
+                    } else {
+                        icon = '🔴'; cls = 'bg-rose-500/10 border border-rose-500/20';
+                        title = 'Over budget pace';
+                        sub = '$' + Math.round(mExp) + ' spent · $' + Math.round(mExp - expectedNow) + ' ahead of pace';
+                    }
+                } else {
+                    icon = '📊'; cls = 'bg-zinc-800/60';
+                    title = 'New month — $' + Math.round(totalBudget) + ' budget';
+                    sub = 'Start tracking your spending';
+                }
+                trackMsg.className = 'rounded-2xl px-4 py-3 flex items-center gap-3 ' + cls;
+                if (trackIcon)  trackIcon.textContent = icon;
+                if (trackTitle) trackTitle.textContent = title;
+                if (trackSub)   trackSub.textContent = sub;
+            }
 
             // ── Build cumulative daily spending array (includes savings outflows) ──
             const cumActual = [];
@@ -3693,40 +3713,7 @@ Transactions using it will stay.`)) {
             document.getElementById('budget-item-modal').classList.remove('hidden');
         }
 
-        // Edit button handler — opens add-budget-item modal in edit mode
-        function _bimStartEdit() {
-            const main = _bimMain, sub = _bimSub;
-            if (!main || !sub) return;
-            document.getElementById('budget-item-modal').classList.add('hidden');
-            // Open add-item modal pre-populated for editing
-            const mb = monthlyBudgets[selectedBudgetMonth] || {};
-            const budget = (mb[main] || {})[sub] || 0;
-            const icon = itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || '💸';
-            const modal = document.getElementById('add-budget-item-modal');
-            const catLabel = document.getElementById('aim-cat-label');
-            const nameInput = document.getElementById('aim-name-input');
-            const amtInput = document.getElementById('aim-amount-input');
-            const hdrIcon = document.getElementById('aim-hdr-icon');
-            if (catLabel) catLabel.textContent = main;
-            if (nameInput) nameInput.value = sub;
-            if (amtInput) amtInput.value = budget || '';
-            if (hdrIcon) hdrIcon.textContent = icon;
-            _aimSelectedIcon = icon;
-            _aimEditingMain = main;
-            _aimEditingSub = sub;
-            // Update button text
-            const addBtn = modal?.querySelector('button[onclick="_aimConfirm()"]');
-            if (addBtn) addBtn.textContent = 'Save Changes';
-            // Populate icon picker
-            const grid = document.getElementById('aim-icon-grid');
-            if (grid) {
-                grid.innerHTML = BUDGET_ICONS.map(e =>
-                    `<button type="button" onclick="_aimSelectIcon('${e}')"
-                        class="text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all ${e === icon ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700'}">${e}</button>`
-                ).join('');
-            }
-            if (modal) modal.classList.remove('hidden');
-        }
+        // _bimStartEdit removed — editing is done inline from summary modal
         let _aimEditingMain = null, _aimEditingSub = null;
 
         function _bimPopulateTxList(main, sub, isInc, isDynamic) {
@@ -3857,37 +3844,47 @@ Transactions using it will stay.`)) {
         }
 
         function _bimInlineEditAmount(el) {
+            // Capture current category to avoid stale globals
+            const main = _bimMain, sub = _bimSub;
             const mb      = monthlyBudgets[selectedBudgetMonth] || {};
-            const current = (mb[_bimMain] || {})[_bimSub] || 0;
+            const current = (mb[main] || {})[sub] || 0;
 
+            // Build a wrapper with $ prefix
+            const wrap = document.createElement('div');
+            wrap.className = 'flex items-center justify-center gap-0.5';
+            const dollar = document.createElement('span');
+            dollar.className = 'text-sm font-bold text-zinc-400';
+            dollar.textContent = '$';
             const input = document.createElement('input');
-            input.type = 'number';
+            input.type = 'text';
             input.inputMode = 'numeric';
-            input.step = '1';
-            input.min  = '0';
-            input.value = current > 0 ? current : '';
+            input.value = current > 0 ? String(current) : '';
             input.placeholder = '0';
-            input.className = 'bg-zinc-800 rounded-lg px-2 py-0.5 text-sm font-bold text-zinc-100 w-20 text-center focus:outline-none focus:ring-1 focus:ring-emerald-500';
-            el.replaceWith(input);
+            input.className = 'bg-zinc-800 rounded-lg px-1 py-0.5 text-sm font-bold text-zinc-100 w-16 text-center focus:outline-none focus:ring-1 focus:ring-emerald-500';
+            wrap.appendChild(dollar);
+            wrap.appendChild(input);
+            el.replaceWith(wrap);
             input.focus();
-            input.select();
+            input.value = '';  // clear so user can type fresh
+            if (current > 0) input.placeholder = String(current);
 
             function commit() {
-                const newAmt = Math.round(parseFloat(input.value) || 0);
+                const raw = input.value.replace(/[^0-9.]/g, '');
+                const newAmt = Math.round(parseFloat(raw) || (raw === '' ? current : 0));
                 monthlyBudgets[selectedBudgetMonth] = monthlyBudgets[selectedBudgetMonth] || {};
-                monthlyBudgets[selectedBudgetMonth][_bimMain] = monthlyBudgets[selectedBudgetMonth][_bimMain] || {};
-                monthlyBudgets[selectedBudgetMonth][_bimMain][_bimSub] = newAmt;
+                monthlyBudgets[selectedBudgetMonth][main] = monthlyBudgets[selectedBudgetMonth][main] || {};
+                monthlyBudgets[selectedBudgetMonth][main][sub] = newAmt;
                 saveData();
                 renderBudgets();
                 // Refresh the modal stats
-                openBudgetItemModal(_bimMain, _bimSub);
+                openBudgetItemModal(main, sub);
             }
 
             input.addEventListener('blur', commit);
             input.addEventListener('keydown', e => {
                 if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
                 if (e.key === 'Escape') {
-                    openBudgetItemModal(_bimMain, _bimSub);
+                    openBudgetItemModal(main, sub);
                 }
             });
         }
@@ -5567,6 +5564,7 @@ Transactions using it will stay.`)) {
 
         let _importParsed = [];   // [{date, desc, amount, type}]
         let _importAccountId = ''; // wallet account to link imported transactions to
+        let _importSelected = new Set(); // indices of selected transactions for batch operations
 
         /* ── File entry point (called from Settings AND Tx tab) ─────── */
         function openBankImport(e) {
@@ -6048,8 +6046,9 @@ Transactions using it will stay.`)) {
                 if (!t._sub)  t._sub  = firstSub;
             });
 
-            // Reset account selection
+            // Reset account selection and selection state
             _importAccountId = '';
+            _importSelected = new Set();
 
             document.getElementById('import-modal-subtitle').textContent = filename;
             document.getElementById('import-bank-label').textContent = '🏦 ' + bankName;
@@ -6115,7 +6114,14 @@ Transactions using it will stay.`)) {
                     row.className = 'rounded-2xl mb-2 overflow-hidden ' + (t.isDup ? 'opacity-30' : 'bg-zinc-900');
                     row.id = 'import-row-' + idx;
 
-                    var topRow = '<div class="flex items-center gap-3 px-3 pt-3 ' + (t.isDup ? '' : 'pb-2') + '">'
+                    var checkboxHtml = '';
+                    if (!t.isDup) {
+                        checkboxHtml = '<label class="import-checkbox shrink-0 flex items-center justify-center w-5 h-5 cursor-pointer" onclick="event.stopPropagation()">'
+                            + '<input type="checkbox" class="import-sel-cb accent-emerald-500 w-4 h-4 rounded cursor-pointer" data-idx="' + idx + '" onchange="_importToggleSelect(this)">'
+                            + '</label>';
+                    }
+                    var topRow = '<div class="flex items-center gap-2 px-3 pt-3 ' + (t.isDup ? '' : 'pb-2') + '">'
+                        + checkboxHtml
                         + '<div class="w-1 h-9 rounded-full shrink-0 ' + (isExp ? 'bg-rose-500' : 'bg-emerald-500') + '"></div>'
                         + '<div class="flex-1 min-w-0">'
                         + '<div class="text-sm font-medium truncate ' + (t.isDup ? 'line-through' : '') + '">' + _escHtml(t.desc) + '</div>'
@@ -6176,9 +6182,11 @@ Transactions using it will stay.`)) {
             var main = sel.value;
             var subSel = document.getElementById('import-batch-sub');
             if (subSel) { subSel.innerHTML = '<option value="">—</option>' + _subOptHtmlWithNew(main); subSel.value = ''; }
-            // Apply to all non-duplicate expense rows
+            var hasSelection = _importSelected.size > 0;
+            // Apply to selected non-duplicate expense rows (or all if none selected)
             _importParsed.forEach(function(t, i) {
                 if (t.isDup || t.type !== 'expense') return;
+                if (hasSelection && !_importSelected.has(i)) return;
                 t._main = main;
                 t._sub = (expenseCategories[main] || [])[0] || '';
                 var row = document.getElementById('import-row-' + i);
@@ -6196,8 +6204,10 @@ Transactions using it will stay.`)) {
             var batchMain = document.getElementById('import-batch-main');
             var main = batchMain ? batchMain.value : '';
             if (!main) return;
+            var hasSelection = _importSelected.size > 0;
             _importParsed.forEach(function(t, i) {
                 if (t.isDup || t.type !== 'expense' || t._main !== main) return;
+                if (hasSelection && !_importSelected.has(i)) return;
                 t._sub = sub;
                 var row = document.getElementById('import-row-' + i);
                 if (!row) return;
@@ -6281,6 +6291,49 @@ Transactions using it will stay.`)) {
         function closeBankImport() {
             document.getElementById('bank-import-modal').classList.add('hidden');
             _importParsed = [];
+            _importSelected = new Set();
+        }
+
+        function _importToggleSelect(cb) {
+            var idx = parseInt(cb.dataset.idx);
+            if (cb.checked) { _importSelected.add(idx); } else { _importSelected.delete(idx); }
+            _importUpdateSelectAllBtn();
+            // Highlight selected row
+            var row = document.getElementById('import-row-' + idx);
+            if (row) row.style.outline = cb.checked ? '1.5px solid rgba(16,185,129,0.4)' : '';
+        }
+
+        function _importToggleSelectAll() {
+            var nonDupIndices = [];
+            _importParsed.forEach(function(t, i) { if (!t.isDup) nonDupIndices.push(i); });
+            var allSelected = nonDupIndices.length > 0 && nonDupIndices.every(function(i) { return _importSelected.has(i); });
+            if (allSelected) {
+                _importSelected.clear();
+                document.querySelectorAll('.import-sel-cb').forEach(function(cb) {
+                    cb.checked = false;
+                    var row = document.getElementById('import-row-' + cb.dataset.idx);
+                    if (row) row.style.outline = '';
+                });
+            } else {
+                nonDupIndices.forEach(function(i) { _importSelected.add(i); });
+                document.querySelectorAll('.import-sel-cb').forEach(function(cb) {
+                    cb.checked = true;
+                    var row = document.getElementById('import-row-' + cb.dataset.idx);
+                    if (row) row.style.outline = '1.5px solid rgba(16,185,129,0.4)';
+                });
+            }
+            _importUpdateSelectAllBtn();
+        }
+
+        function _importUpdateSelectAllBtn() {
+            var btn = document.getElementById('import-select-all-btn');
+            if (!btn) return;
+            var nonDupCount = _importParsed.filter(function(t) { return !t.isDup; }).length;
+            var allSelected = nonDupCount > 0 && _importSelected.size === nonDupCount;
+            btn.textContent = allSelected ? 'Deselect All' : 'Select All';
+            // Update the "Set all" / "Set selected" label
+            var setLabel = document.getElementById('import-set-label');
+            if (setLabel) setLabel.textContent = _importSelected.size > 0 ? 'Set selected' : 'Set all';
         }
 
         function confirmBankImport() {
@@ -7104,15 +7157,16 @@ Transactions using it will stay.`)) {
                     <select id="import-account-sel" onchange="_importAccountChange(this)" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500"></select>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-bold tracking-widest text-zinc-600 uppercase shrink-0">Set all</span>
+                    <span id="import-set-label" class="text-[10px] font-bold tracking-widest text-zinc-600 uppercase shrink-0">Set all</span>
                     <select id="import-batch-main" onchange="_importBatchMain(this)" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500"></select>
                     <select id="import-batch-sub" onchange="_importBatchSub(this)" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500"></select>
                 </div>
             </div>
 
-            <!-- Hint -->
-            <div class="px-5 py-2 shrink-0">
-                <p class="text-[10px] text-zinc-600">Assign a type and category to each transaction. Duplicates are struck through.</p>
+            <!-- Select bar + Hint -->
+            <div class="px-5 py-2 shrink-0 flex items-center justify-between">
+                <p class="text-[10px] text-zinc-600">Tap checkboxes to select, then use "Set all" to update selected.</p>
+                <button id="import-select-all-btn" onclick="_importToggleSelectAll()" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors shrink-0 ml-2">Select All</button>
             </div>
 
             <!-- Transaction review list -->
