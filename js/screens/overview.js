@@ -116,8 +116,20 @@ function renderOverview() {
         projectedEnd = dailyRate * daysInMo;
     }
 
+    // ── Track status for chart color ─────────────────────────
+    // 'green' = on track, 'amber' = projected off track, 'red' = actually off track
+    let trackStatus = 'green';
+    if (hasBudget && todayDay > 0) {
+        const expectedNow = (todayDay / daysInMo) * totalBudget;
+        if (mExp > expectedNow) {
+            trackStatus = 'red';
+        } else if (projectedEnd !== null && projectedEnd > totalBudget) {
+            trackStatus = 'amber';
+        }
+    }
+
     // ── Render chart ───────────────────────────────────────────
-    _renderOvChart(cumActual, budgetPace, xLabels, projectedEnd, daysInMo, todayDay, isCurrentMonth);
+    _renderOvChart(cumActual, budgetPace, xLabels, projectedEnd, daysInMo, todayDay, isCurrentMonth, trackStatus);
 
     // ── Spent / budget header ─────────────────────────────────
     const sSpent  = document.getElementById('ov-s-spent');
@@ -141,10 +153,15 @@ function renderOverview() {
         if (hasBudget && todayDay > 0) {
             const expectedNow = (todayDay / daysInMo) * totalBudget;
             const pct   = Math.round(mExp / expectedNow * 100);
-            const under = mExp <= expectedNow;
-            badgeEl.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full ' +
-                (under ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400');
-            badgeEl.textContent = under ? pct + '% of pace \u2713' : pct + '% of pace';
+            const badgeColors = {
+                green: 'bg-emerald-500/15 text-emerald-400',
+                amber: 'bg-amber-500/15 text-amber-400',
+                red:   'bg-rose-500/15 text-rose-400',
+            };
+            badgeEl.className = 'text-[11px] font-bold px-2.5 py-1 rounded-full ' + badgeColors[trackStatus];
+            const statusText = trackStatus === 'green' ? 'On track' :
+                               trackStatus === 'amber' ? 'Projected over' : 'Over budget';
+            badgeEl.textContent = pct + '% \u00B7 ' + statusText;
         } else {
             badgeEl.className = 'hidden';
         }
@@ -265,7 +282,7 @@ function _renderOvRecent(monthKey) {
 /* ── Overview chart (spending pace — hero) ──────────────── */
 let _ovChart = null;
 
-function _renderOvChart(actualData, paceData, labels, projectedEnd, daysInMo, todayDay, isCurrentMonth) {
+function _renderOvChart(actualData, paceData, labels, projectedEnd, daysInMo, todayDay, isCurrentMonth, trackStatus) {
     if (_ovChart) { try { _ovChart.destroy(); } catch (e) {} _ovChart = null; }
     const ctx = document.getElementById('ov-chart');
     if (!ctx) return;
@@ -279,25 +296,40 @@ function _renderOvChart(actualData, paceData, labels, projectedEnd, daysInMo, to
     const ttBody   = light ? '#09090b' : '#f4f4f5';
     const ttTitle  = light ? '#71717a' : '#a1a1aa';
 
+    // Dynamic colors based on tracking status
+    const lineColors = {
+        green: '#34d399',  // emerald
+        amber: '#fbbf24',  // amber
+        red:   '#f87171',  // rose/red
+    };
+    const gradColors = {
+        green: ['rgba(52,211,153,0.25)', 'rgba(52,211,153,0.02)'],
+        amber: ['rgba(251,191,36,0.22)', 'rgba(251,191,36,0.02)'],
+        red:   ['rgba(248,113,113,0.22)', 'rgba(248,113,113,0.02)'],
+    };
+    const status = trackStatus || 'green';
+    const lineClr = lineColors[status];
+    const [gradTop, gradBot] = gradColors[status];
+
     const lastIdx = actualData.reduce((last, v, i) => v !== null ? i : last, -1);
 
-    // Green gradient fill under actual spend line
+    // Gradient fill under actual spend line
     const actualGrad = ctx.getContext('2d').createLinearGradient(0, 0, 0, ctx.parentElement.offsetHeight || 300);
-    actualGrad.addColorStop(0, 'rgba(52,211,153,0.25)');
-    actualGrad.addColorStop(1, 'rgba(52,211,153,0.02)');
+    actualGrad.addColorStop(0, gradTop);
+    actualGrad.addColorStop(1, gradBot);
 
     const datasets = [{
         label: 'Actual',
         data: actualData,
-        borderColor: '#34d399',
+        borderColor: lineClr,
         backgroundColor: actualGrad,
         fill: true,
         tension: 0.35,
         borderWidth: 2.5,
         pointRadius: (ctx2) => ctx2.dataIndex === lastIdx ? 6 : 0,
         pointHoverRadius: 6,
-        pointBackgroundColor: '#34d399',
-        pointBorderColor: '#34d399',
+        pointBackgroundColor: lineClr,
+        pointBorderColor: lineClr,
         pointBorderWidth: 0,
         spanGaps: false,
     }];
@@ -316,6 +348,10 @@ function _renderOvChart(actualData, paceData, labels, projectedEnd, daysInMo, to
             pointHoverRadius: 4,
         });
     }
+
+    // Update legend color to match line
+    const legendActual = document.getElementById('ov-legend-actual');
+    if (legendActual) legendActual.style.backgroundColor = lineClr;
 
     // Projected line from today to end of month
     const projLegend = document.getElementById('ov-legend-proj');
