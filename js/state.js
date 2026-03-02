@@ -304,3 +304,4 @@ function _isTransferExcluded(t) {
     const toType   = _getAccType(t.toAccountId);
     if (!fromType || !toType) return true;
     return fromType === toType;
+}
