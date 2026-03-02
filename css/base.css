@@ -103,6 +103,9 @@ select { background-image: none; }
 .acc-chevron { transition:transform .22s ease; flex-shrink:0; }
 .acc-chevron.open { transform:rotate(90deg); }
 
+/* ── Overview top categories scrollbar hide ── */
+#ov-top-cats::-webkit-scrollbar { display: none; }
+
 /* ── Theme transition ── */
 *, *::before, *::after { transition-property:background-color,border-color,color; transition-duration:.18s; }
 /* Exclude animation-dependent elements */

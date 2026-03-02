@@ -147,84 +147,84 @@
         <!-- OVERVIEW -->
         <div id="screen-0" class="pb-16 overflow-y-auto">
 
-            <!-- ── Month Header with On-Track Message ── -->
-            <div class="px-5 pt-6 pb-1">
-                <p id="ov-month-label" class="text-[9px] font-black tracking-[.18em] text-zinc-600 uppercase mb-2">This Month</p>
-                <div id="ov-track-msg" class="rounded-2xl px-4 py-3 flex items-center gap-3">
-                    <span id="ov-track-icon" class="text-xl shrink-0 leading-none"></span>
-                    <div class="min-w-0">
-                        <p id="ov-track-title" class="text-sm font-semibold leading-snug"></p>
-                        <p id="ov-track-sub" class="text-[11px] text-zinc-500 mt-0.5 leading-snug"></p>
-                    </div>
-                </div>
+            <!-- ── Month Selector ── -->
+            <div class="flex items-center justify-between px-5 pt-5 pb-2">
+                <button onclick="prevOvMonth()" class="w-9 h-9 rounded-full bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <div id="ov-month-label" class="font-semibold text-base"></div>
+                <button onclick="nextOvMonth()" class="w-9 h-9 rounded-full bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
             </div>
 
-            <!-- ── Spending Pace Card ── -->
-            <div class="mx-5 mt-4 mb-1 bg-zinc-900 rounded-3xl overflow-hidden">
-
-                <!-- Card header -->
-                <div class="flex items-start justify-between px-5 pt-4 pb-2">
+            <!-- ── Hero Spending Pace Chart ── -->
+            <div class="mx-4 mt-2 bg-zinc-900 rounded-3xl overflow-hidden">
+                <!-- Chart header row -->
+                <div class="flex items-start justify-between px-5 pt-4 pb-1">
                     <div>
-                        <p class="text-[9px] font-black tracking-[.16em] text-zinc-500 uppercase">Spending Pace</p>
-                        <p id="ov-day-label" class="text-xs text-zinc-600 mt-0.5"></p>
+                        <p id="ov-s-spent" class="text-3xl font-bold tracking-tight text-white leading-none">—</p>
+                        <p id="ov-s-budget" class="text-xs text-zinc-500 mt-1.5 leading-none"></p>
                     </div>
-                    <div id="ov-pace-badge" class="text-[11px] font-bold px-2.5 py-1 rounded-full mt-0.5"></div>
+                    <div class="text-right">
+                        <div id="ov-pace-badge" class="text-[11px] font-bold px-2.5 py-1 rounded-full"></div>
+                        <p id="ov-day-label" class="text-[11px] text-zinc-600 mt-1.5"></p>
+                    </div>
                 </div>
 
-                <!-- Chart area -->
-                <div class="px-2 pb-0" style="height:180px;position:relative">
+                <!-- Chart area — hero size -->
+                <div class="px-2 pb-0" style="height:45vh;min-height:220px;max-height:380px;position:relative">
                     <canvas id="ov-chart"></canvas>
                 </div>
 
                 <!-- Chart legend -->
-                <div class="flex items-center gap-5 px-5 pt-2 pb-4">
+                <div class="flex items-center gap-5 px-5 pt-1 pb-3">
                     <div class="flex items-center gap-1.5">
-                        <div class="w-5 h-[2px] rounded-full bg-rose-400"></div>
-                        <span class="text-[10px] text-zinc-600">Actual spend</span>
+                        <div class="w-5 h-[2px] rounded-full bg-emerald-400"></div>
+                        <span class="text-[10px] text-zinc-600">Actual</span>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <svg width="20" height="4" viewBox="0 0 20 4"><line x1="0" y1="2" x2="20" y2="2" stroke="#52525b" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
                         <span class="text-[10px] text-zinc-600">Budget pace</span>
                     </div>
+                    <div id="ov-legend-proj" class="flex items-center gap-1.5 hidden">
+                        <div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+                        <span class="text-[10px] text-zinc-600">Projected</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- ── 3-stat row ── -->
-            <div class="grid grid-cols-3 gap-2 px-5 mt-3">
-                <div class="bg-zinc-900 rounded-2xl p-4">
-                    <p class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-2">Spent</p>
-                    <p id="ov-s-spent" class="text-[15px] font-semibold tracking-tight text-rose-400 leading-none">—</p>
-                    <p id="ov-s-budget" class="text-[10px] text-zinc-600 mt-1.5 leading-none"></p>
+            <!-- ── 2-stat row ── -->
+            <div class="grid grid-cols-2 gap-3 px-4 mt-3">
+                <div class="bg-zinc-900 rounded-2xl px-4 py-3">
+                    <p class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-1">Remaining</p>
+                    <p id="ov-s-left" class="text-2xl font-bold tracking-tight leading-none">—</p>
+                    <p id="ov-s-days" class="text-[10px] text-zinc-600 mt-1 leading-none"></p>
                 </div>
-                <div class="bg-zinc-900 rounded-2xl p-4">
-                    <p class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-2">Left</p>
-                    <p id="ov-s-left" class="text-[15px] font-semibold tracking-tight leading-none">—</p>
-                    <p id="ov-s-days" class="text-[10px] text-zinc-600 mt-1.5 leading-none"></p>
-                </div>
-                <div class="bg-zinc-900 rounded-2xl p-4">
-                    <p class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-2">Daily&nbsp;↓</p>
-                    <p id="ov-s-daily" class="text-[15px] font-semibold tracking-tight text-emerald-400 leading-none">—</p>
-                    <p class="text-[10px] text-zinc-600 mt-1.5 leading-none">to stay on&nbsp;track</p>
+                <div class="bg-zinc-900 rounded-2xl px-4 py-3">
+                    <p class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-1">Daily&nbsp;Budget</p>
+                    <p id="ov-s-daily" class="text-2xl font-bold tracking-tight text-emerald-400 leading-none">—</p>
+                    <p class="text-[10px] text-zinc-600 mt-1 leading-none">per day left</p>
                 </div>
             </div>
 
-            <!-- ── Projection callout ── -->
-            <div id="ov-proj" class="mx-5 mt-3 rounded-2xl px-4 py-3 flex items-center gap-3 hidden">
-                <span id="ov-proj-icon" class="text-lg shrink-0 leading-none"></span>
-                <div class="min-w-0">
-                    <p id="ov-proj-title" class="text-xs font-semibold leading-snug"></p>
-                    <p id="ov-proj-sub"   class="text-[11px] text-zinc-500 mt-0.5 leading-snug"></p>
+            <!-- ── Top Categories ── -->
+            <div class="mt-4 mb-1">
+                <div class="flex items-center gap-3 px-5 mb-2.5">
+                    <span class="text-[9px] font-black tracking-[.12em] text-zinc-600 uppercase shrink-0">Top Categories</span>
+                    <div class="flex-1 h-px bg-zinc-800"></div>
                 </div>
+                <div id="ov-top-cats" class="flex gap-2.5 px-5 overflow-x-auto pb-1" style="scrollbar-width:none;-webkit-overflow-scrolling:touch"></div>
             </div>
 
             <!-- ── Recent transactions ── -->
-            <div class="px-5 mt-5 mb-2">
+            <div class="px-5 mt-3 mb-2">
                 <div class="flex items-center gap-3 mb-3">
                     <span class="text-[9px] font-black tracking-[.12em] text-zinc-600 uppercase shrink-0">Recent</span>
                     <div class="flex-1 h-px bg-zinc-800"></div>
                     <button onclick="switchTab(1)" class="text-[9px] font-black tracking-[.1em] text-zinc-600 hover:text-emerald-400 uppercase transition-colors shrink-0">See all →</button>
                 </div>
-                <div id="recent-list" class="space-y-1.5 pb-4"></div>
+                <div id="recent-list" class="space-y-2 pb-4"></div>
             </div>
         </div>
 
