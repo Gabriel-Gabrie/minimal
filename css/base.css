@@ -1,0 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+body { font-family: 'Inter', system_ui, sans-serif; }
+.tab-active { border-bottom: 3px solid #10b981; color: white; font-weight: 600; }
+.tab-active svg { color: #10b981; }
+.progress-bar { transition: width 0.4s ease-out; }
+.tabs-container { scrollbar-width: none; } .tabs-container::-webkit-scrollbar { display: none; }
+.tabs-fade-wrap { position:relative; }
+/* Fade the strip so the pill has something to emerge from */
+.tabs-fade-wrap::before {
+    content:""; pointer-events:none; position:absolute;
+    right:0; top:0; bottom:0; width:56px;
+    background:linear-gradient(to right, transparent, #09090b 80%);
+    transition:opacity .25s; z-index:2; }
+/* Floating pill cue */
+.tabs-fade-wrap::after {
+    content:"›"; pointer-events:none; position:absolute;
+    right:8px; top:50%; transform:translateY(-50%);
+    width:22px; height:22px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; line-height:1;
+    color:#10b981;
+    background:rgba(16,185,129,.18);
+    border:1px solid rgba(16,185,129,.35);
+    box-shadow:0 0 10px rgba(16,185,129,.25);
+    transition:opacity .25s; z-index:3;
+    animation:_tabCue 1.4s ease-in-out infinite; }
+.tabs-fade-wrap.scrolled-end::before,
+.tabs-fade-wrap.scrolled-end::after { opacity:0; animation:none; }
+@keyframes _tabCue {
+    0%,100% { transform:translateY(-50%) translateX(0);   opacity:.7; }
+    50%      { transform:translateY(-50%) translateX(3px); opacity:1; } }
+/* ── Tutorial ───────────────────────────────── */
+#tut-modal {
+    background: #09090b;
+    z-index: 200;
+}
+/* Slide track — all slides sit side-by-side */
+#tut-track {
+    display: flex;
+    height: 100%;
+    will-change: transform;
+    transition: transform .38s cubic-bezier(.32,.72,0,1);
+}
+#tut-track.dragging { transition: none; }
+.tut-slide {
+    min-width: 100%;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 2rem 1rem;
+    text-align: center;
+}
+.tut-dot {
+    height: 6px; border-radius: 3px;
+    background: #3f3f46;
+    transition: background .25s, width .25s cubic-bezier(.34,1.56,.64,1);
+    width: 6px;
+}
+.tut-dot.active { background: #10b981; width: 22px; }
+/* Budget over-limit bar pulse */
+@keyframes _budgetOver {
+    0%,100% { opacity:1; }
+    50%      { opacity:.55; } }
+.budget-bar-over { animation:_budgetOver 1.6s ease-in-out infinite; }
+/* ── Transactions ── */
+.tx-item { position:relative; overflow:hidden; background:#18181b; border-radius:16px; user-select:none; }
+.tx-content { position:relative; z-index:1; background:#18181b; will-change:transform; transition:transform .3s cubic-bezier(.25,.46,.45,.94); }
+.tx-item.swiping .tx-content { transition:none; }
+.tx-delete { position:absolute; right:0; top:0; bottom:0; width:76px; background:#ef4444;
+             display:flex; flex-direction:column; align-items:center; justify-content:center;
+             gap:3px; color:#fff; font-size:9px; font-weight:800; letter-spacing:.08em; }
+.tx-delete svg { width:18px; height:18px; }
+/* ── Undo bar ── */
+@keyframes _snkIn  { from { opacity:0; transform:translateX(-50%) translateY(10px) } to { opacity:1; transform:translateX(-50%) translateY(0) } }
+@keyframes _snkOut { to   { opacity:0; transform:translateX(-50%) translateY(8px)  } }
+#_undo { position:fixed; bottom:7.5rem; left:50%; transform:translateX(-50%);
+         display:flex; align-items:center; gap:1rem;
+         background:#27272a; border:1px solid #3f3f46; border-radius:14px;
+         padding:.65rem 1.1rem; box-shadow:0 8px 32px #0009;
+         white-space:nowrap; z-index:200; font-size:.82rem;
+         animation:_snkIn .22s ease; }
+#_undo.out { animation:_snkOut .2s ease forwards; }
+@keyframes slideUp { from { transform: translateY(100%); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }
+.modal-panel { animation: slideUp 0.28s cubic-bezier(0.32,0.72,0,1); }
+select { background-image: none; }
+/* iOS-style toggle switch */
+.tog-wrap { position:relative; display:inline-block; width:44px; height:26px; flex-shrink:0; }
+.tog-wrap input { opacity:0; width:0; height:0; position:absolute; }
+.tog-track { position:absolute; inset:0; border-radius:13px; background:#3f3f46;
+             transition:background .2s; cursor:pointer; }
+.tog-track::after { content:''; position:absolute; width:20px; height:20px; border-radius:50%;
+                    background:#fff; top:3px; left:3px;
+                    transition:transform .22s cubic-bezier(.34,1.56,.64,1); }
+.tog-wrap input:checked + .tog-track { background:#10b981; }
+.tog-wrap input:checked + .tog-track::after { transform:translateX(18px); }
+/* Accordion body slide */
+.acc-body { display:grid; grid-template-rows:0fr; transition:grid-template-rows .25s ease; }
+.acc-body.open { grid-template-rows:1fr; }
+.acc-body > div { overflow:hidden; }
+/* Accordion chevron */
+.acc-chevron { transition:transform .22s ease; flex-shrink:0; }
+.acc-chevron.open { transform:rotate(90deg); }
+
+/* ── Theme transition ── */
+*, *::before, *::after { transition-property:background-color,border-color,color; transition-duration:.18s; }
+/* Exclude animation-dependent elements */
+.progress-bar, .tut-dot, .tog-track, .tog-track::after, canvas { transition-duration:0s !important; }
