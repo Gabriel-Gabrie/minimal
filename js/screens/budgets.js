@@ -640,19 +640,12 @@ function _catColor(name, idx) {
 
 function setReport(){}  // no-op — kept for any lingering references
 
-function setTrendCount(n) {
-    _trendMonthCount = n;
-    _updateReportPills();
-    // Only re-render open trend cards
-    ['expenses','income','surplus'].forEach(id => { if (_rCardOpen[id]) _renderOpenCard(id); });
-}
+function setTrendCount(n) { _trendMonthCount = n; renderReports(); }
 function setBreakCount(n) {
     _breakMonthCount = n;
     _updateReportPills();
-    // Only re-render open breakdown cards
-    ['spendBreak','incBreak'].forEach(id => { if (_rCardOpen[id]) _renderOpenCard(id); });
+    _renderBreakdownCard('spendBreak');
 }
-// Legacy shim (called nowhere now, kept for safety)
 function setMonthCount(n) { setTrendCount(n); setBreakCount(n); }
 
 function setBreakdownMode(mode) {
@@ -666,37 +659,10 @@ function setBreakdownMode(mode) {
     _renderBreakdownCard('spendBreak');
 }
 
-function toggleReportSection(id) {
-    _rSectOpen[id] = !_rSectOpen[id];
-    const sect = document.getElementById('rsect-' + id);
-    const chev = document.getElementById('rchev-' + id);
-    if (sect) sect.classList.toggle('hidden', !_rSectOpen[id]);
-    if (chev) chev.style.transform = _rSectOpen[id] ? '' : 'rotate(-90deg)';
-}
-
-function toggleReportCard(id) {
-    _rCardOpen[id] = !_rCardOpen[id];
-    const card = document.getElementById('rcard-' + id);
-    const chev = document.getElementById('rchev-' + id);
-    if (card) card.classList.toggle('hidden', !_rCardOpen[id]);
-    if (chev) chev.style.transform = _rCardOpen[id] ? '' : 'rotate(-180deg)';
-    if (_rCardOpen[id]) _renderOpenCard(id);
-}
-
-function _renderOpenCard(id) {
-    if      (id === 'expenses')   _renderTrendCard('expenses',  'expense');
-    else if (id === 'income')     _renderTrendCard('income',    'income');
-    else if (id === 'surplus')    _renderSurplusCard();
-    else if (id === 'spendBreak') _renderBreakdownCard('spendBreak');
-    else if (id === 'incBreak')   _renderBreakdownCard('incBreak');
-}
+function toggleReportSection(id) {}  // no-op — old accordion sections removed
+function toggleReportCard(id) {}     // no-op — old accordion cards removed
 
 function _updateReportPills() {
-    [3,6,12].forEach(n => {
-        const b = document.getElementById('tbtn-' + n);
-        if (b) b.className = 'px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors ' +
-            (n === _trendMonthCount ? 'bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500');
-    });
     [1,3,6,12].forEach(n => {
         const b = document.getElementById('bbtn-' + n);
         if (b) b.className = 'px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors ' +
