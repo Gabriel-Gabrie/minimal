@@ -1,12 +1,41 @@
-function renderAllReports() {
-    _updateReportPills();
-    // Render all open cards
-    Object.keys(_rCardOpen).forEach(id => {
-        if (_rCardOpen[id]) _renderOpenCard(id);
+/* ══════════════════════════════════════════════
+   REPORTS — Redesigned dashboard
+══════════════════════════════════════════════ */
+
+let _rptView  = 'spending';   // 'spending' | 'income' | 'surplus'
+let _rptRange = 6;            // months to show in trend
+
+/* ── View / range setters ────────────────────── */
+
+function setReportView(view) {
+    _rptView = view;
+    ['spending','income','surplus'].forEach(v => {
+        const btn = document.getElementById('rv-' + v);
+        if (btn) btn.className = 'flex-1 py-2 rounded-xl text-xs font-semibold transition-all ' +
+            (v === view ? 'bg-zinc-700 text-white' : 'text-zinc-500');
+    });
+    // Show breakdown toggle only for spending
+    const tog = document.getElementById('rpt-break-toggle');
+    if (tog) tog.classList.toggle('hidden', view !== 'spending');
+    renderReports();
+}
+
+function setReportRange(n) {
+    _rptRange = n;
+    _updateRangePills();
+    renderReports();
+}
+
+function _updateRangePills() {
+    [3,6,12].forEach(n => {
+        const b = document.getElementById('rbtn-' + n);
+        if (b) b.className = 'px-3 py-1 rounded-full text-[11px] font-semibold transition-colors ' +
+            (n === _rptRange ? 'bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500');
     });
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────
+/* ── Helper functions (shared) ──────────────── */
+
 function _pastMonths(n) {
     n = (n !== undefined) ? n : _breakMonthCount;
     const out = [];
@@ -32,25 +61,50 @@ function _destroyChart(id) {
     if (_rCharts[id]) { try { _rCharts[id].destroy(); } catch(e){} delete _rCharts[id]; }
 }
 
+/* ── Chart builders ──────────────────────────── */
+
 function _buildLineOrBar(canvasId, labels, data, color) {
     _destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
+    const light   = document.documentElement.classList.contains('light');
+    const gridClr = light ? 'rgba(200,200,210,0.35)' : 'rgba(63,63,70,0.35)';
+    const tickClr = light ? '#a1a1aa' : '#71717a';
     const type = labels.length === 1 ? 'bar' : 'line';
+
+    const grad = ctx.getContext('2d').createLinearGradient(0, 0, 0, ctx.parentElement.offsetHeight || 200);
+    grad.addColorStop(0, color + '30');
+    grad.addColorStop(1, color + '05');
+
     _rCharts[canvasId] = new Chart(ctx, {
         type,
         data: {
             labels,
-            datasets: [{ data, borderColor: color, backgroundColor: color + '33',
+            datasets: [{ data, borderColor: color, backgroundColor: type === 'line' ? grad : color + '33',
                 fill: type === 'line', tension: 0.35,
                 pointBackgroundColor: color, borderRadius: 4,
-                borderWidth: type === 'bar' ? 0 : 2 }]
+                borderWidth: type === 'bar' ? 0 : 2.5,
+                pointRadius: type === 'line' ? 3 : 0,
+            }]
         },
         options: {
-            plugins: { legend: { display: false } },
+            responsive: true, maintainAspectRatio: false,
+            animation: { duration: 400, easing: 'easeOutQuart' },
+            plugins: { legend: { display: false },
+                tooltip: {
+                    backgroundColor: light ? '#fff' : '#1c1c1f',
+                    borderColor: light ? '#e4e4e7' : '#3f3f46',
+                    borderWidth: 1,
+                    titleColor: light ? '#71717a' : '#a1a1aa',
+                    bodyColor: light ? '#09090b' : '#f4f4f5',
+                    padding: 10, cornerRadius: 10,
+                    callbacks: { label: item => '  $' + Math.round(item.raw).toLocaleString() },
+                },
+            },
             scales: {
-                y: { grid: { color:'#27272a' }, ticks: { color:'#71717a', callback: v => '$'+Math.abs(v) } },
-                x: { grid: { color:'#27272a' }, ticks: { color:'#71717a' } }
+                y: { grid: { color: gridClr, lineWidth: 0.5 }, ticks: { color: tickClr, font: { size: 10 },
+                    callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(1) + 'k' : v) }, border: { display: false }, beginAtZero: true },
+                x: { grid: { color: gridClr, lineWidth: 0.5 }, ticks: { color: tickClr, font: { size: 10 } }, border: { display: false } }
             }
         }
     });
@@ -60,22 +114,41 @@ function _buildSurplusBar(canvasId, labels, data) {
     _destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
+    const light   = document.documentElement.classList.contains('light');
+    const gridClr = light ? 'rgba(200,200,210,0.35)' : 'rgba(63,63,70,0.35)';
+    const tickClr = light ? '#a1a1aa' : '#71717a';
     _rCharts[canvasId] = new Chart(ctx, {
         type: 'bar',
         data: {
             labels,
             datasets: [{
                 data,
-                backgroundColor: data.map(v => v >= 0 ? '#10b98166' : '#f43f5e66'),
+                backgroundColor: data.map(v => v >= 0 ? '#10b98140' : '#f43f5e40'),
                 borderColor:     data.map(v => v >= 0 ? '#10b981'   : '#f43f5e'),
-                borderWidth: 1.5, borderRadius: 4
+                borderWidth: 1.5, borderRadius: 6
             }]
         },
         options: {
-            plugins: { legend: { display: false } },
+            responsive: true, maintainAspectRatio: false,
+            animation: { duration: 400, easing: 'easeOutQuart' },
+            plugins: { legend: { display: false },
+                tooltip: {
+                    backgroundColor: light ? '#fff' : '#1c1c1f',
+                    borderColor: light ? '#e4e4e7' : '#3f3f46',
+                    borderWidth: 1,
+                    titleColor: light ? '#71717a' : '#a1a1aa',
+                    bodyColor: light ? '#09090b' : '#f4f4f5',
+                    padding: 10, cornerRadius: 10,
+                    callbacks: { label: item => {
+                        const v = item.raw;
+                        return '  ' + (v >= 0 ? '+' : '\u2212') + '$' + Math.round(Math.abs(v)).toLocaleString();
+                    }},
+                },
+            },
             scales: {
-                y: { grid: { color:'#27272a' }, ticks: { color:'#71717a', callback: v => '$'+v } },
-                x: { grid: { color:'#27272a' }, ticks: { color:'#71717a' } }
+                y: { grid: { color: gridClr, lineWidth: 0.5 }, ticks: { color: tickClr, font: { size: 10 },
+                    callback: v => (v >= 0 ? '' : '-') + '$' + Math.abs(v) }, border: { display: false } },
+                x: { grid: { color: gridClr, lineWidth: 0.5 }, ticks: { color: tickClr, font: { size: 10 } }, border: { display: false } }
             }
         }
     });
@@ -85,19 +158,20 @@ function _buildDoughnut(canvasId, labels, values, colors) {
     _destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
-    // Total for centre label
+    const light = document.documentElement.classList.contains('light');
     const total = values.reduce((s,v) => s+v, 0);
     _rCharts[canvasId] = new Chart(ctx, {
         type: 'doughnut',
         data: { labels, datasets: [{ data: values, backgroundColor: colors,
-            borderColor: '#18181b', borderWidth: 3, hoverOffset: 6 }] },
+            borderColor: light ? '#ffffff' : '#18181b', borderWidth: 3, hoverOffset: 6 }] },
         options: {
             cutout: '68%',
+            animation: { duration: 400, easing: 'easeOutQuart' },
             plugins: {
                 legend: { display: false },
                 tooltip: { callbacks: {
-                    label: ctx => ' ' + ctx.label + '  $' + Math.round(ctx.parsed)
-                        + '  (' + (total > 0 ? (ctx.parsed/total*100).toFixed(1) : 0) + '%)'
+                    label: ctx2 => ' ' + ctx2.label + '  $' + Math.round(ctx2.parsed)
+                        + '  (' + (total > 0 ? (ctx2.parsed/total*100).toFixed(1) : 0) + '%)'
                 }}
             }
         }
@@ -108,18 +182,26 @@ function _buildStackedBar(canvasId, labels, datasets) {
     _destroyChart(canvasId);
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
+    const light   = document.documentElement.classList.contains('light');
+    const gridClr = light ? 'rgba(200,200,210,0.35)' : 'rgba(63,63,70,0.35)';
+    const tickClr = light ? '#a1a1aa' : '#71717a';
     _rCharts[canvasId] = new Chart(ctx, {
         type: 'bar',
         data: { labels, datasets },
         options: {
+            responsive: true, maintainAspectRatio: false,
+            animation: { duration: 400, easing: 'easeOutQuart' },
             plugins: { legend: { display: false } },
             scales: {
-                x: { stacked: true, grid: { color:'#27272a' }, ticks: { color:'#71717a' } },
-                y: { stacked: true, grid: { color:'#27272a' }, ticks: { color:'#71717a', callback: v => '$'+v } }
+                x: { stacked: true, grid: { color: gridClr, lineWidth: 0.5 }, ticks: { color: tickClr, font: { size: 10 } }, border: { display: false } },
+                y: { stacked: true, grid: { color: gridClr, lineWidth: 0.5 }, ticks: { color: tickClr, font: { size: 10 },
+                    callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(1) + 'k' : v) }, border: { display: false } }
             }
         }
     });
 }
+
+/* ── Stats & legend renderers ────────────────── */
 
 function _renderStats(elId, data, color) {
     const el = document.getElementById(elId);
@@ -130,10 +212,26 @@ function _renderStats(elId, data, color) {
     const peak = abs.length ? Math.max(...abs) : 0;
     const fmt  = v => v >= 1000 ? '$'+(v/1000).toFixed(1)+'k' : '$'+v.toFixed(0);
     el.innerHTML = [['Total', fmt(tot)], ['Monthly Avg', fmt(avg)], ['Peak', fmt(peak)]]
-        .map(([l,v]) => `<div class="bg-zinc-800/60 rounded-2xl p-3 text-center">
+        .map(([l,v]) => `<div class="bg-zinc-900 rounded-2xl px-4 py-3 text-center">
             <div class="text-[9px] font-black tracking-[.12em] text-zinc-600 uppercase mb-1">${l}</div>
-            <div class="text-base font-semibold tracking-tight" style="color:${color}">${v}</div>
+            <div class="text-lg font-bold tracking-tight" style="color:${color}">${v}</div>
         </div>`).join('');
+}
+
+function _renderLegend(elId, labels, values, colors) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const total = (values || []).reduce((s,v) => s+v, 0);
+    el.innerHTML = labels.map((l, i) => {
+        const pct  = (total > 0 && values) ? (values[i]/total*100).toFixed(1) + '%' : '';
+        const amt  = values ? '$' + Math.round(values[i]).toLocaleString() : '';
+        return `<div class="flex items-center gap-2 py-1">
+            <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${colors[i]}"></div>
+            <span class="text-xs text-zinc-400 flex-1 truncate">${l}</span>
+            ${pct ? `<span class="text-[11px] text-zinc-600 tabular-nums">${pct}</span>` : ''}
+            ${amt ? `<span class="text-xs font-medium text-zinc-300 tabular-nums text-right">${amt}</span>` : ''}
+        </div>`;
+    }).join('');
 }
 
 function _renderMonthList(elId, pastMonths, mode) {
@@ -148,22 +246,22 @@ function _renderMonthList(elId, pastMonths, mode) {
         const util = totalBud > 0 ? Math.round(exp/totalBud*100) : 0;
 
         let val, sub, barColor, valColor;
-        if (mode === 'expense') {
-            val = '$' + Math.round(exp);
+        if (mode === 'spending') {
+            val = '$' + Math.round(exp).toLocaleString();
             sub = totalBud > 0 ? util + '% of budget' : 'No budget set';
             barColor = util > 100 ? '#ef4444' : util > 80 ? '#f59e0b' : '#10b981';
             valColor = util > 100 ? 'text-rose-400' : util > 80 ? 'text-amber-400' : 'text-zinc-200';
         } else if (mode === 'income') {
-            val = '$' + Math.round(inc);
-            sub = exp > 0 ? 'Spent $' + Math.round(exp) : 'No expenses';
+            val = '$' + Math.round(inc).toLocaleString();
+            sub = exp > 0 ? 'Spent $' + Math.round(exp).toLocaleString() : 'No expenses';
             barColor = '#10b981'; valColor = 'text-emerald-400';
         } else {
-            val = (surplus >= 0 ? '+' : '−') + '$' + Math.round(Math.abs(surplus));
-            sub = '↑$' + Math.round(inc) + '  ↓$' + Math.round(exp);
+            val = (surplus >= 0 ? '+' : '\u2212') + '$' + Math.round(Math.abs(surplus)).toLocaleString();
+            sub = '\u2191$' + Math.round(inc).toLocaleString() + '  \u2193$' + Math.round(exp).toLocaleString();
             barColor = surplus >= 0 ? '#10b981' : '#ef4444';
             valColor = surplus >= 0 ? 'text-emerald-400' : 'text-rose-400';
         }
-        html += `<div class="flex items-stretch bg-zinc-800/60 rounded-2xl overflow-hidden">
+        html += `<div class="flex items-stretch bg-zinc-900 rounded-2xl overflow-hidden">
             <div style="width:3px;background:${barColor};flex-shrink:0;margin:8px 0 8px 8px;border-radius:2px"></div>
             <div class="flex-1 px-4 py-3 flex justify-between items-center">
                 <div class="font-medium text-sm">${formatMonthName(m)}</div>
@@ -177,37 +275,14 @@ function _renderMonthList(elId, pastMonths, mode) {
     el.innerHTML = html || '<p class="text-center text-zinc-600 text-sm py-6">No data yet</p>';
 }
 
-// ── Trend card renderers ─────────────────────────────────────────────
-function _renderTrendCard(cardId, mode) {
-    const months = _pastMonthsTrend();
-    const labels = months.map(m => formatMonthShort(m));
-    const data   = months.map(m => mode === 'income' ? _getInc(m) : _getExp(m));
-    const color  = mode === 'income' ? '#10b981' : '#f43f5e';
-    const canvas = document.getElementById('rchart-' + cardId);
-    if (canvas) canvas.height = 160;
-    _buildLineOrBar('rchart-' + cardId, labels, data, color);
-    _renderStats('rstats-' + cardId, data, color);
-}
+/* ── Breakdown data builders ─────────────────── */
 
-function _renderSurplusCard() {
-    const months = _pastMonthsTrend();
-    const labels = months.map(m => formatMonthShort(m));
-    const data   = months.map(m => _getInc(m) - _getExp(m));
-    const canvas = document.getElementById('rchart-surplus');
-    if (canvas) canvas.height = 160;
-    _buildSurplusBar('rchart-surplus', labels, data);
-    _renderStats('rstats-surplus', data, '#38bdf8');
-}
-
-// ── Breakdown card renderers ─────────────────────────────────────────
 function _spendBreakData(month) {
-    // Returns { labels, values, colors } for a single month
     if (_breakdownMode === 'category') {
         const pairs = Object.keys(expenseCategories)
             .map((cat, i) => ({ cat, val: calculateSpentInMonth(month, cat), i }))
             .filter(x => x.val > 0)
             .sort((a, b) => b.val - a.val);
-        // Add Saving/Debt as sections
         let ci = pairs.length;
         ['Saving', 'Debt'].forEach(secType => {
             const val = walletAccounts.filter(a => a.type === secType.toLowerCase())
@@ -217,7 +292,6 @@ function _spendBreakData(month) {
         pairs.sort((a, b) => b.val - a.val);
         return { labels: pairs.map(x=>x.cat), values: pairs.map(x=>x.val), colors: pairs.map(x=>_catColor(x.cat, x.i)) };
     } else {
-        // By category — collect all then sort
         const entries = [];
         Object.entries(expenseCategories).forEach(([cat, items]) => {
             (items || []).forEach(item => {
@@ -225,7 +299,6 @@ function _spendBreakData(month) {
                 if (v > 0) entries.push({ label: item, v, color: _catColor(cat, entries.length) });
             });
         });
-        // Add individual saving/debt accounts
         ['Saving', 'Debt'].forEach(secType => {
             walletAccounts.filter(a => a.type === secType.toLowerCase()).forEach(acc => {
                 const v = Math.max(0, _calculateTransferToAccount(month, acc.id));
@@ -243,16 +316,15 @@ function _spendBreakDatasets(months) {
             label: cat,
             data: months.map(m => calculateSpentInMonth(m, cat)),
             backgroundColor: _catColor(cat, i),
-            borderWidth: 0, borderRadius: 2, stack: 'spend'
+            borderWidth: 0, borderRadius: 4, stack: 'spend'
         }));
-        // Add Saving/Debt sections
         let ci = ds.length;
         ['Saving', 'Debt'].forEach(secType => {
             const data = months.map(m => walletAccounts.filter(a => a.type === secType.toLowerCase())
                 .reduce((s, acc) => s + Math.max(0, _calculateTransferToAccount(m, acc.id)), 0));
             if (data.some(v => v > 0)) {
                 ds.push({ label: secType, data, backgroundColor: _catColor(secType, ci++),
-                    borderWidth: 0, borderRadius: 2, stack: 'spend' });
+                    borderWidth: 0, borderRadius: 4, stack: 'spend' });
             }
         });
         return ds.filter(d => d.data.some(v => v > 0))
@@ -265,18 +337,17 @@ function _spendBreakDatasets(months) {
                 const data = months.map(m => calculateSpentInMonth(m, cat, item));
                 if (data.some(v => v > 0)) {
                     datasets.push({ label: item, data, backgroundColor: _catColor(cat, ci),
-                        borderWidth: 0, borderRadius: 2, stack: 'spend' });
+                        borderWidth: 0, borderRadius: 4, stack: 'spend' });
                     ci++;
                 }
             });
         });
-        // Add individual saving/debt accounts
         ['Saving', 'Debt'].forEach(secType => {
             walletAccounts.filter(a => a.type === secType.toLowerCase()).forEach(acc => {
                 const data = months.map(m => Math.max(0, _calculateTransferToAccount(m, acc.id)));
                 if (data.some(v => v > 0)) {
                     datasets.push({ label: acc.name, data, backgroundColor: _catColor(secType, ci++),
-                        borderWidth: 0, borderRadius: 2, stack: 'spend' });
+                        borderWidth: 0, borderRadius: 4, stack: 'spend' });
                 }
             });
         });
@@ -291,27 +362,13 @@ function _incBreakDatasets(months) {
             t.type === 'income' && !t.excluded && t.date.startsWith(m) && t.mainCategory === cat)
             .reduce((s,t) => s + parseFloat(t.amount), 0)),
         backgroundColor: _FB_COLORS[i % _FB_COLORS.length],
-        borderWidth: 0, borderRadius: 2, stack: 'inc'
+        borderWidth: 0, borderRadius: 4, stack: 'inc'
     }))
     .filter(ds => ds.data.some(v => v > 0))
     .sort((a, b) => b.data.reduce((s,v)=>s+v,0) - a.data.reduce((s,v)=>s+v,0));
 }
 
-function _renderLegend(elId, labels, values, colors) {
-    const el = document.getElementById(elId);
-    if (!el) return;
-    const total = (values || []).reduce((s,v) => s+v, 0);
-    el.innerHTML = labels.map((l, i) => {
-        const pct  = (total > 0 && values) ? (values[i]/total*100).toFixed(1) + '%' : '';
-        const amt  = values ? '$' + Math.round(values[i]) : '';
-        return `<div class="flex items-center gap-2 py-0.5">
-            <div class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${colors[i]}"></div>
-            <span class="text-xs text-zinc-400 flex-1 truncate">${l}</span>
-            ${pct ? `<span class="text-xs text-zinc-600 tabular-nums">${pct}</span>` : ''}
-            ${amt ? `<span class="text-xs text-zinc-400 tabular-nums text-right">${amt}</span>` : ''}
-        </div>`;
-    }).join('');
-}
+/* ── Breakdown card renderer ─────────────────── */
 
 function _renderBreakdownCard(cardId) {
     const months = _pastMonths();
@@ -320,13 +377,12 @@ function _renderBreakdownCard(cardId) {
 
     if (cardId === 'spendBreak') {
         if (_breakMonthCount === 1) {
-            // Ring chart
-            if (canvas) { canvas.height = 220; canvas.width = 220; canvas.style.maxWidth='220px'; canvas.style.margin='0 auto'; canvas.style.display='block'; }
+            if (canvas) { canvas.height = 200; canvas.width = 200; canvas.style.maxWidth='200px'; canvas.style.margin='0 auto'; canvas.style.display='block'; }
             const d = _spendBreakData(months[0]);
             _buildDoughnut('rchart-spendBreak', d.labels, d.values, d.colors);
             _renderLegend('rlegend-spendBreak', d.labels, d.values, d.colors);
         } else {
-            if (canvas) { canvas.height = 220; canvas.style.maxWidth=''; canvas.style.margin=''; canvas.style.display=''; }
+            if (canvas) { canvas.height = 200; canvas.style.maxWidth=''; canvas.style.margin=''; canvas.style.display=''; }
             const ds = _spendBreakDatasets(months);
             _buildStackedBar('rchart-spendBreak', labels, ds);
             const uniq = ds.map(d => ({ label: d.label, color: d.backgroundColor }));
@@ -334,8 +390,7 @@ function _renderBreakdownCard(cardId) {
         }
     } else if (cardId === 'incBreak') {
         if (_breakMonthCount === 1) {
-            if (canvas) { canvas.height = 220; canvas.width = 220; canvas.style.maxWidth='220px'; canvas.style.margin='0 auto'; canvas.style.display='block'; }
-            // Single month income by type
+            if (canvas) { canvas.height = 200; canvas.width = 200; canvas.style.maxWidth='200px'; canvas.style.margin='0 auto'; canvas.style.display='block'; }
             const m = months[0];
             const vals = incomeCats.map(cat => transactions.filter(t =>
                 t.type==='income' && !t.excluded && t.date.startsWith(m) && t.mainCategory===cat)
@@ -345,7 +400,7 @@ function _renderBreakdownCard(cardId) {
             _buildDoughnut('rchart-incBreak', filtered.map(x=>x.l), filtered.map(x=>x.v), filtered.map(x=>x.c));
             _renderLegend('rlegend-incBreak', filtered.map(x=>x.l), filtered.map(x=>x.v), filtered.map(x=>x.c));
         } else {
-            if (canvas) { canvas.height = 220; canvas.style.maxWidth=''; canvas.style.margin=''; canvas.style.display=''; }
+            if (canvas) { canvas.height = 200; canvas.style.maxWidth=''; canvas.style.margin=''; canvas.style.display=''; }
             const ds = _incBreakDatasets(months);
             _buildStackedBar('rchart-incBreak', labels, ds);
             _renderLegend('rlegend-incBreak', ds.map(d=>d.label), null, ds.map(d=>d.backgroundColor));
@@ -353,127 +408,77 @@ function _renderBreakdownCard(cardId) {
     }
 }
 
-function updateReportControls() {} // kept as no-op for safety
-
+/* ══════════════════════════════════════════════
+   MAIN RENDER
+══════════════════════════════════════════════ */
 
 function renderReports() {
-    updateReportControls();
+    _updateRangePills();
+    _updateReportPills();
 
-    const pastMonths = [];
-    let d = new Date(getCurrentDateEST());
-    for (let i = 0; i < _breakMonthCount; i++) {
-        const key = d.toISOString().slice(0,7);
-        pastMonths.unshift(key);
-        d.setMonth(d.getMonth() - 1);
+    const months = _pastMonths(_rptRange);
+    const labels = months.map(m => formatMonthShort(m));
+
+    const view = _rptView;
+    const viewColors = { spending: '#f87171', income: '#34d399', surplus: '#38bdf8' };
+    const color = viewColors[view];
+
+    // Data for trend
+    let data;
+    if (view === 'spending') {
+        data = months.map(m => _getExp(m));
+    } else if (view === 'income') {
+        data = months.map(m => _getInc(m));
+    } else {
+        data = months.map(m => _getInc(m) - _getExp(m));
     }
 
-    const meta = REPORT_META[selectedReport];
+    // ── Hero amount ──────────────────────────────────
+    const heroAmt = document.getElementById('rpt-hero-amount');
+    const heroSub = document.getElementById('rpt-hero-sub');
+    const total   = data.reduce((s,v) => s + Math.abs(v), 0);
+    const avg     = data.length ? total / data.length : 0;
+    const fmt     = v => '$' + Math.round(v).toLocaleString();
 
-    const labels = pastMonths.map(m => formatMonthShort(m));
-
-    const getInc = m => transactions.filter(t => t.type==='income' && t.date.startsWith(m)).reduce((s,t)=>s+parseFloat(t.amount),0);
-    const getExp = m => calculateSpentInMonth(m);
-
-    let chartData, chartType, chartDatasets;
-
-    if (selectedReport === 'spending' || selectedReport === 'expense') {
-        chartType = 'line';
-        chartData = pastMonths.map(m => getExp(m));
-        chartDatasets = [{ data: chartData, borderColor: meta.color, backgroundColor: meta.color + '22', fill: true, tension: 0.3, pointBackgroundColor: meta.color }];
-    } else if (selectedReport === 'income') {
-        chartType = 'line';
-        chartData = pastMonths.map(m => getInc(m));
-        chartDatasets = [{ data: chartData, borderColor: '#10b981', backgroundColor: '#10b98122', fill: true, tension: 0.3, pointBackgroundColor: '#10b981' }];
-    } else { // surplus
-        chartType = 'bar';
-        chartData = pastMonths.map(m => getInc(m) - getExp(m));
-        chartDatasets = [{
-            data: chartData,
-            backgroundColor: chartData.map(v => v >= 0 ? '#10b98166' : '#f43f5e66'),
-            borderColor:     chartData.map(v => v >= 0 ? '#10b981'   : '#f43f5e'),
-            borderWidth: 1.5,
-            borderRadius: 4,
-        }];
-    }
-
-    if (trendChart) trendChart.destroy();
-    trendChart = new Chart(document.getElementById('trendChart'), {
-        type: chartType,
-        data: { labels, datasets: chartDatasets },
-        options: {
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: '#27272a' }, ticks: { color: '#71717a', callback: v => '$' + v } },
-                x: { grid: { color: '#27272a' }, ticks: { color: '#71717a' } }
-            }
-        }
-    });
-
-    // Summary stats
-    const allValues = chartData.filter(v => v > 0);
-    const statTotal = chartData.reduce((s,v) => s + Math.abs(v), 0);
-    const statAvg   = chartData.length > 0 ? statTotal / chartData.length : 0;
-    const statPeak  = chartData.length > 0 ? Math.max(...chartData.map(Math.abs)) : 0;
-    const statColor = meta.color;
-
-    const statsEl = document.getElementById('report-stats');
-    if (statsEl) {
-        const fmtAmt = v => v >= 1000 ? '$' + (v/1000).toFixed(1) + 'k' : '$' + v.toFixed(0);
-        statsEl.innerHTML = [
-            ['Total',   fmtAmt(statTotal)],
-            ['Monthly Avg', fmtAmt(statAvg)],
-            ['Peak',    fmtAmt(statPeak)],
-        ].map(([label, val]) => `
-            <div class="bg-zinc-900 rounded-2xl p-4 text-center">
-                <div class="text-[9px] font-black tracking-[.12em] text-zinc-600 uppercase mb-1">${label}</div>
-                <div class="text-lg font-semibold tracking-tight" style="color:${statColor}">${val}</div>
-            </div>`).join('');
-    }
-
-    // Month list with colored bars
-    let listHTML = '';
-    pastMonths.slice().reverse().forEach(m => {
-        const inc = getInc(m), exp = getExp(m), surplus = inc - exp;
-        const monthBudget = monthlyBudgets[m] || {};
-        let totalBudget = 0;
-        Object.values(monthBudget).forEach(cat => Object.values(cat || {}).forEach(b => totalBudget += b));
-        const util = totalBudget > 0 ? Math.round(exp / totalBudget * 100) : 0;
-
-        let rightVal, rightSub, barColor, rowVal;
-        if (selectedReport === 'spending' || selectedReport === 'expense') {
-            rowVal = exp;
-            rightVal = `$${Math.round(exp)}`;
-            rightSub = totalBudget > 0 ? `${util}% of budget` : 'No budget set';
-            barColor = util > 100 ? '#ef4444' : util > 80 ? '#f59e0b' : '#10b981';
-        } else if (selectedReport === 'income') {
-            rowVal = inc;
-            rightVal = `$${Math.round(inc)}`;
-            rightSub = exp > 0 ? `Spent $${Math.round(exp)}` : 'No expenses';
-            barColor = '#10b981';
+    if (heroAmt) {
+        const heroColors = { spending: 'text-rose-400', income: 'text-emerald-400', surplus: 'text-sky-400' };
+        heroAmt.className = 'text-3xl font-bold tracking-tight leading-none text-center ' + heroColors[view];
+        if (view === 'surplus') {
+            const net = data.reduce((s,v) => s + v, 0);
+            heroAmt.textContent = (net >= 0 ? '+' : '\u2212') + '$' + Math.round(Math.abs(net)).toLocaleString();
         } else {
-            rowVal = surplus;
-            rightVal = `${surplus >= 0 ? '+' : '−'}$${Math.round(Math.abs(surplus))}`;
-            rightSub = `↑$${Math.round(inc)}  ↓$${Math.round(exp)}`;
-            barColor = surplus >= 0 ? '#10b981' : '#ef4444';
+            heroAmt.textContent = fmt(total);
         }
+    }
+    if (heroSub) {
+        const rangeLabel = _rptRange + '-month ' + (view === 'surplus' ? 'net' : 'total');
+        heroSub.textContent = rangeLabel + '  \u00B7  avg ' + fmt(avg) + '/mo';
+    }
 
-        const rightColor = selectedReport === 'surplus'
-            ? (surplus >= 0 ? 'text-emerald-400' : 'text-rose-400')
-            : selectedReport === 'income' ? 'text-emerald-400'
-            : (util > 100 ? 'text-rose-400' : util > 80 ? 'text-amber-400' : 'text-emerald-400');
+    // ── Trend chart ──────────────────────────────────
+    if (view === 'surplus') {
+        _buildSurplusBar('rpt-trend-chart', labels, data);
+    } else {
+        _buildLineOrBar('rpt-trend-chart', labels, data, color);
+    }
 
-        listHTML += `<div class="flex items-stretch bg-zinc-900 rounded-2xl overflow-hidden">
-            <div style="width:3px;background:${barColor};flex-shrink:0;margin:8px 0 8px 8px;border-radius:2px"></div>
-            <div class="flex-1 px-4 py-3.5 flex justify-between items-center">
-                <div class="font-medium text-sm">${formatMonthName(m)}</div>
-                <div class="text-right">
-                    <div class="${rightColor} font-semibold text-sm tabular-nums">${rightVal}</div>
-                    <div class="text-[10px] text-zinc-600 mt-0.5">${rightSub}</div>
-                </div>
-            </div>
-        </div>`;
-    });
-    document.getElementById('history-list').innerHTML = listHTML || '<p class="text-center text-zinc-600 text-sm py-8">No data yet</p>';
+    // ── Stats row ────────────────────────────────────
+    _renderStats('rpt-stats', data, color);
+
+    // ── Month list ───────────────────────────────────
+    _renderMonthList('rpt-month-list', months, view);
+
+    // ── Spending breakdown ───────────────────────────
+    _renderBreakdownCard('spendBreak');
+}
+
+
+/* ── Legacy shims — kept for safety ────────── */
+function renderAllReports() { renderReports(); }
+function updateReportControls() {}
+function _renderOpenCard(id) {
+    if      (id === 'spendBreak') _renderBreakdownCard('spendBreak');
+    else if (id === 'incBreak')   _renderBreakdownCard('incBreak');
 }
 
 
@@ -691,4 +696,3 @@ Transactions using it will stay.`)) {
         renderBudgets();
     }
 }
-

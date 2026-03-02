@@ -180,7 +180,7 @@
                 <!-- Chart legend -->
                 <div class="flex items-center gap-5 px-5 pt-1 pb-3">
                     <div class="flex items-center gap-1.5">
-                        <div class="w-5 h-[2px] rounded-full bg-emerald-400"></div>
+                        <div id="ov-legend-actual" class="w-5 h-[2px] rounded-full bg-emerald-400"></div>
                         <span class="text-[10px] text-zinc-600">Actual</span>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -339,80 +339,56 @@
         </div>
 
         <!-- REPORTS -->
-        <div id="screen-4" class="hidden pb-12">
+        <div id="screen-4" class="hidden pb-16 overflow-y-auto">
 
-            <!-- ══ TRENDS SECTION ══ -->
-            <div class="px-5 pt-5 mb-1">
-                <div class="flex items-center justify-between">
-                    <button onclick="toggleReportSection('trends')" class="flex items-center gap-2 py-1 group">
-                        <span class="text-[10px] font-black tracking-widest text-zinc-500 uppercase group-hover:text-zinc-400 transition-colors">Trends</span>
-                        <svg id="rchev-trends" class="w-3.5 h-3.5 text-zinc-600 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <!-- Trends time pills — no 1M (need ≥2 points for a line) -->
-                    <div class="flex gap-1.5">
-                        <button onclick="setTrendCount(3)"  id="tbtn-3"  class="px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors">3M</button>
-                        <button onclick="setTrendCount(6)"  id="tbtn-6"  class="px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors">6M</button>
-                        <button onclick="setTrendCount(12)" id="tbtn-12" class="px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors">12M</button>
-                    </div>
+            <!-- ── Segment control: Spending / Income / Surplus ── -->
+            <div class="px-4 pt-5 pb-2">
+                <div class="flex bg-zinc-900 rounded-2xl p-1">
+                    <button onclick="setReportView('spending')" id="rv-spending"
+                        class="flex-1 py-2 rounded-xl text-xs font-semibold transition-all bg-zinc-700 text-white">Spending</button>
+                    <button onclick="setReportView('income')" id="rv-income"
+                        class="flex-1 py-2 rounded-xl text-xs font-semibold transition-all text-zinc-500">Income</button>
+                    <button onclick="setReportView('surplus')" id="rv-surplus"
+                        class="flex-1 py-2 rounded-xl text-xs font-semibold transition-all text-zinc-500">Surplus</button>
                 </div>
             </div>
-            <div id="rsect-trends" class="px-5 space-y-3 mb-6">
 
-                <!-- Monthly Expenses card -->
-                <div class="bg-zinc-900 rounded-3xl overflow-hidden">
-                    <button onclick="toggleReportCard('expenses')" class="w-full flex items-center justify-between px-5 py-4">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></div>
-                            <span class="font-semibold text-sm">Monthly Expenses</span>
-                        </div>
-                        <svg id="rchev-expenses" class="w-4 h-4 text-zinc-600 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <div id="rcard-expenses">
-                        <div class="px-4 pb-2"><canvas id="rchart-expenses" height="160"></canvas></div>
-                        <div id="rstats-expenses" class="grid grid-cols-3 gap-2 px-4 mb-3"></div>
-                    </div>
-                </div>
-
-                <!-- Monthly Income card -->
-                <div class="bg-zinc-900 rounded-3xl overflow-hidden">
-                    <button onclick="toggleReportCard('income')" class="w-full flex items-center justify-between px-5 py-4">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></div>
-                            <span class="font-semibold text-sm">Monthly Income</span>
-                        </div>
-                        <svg id="rchev-income" class="w-4 h-4 text-zinc-600 transition-transform rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <div id="rcard-income" class="hidden">
-                        <div class="px-4 pb-2"><canvas id="rchart-income" height="160"></canvas></div>
-                        <div id="rstats-income" class="grid grid-cols-3 gap-2 px-4 mb-3"></div>
-                    </div>
-                </div>
-
-                <!-- Net Surplus / Deficit card -->
-                <div class="bg-zinc-900 rounded-3xl overflow-hidden">
-                    <button onclick="toggleReportCard('surplus')" class="w-full flex items-center justify-between px-5 py-4">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-2 h-2 rounded-full bg-sky-400 shrink-0"></div>
-                            <span class="font-semibold text-sm">Net Surplus / Deficit</span>
-                        </div>
-                        <svg id="rchev-surplus" class="w-4 h-4 text-zinc-600 transition-transform rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <div id="rcard-surplus" class="hidden">
-                        <div class="px-4 pb-2"><canvas id="rchart-surplus" height="160"></canvas></div>
-                        <div id="rstats-surplus" class="grid grid-cols-3 gap-2 px-4 mb-3"></div>
-                    </div>
-                </div>
-
+            <!-- ── Time range pills ── -->
+            <div class="flex justify-center gap-1.5 px-4 pt-1 pb-3">
+                <button onclick="setReportRange(3)"  id="rbtn-3"  class="px-3 py-1 rounded-full text-[11px] font-semibold transition-colors">3M</button>
+                <button onclick="setReportRange(6)"  id="rbtn-6"  class="px-3 py-1 rounded-full text-[11px] font-semibold transition-colors">6M</button>
+                <button onclick="setReportRange(12)" id="rbtn-12" class="px-3 py-1 rounded-full text-[11px] font-semibold transition-colors">12M</button>
             </div>
 
-            <!-- ══ BREAKDOWNS SECTION ══ -->
-            <div class="px-5 mb-1">
-                <div class="flex items-center justify-between">
-                    <button onclick="toggleReportSection('breakdowns')" class="flex items-center gap-2 py-1 group">
-                        <span class="text-[10px] font-black tracking-widest text-zinc-500 uppercase group-hover:text-zinc-400 transition-colors">Breakdowns</span>
-                        <svg id="rchev-breakdowns" class="w-3.5 h-3.5 text-zinc-600 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <!-- Breakdown time pills — 1M shows ring chart -->
+            <!-- ── Hero summary stat ── -->
+            <div class="px-5 mb-2">
+                <p id="rpt-hero-amount" class="text-3xl font-bold tracking-tight leading-none text-center">—</p>
+                <p id="rpt-hero-sub" class="text-xs text-zinc-500 text-center mt-1"></p>
+            </div>
+
+            <!-- ── Trend chart ── -->
+            <div class="mx-4 bg-zinc-900 rounded-3xl overflow-hidden">
+                <div class="px-3 pt-3 pb-0" style="height:200px;position:relative">
+                    <canvas id="rpt-trend-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- ── 3-stat row ── -->
+            <div id="rpt-stats" class="grid grid-cols-3 gap-2 px-4 mt-3"></div>
+
+            <!-- ── Monthly breakdown list ── -->
+            <div class="px-4 mt-4 mb-1">
+                <div class="flex items-center gap-3 mb-2.5">
+                    <span class="text-[9px] font-black tracking-[.12em] text-zinc-600 uppercase shrink-0">Monthly</span>
+                    <div class="flex-1 h-px bg-zinc-800"></div>
+                </div>
+                <div id="rpt-month-list" class="space-y-2"></div>
+            </div>
+
+            <!-- ── Breakdown section ── -->
+            <div class="mt-5 mb-2">
+                <div class="flex items-center justify-between px-5 mb-2.5">
+                    <span class="text-[9px] font-black tracking-[.12em] text-zinc-600 uppercase shrink-0">Breakdown</span>
                     <div class="flex gap-1.5">
                         <button onclick="setBreakCount(1)"  id="bbtn-1"  class="px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors">1M</button>
                         <button onclick="setBreakCount(3)"  id="bbtn-3"  class="px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors">3M</button>
@@ -420,50 +396,21 @@
                         <button onclick="setBreakCount(12)" id="bbtn-12" class="px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors">12M</button>
                     </div>
                 </div>
-            </div>
-            <div id="rsect-breakdowns" class="px-5 space-y-3 mb-6">
-
-                <!-- Spending Breakdown card -->
-                <div class="bg-zinc-900 rounded-3xl overflow-hidden">
-                    <button onclick="toggleReportCard('spendBreak')" class="w-full flex items-center justify-between px-5 py-4">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></div>
-                            <span class="font-semibold text-sm">Spending Breakdown</span>
-                        </div>
-                        <svg id="rchev-spendBreak" class="w-4 h-4 text-zinc-600 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <div id="rcard-spendBreak">
-                        <!-- Section / Category toggle -->
-                        <div class="flex bg-zinc-800 rounded-2xl p-1 mx-4 mb-3">
-                            <button onclick="setBreakdownMode('category')" id="bmode-category"
-                                class="flex-1 py-1.5 rounded-xl text-xs font-semibold transition-all bg-zinc-700 text-white">By Section</button>
-                            <button onclick="setBreakdownMode('item')" id="bmode-item"
-                                class="flex-1 py-1.5 rounded-xl text-xs font-semibold transition-all text-zinc-500">By Category</button>
-                        </div>
-                        <div class="px-4 pb-2">
-                            <canvas id="rchart-spendBreak"></canvas>
-                        </div>
-                        <div id="rlegend-spendBreak" class="px-4 pb-4"></div>
+                <!-- By Section / By Category toggle -->
+                <div id="rpt-break-toggle" class="px-4 mb-3">
+                    <div class="flex bg-zinc-900 rounded-2xl p-1">
+                        <button onclick="setBreakdownMode('category')" id="bmode-category"
+                            class="flex-1 py-1.5 rounded-xl text-xs font-semibold transition-all bg-zinc-700 text-white">By Section</button>
+                        <button onclick="setBreakdownMode('item')" id="bmode-item"
+                            class="flex-1 py-1.5 rounded-xl text-xs font-semibold transition-all text-zinc-500">By Category</button>
                     </div>
                 </div>
-
-                <!-- Income Breakdown card -->
-                <div class="bg-zinc-900 rounded-3xl overflow-hidden">
-                    <button onclick="toggleReportCard('incBreak')" class="w-full flex items-center justify-between px-5 py-4">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></div>
-                            <span class="font-semibold text-sm">Income Breakdown</span>
-                        </div>
-                        <svg id="rchev-incBreak" class="w-4 h-4 text-zinc-600 transition-transform rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <div id="rcard-incBreak" class="hidden">
-                        <div class="px-4 pb-2">
-                            <canvas id="rchart-incBreak"></canvas>
-                        </div>
-                        <div id="rlegend-incBreak" class="px-4 pb-4"></div>
+                <div class="mx-4 bg-zinc-900 rounded-3xl overflow-hidden pb-3">
+                    <div class="px-4 pt-3 pb-1">
+                        <canvas id="rchart-spendBreak"></canvas>
                     </div>
+                    <div id="rlegend-spendBreak" class="px-4 pt-1 pb-1"></div>
                 </div>
-
             </div>
         </div>
 
