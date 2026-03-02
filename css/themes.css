@@ -1,0 +1,66 @@
+/* ── Light mode overrides ── */
+html.light { color-scheme: light; }
+/* Page & screens */
+html.light body,
+html.light #app,
+html.light [id^="screen-"],
+html.light .fixed.inset-0:not(#tut-modal):not(#auth-screen) { background-color: #f4f4f5 !important; }
+html.light #auth-screen { background-color: #f4f4f5 !important; }
+html.light #tut-modal   { background-color: #09090b !important; }
+/* Zinc scale remap */
+html.light .bg-zinc-950 { background-color: #f4f4f5 !important; }
+html.light .bg-zinc-900 { background-color: #ffffff !important; }
+html.light .bg-zinc-800,
+html.light .bg-zinc-800\/60,
+html.light .bg-zinc-800\/80 { background-color: #e4e4e7 !important; }
+html.light .bg-zinc-700 { background-color: #d4d4d8 !important; }
+html.light .hover\:bg-zinc-900:hover { background-color: #f1f5f9 !important; }
+html.light .hover\:bg-zinc-800:hover,
+html.light .hover\:bg-zinc-800\/60:hover { background-color: #d4d4d8 !important; }
+html.light .hover\:bg-zinc-700:hover { background-color: #c4c4cc !important; }
+/* Text */
+html.light .text-white,
+html.light body { color: #09090b !important; }
+html.light .text-zinc-200 { color: #18181b !important; }
+html.light .text-zinc-300 { color: #27272a !important; }
+html.light .text-zinc-400 { color: #3f3f46 !important; }
+html.light .text-zinc-500 { color: #52525b !important; }
+html.light .text-zinc-600 { color: #71717a !important; }
+html.light .text-zinc-700 { color: #71717a !important; }
+html.light .hover\:text-white:hover { color: #09090b !important; }
+html.light .hover\:text-zinc-200:hover { color: #18181b !important; }
+/* Borders */
+html.light .border-zinc-800 { border-color: #e4e4e7 !important; }
+html.light .border-zinc-700 { border-color: #d4d4d8 !important; }
+html.light .border-zinc-900 { border-color: #f1f5f9 !important; }
+/* Inputs */
+html.light input, html.light select, html.light textarea {
+    background-color: #e4e4e7 !important;
+    color: #09090b !important;
+    border-color: #d4d4d8 !important; }
+html.light input::placeholder { color: #a1a1aa !important; }
+/* Custom component overrides */
+html.light .tx-item,
+html.light .tx-content { background-color: #ffffff !important; }
+html.light #_undo { background:#f4f4f5 !important; border-color:#d4d4d8 !important; color:#09090b !important; }
+html.light .tabs-fade-wrap::before { background:linear-gradient(to right, transparent, #f4f4f5 80%) !important; }
+/* Tab bar */
+html.light .tabs-fade-wrap,
+html.light #tabs-fade-wrap { background-color: #f4f4f5 !important; border-color: #e4e4e7 !important; }
+html.light .tab-active { border-bottom-color: #10b981; color: #09090b !important; }
+/* Home dot stays emerald */
+html.light [id^="home-dot-"] { background-color: #10b981 !important; }
+/* Header */
+html.light header, html.light #app > div:first-child { background-color: #f4f4f5 !important; }
+/* Modals */
+html.light .modal-panel { background-color: #ffffff !important; }
+html.light [class*="bg-zinc-950"] { background-color: #f4f4f5 !important; }
+/* Toggle track in light mode */
+html.light .tog-track { background: #d4d4d8 !important; }
+html.light .tog-wrap input:checked + .tog-track { background: #10b981 !important; }
+/* Data modal / settings sheet */
+html.light #data-modal > div { background-color: #f4f4f5 !important; }
+/* Ring/chart backgrounds stay dark for readability */
+html.light canvas { filter: none; }
+/* Auth card */
+html.light #auth-screen .bg-zinc-900 { background-color: #ffffff !important; }
