@@ -84,21 +84,32 @@ function _buildLineOrBar(canvasId, labels, data, color) {
                 fill: type === 'line', tension: 0.35,
                 pointBackgroundColor: color, borderRadius: 4,
                 borderWidth: type === 'bar' ? 0 : 2.5,
-                pointRadius: type === 'line' ? 3 : 0,
+                pointRadius: type === 'line' ? 5 : 0,
+                pointHoverRadius: type === 'line' ? 7 : 4,
+                pointBorderColor: light ? '#ffffff' : '#18181b',
+                pointBorderWidth: 2,
             }]
         },
         options: {
             responsive: true, maintainAspectRatio: false,
             animation: { duration: 400, easing: 'easeOutQuart' },
+            interaction: { mode: 'index', intersect: false },
             plugins: { legend: { display: false },
                 tooltip: {
+                    enabled: true,
                     backgroundColor: light ? '#fff' : '#1c1c1f',
                     borderColor: light ? '#e4e4e7' : '#3f3f46',
                     borderWidth: 1,
                     titleColor: light ? '#71717a' : '#a1a1aa',
                     bodyColor: light ? '#09090b' : '#f4f4f5',
+                    titleFont: { size: 11, weight: '600' },
+                    bodyFont: { size: 13, weight: '700' },
                     padding: 10, cornerRadius: 10,
-                    callbacks: { label: item => '  $' + Math.round(item.raw).toLocaleString() },
+                    displayColors: false,
+                    callbacks: {
+                        title: items => items[0] ? items[0].label : '',
+                        label: item => '$' + Math.round(item.raw).toLocaleString(),
+                    },
                 },
             },
             scales: {
@@ -131,18 +142,26 @@ function _buildSurplusBar(canvasId, labels, data) {
         options: {
             responsive: true, maintainAspectRatio: false,
             animation: { duration: 400, easing: 'easeOutQuart' },
+            interaction: { mode: 'index', intersect: false },
             plugins: { legend: { display: false },
                 tooltip: {
+                    enabled: true,
                     backgroundColor: light ? '#fff' : '#1c1c1f',
                     borderColor: light ? '#e4e4e7' : '#3f3f46',
                     borderWidth: 1,
                     titleColor: light ? '#71717a' : '#a1a1aa',
                     bodyColor: light ? '#09090b' : '#f4f4f5',
+                    titleFont: { size: 11, weight: '600' },
+                    bodyFont: { size: 13, weight: '700' },
                     padding: 10, cornerRadius: 10,
-                    callbacks: { label: item => {
-                        const v = item.raw;
-                        return '  ' + (v >= 0 ? '+' : '\u2212') + '$' + Math.round(Math.abs(v)).toLocaleString();
-                    }},
+                    displayColors: false,
+                    callbacks: {
+                        title: items => items[0] ? items[0].label : '',
+                        label: item => {
+                            const v = item.raw;
+                            return (v >= 0 ? '+' : '\u2212') + '$' + Math.round(Math.abs(v)).toLocaleString();
+                        },
+                    },
                 },
             },
             scales: {
@@ -464,9 +483,6 @@ function renderReports() {
 
     // ── Stats row ────────────────────────────────────
     _renderStats('rpt-stats', data, color);
-
-    // ── Month list ───────────────────────────────────
-    _renderMonthList('rpt-month-list', months, view);
 
     // ── Spending breakdown ───────────────────────────
     _renderBreakdownCard('spendBreak');
