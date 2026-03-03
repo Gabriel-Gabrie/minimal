@@ -11,18 +11,20 @@ let _walletSelectedColour = null;
 const WALLET_DEFAULTS = {
     spending: [
         { name: 'Chequing',  icon: '🏦' },
-        { name: 'Credit',    icon: '💳' },
         { name: 'Cash',      icon: '💵' },
+        { name: 'Spending',  icon: '💳' },
     ],
     saving: [
         { name: 'Savings',        icon: '🐷' },
         { name: 'Emergency Fund', icon: '🛟' },
-        { name: 'House',          icon: '🏠' },
+        { name: 'Downpayment',    icon: '🏠' },
+        { name: 'Tuition',        icon: '🎓' },
     ],
     debt: [
-        { name: 'Loan',          icon: '🏛️' },
-        { name: 'Personal Debt', icon: '🤝' },
         { name: 'Car Loan',      icon: '🚗' },
+        { name: 'Visa',          icon: '💳' },
+        { name: 'Mastercard',    icon: '💳' },
+        { name: 'Personal Debt', icon: '🤝' },
     ],
 };
 
@@ -40,6 +42,16 @@ function _walletFmt(n) {
     const abs = Math.abs(v);
     const str = abs >= 1000 ? abs.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : abs.toFixed(2);
     return (neg ? '-$' : '$') + str;
+}
+
+function _walletDateLabel(ds) {
+    const today = getCurrentDateEST();
+    const d = new Date(today); d.setDate(d.getDate() - 1);
+    const yesterday = d.toISOString().slice(0, 10);
+    if (ds === today)     return 'Today';
+    if (ds === yesterday) return 'Yesterday';
+    const [y, mo, day] = ds.split('-').map(Number);
+    return new Date(y, mo - 1, day).toLocaleDateString('default', { weekday:'short', month:'short', day:'numeric' });
 }
 
 /* ── Render wallet page ─────────────────────── */
@@ -79,9 +91,9 @@ function renderWallet() {
     let html = '';
 
     const sections = [
-        { key: 'spending', label: 'Spending', items: spending, icon: '💳' },
-        { key: 'saving',   label: 'Saving',   items: saving,   icon: '🐷' },
-        { key: 'debt',     label: 'Debt',     items: debt,     icon: '🏛️' },
+        { key: 'spending', label: 'Spending Accounts', items: spending, icon: '💳' },
+        { key: 'saving',   label: 'Saving Accounts',   items: saving,   icon: '🐷' },
+        { key: 'debt',     label: 'Debt Accounts',     items: debt,     icon: '🏛️' },
     ];
 
     sections.forEach(sec => {
@@ -107,40 +119,40 @@ function renderWallet() {
             const isFirstInType = accIdx === 0;
             const isLastInType = accIdx === sec.items.length - 1;
             const reorderBtns = sec.items.length > 1 ? `
-                <div class="flex flex-col shrink-0 -mr-1">
-                    <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','up')" class="w-6 h-4 flex items-center justify-center text-zinc-600 hover:text-zinc-300 transition-colors ${isFirstInType?'opacity-20 pointer-events-none':''}" title="Move up">
-                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+                <div class="flex flex-col gap-1 shrink-0 ml-1.5">
+                    <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','up')" class="w-8 h-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors ${isFirstInType?'opacity-20 pointer-events-none':''}" title="Move up">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
                     </button>
-                    <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','down')" class="w-6 h-4 flex items-center justify-center text-zinc-600 hover:text-zinc-300 transition-colors ${isLastInType?'opacity-20 pointer-events-none':''}" title="Move down">
-                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                    <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','down')" class="w-8 h-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors ${isLastInType?'opacity-20 pointer-events-none':''}" title="Move down">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                 </div>` : '';
 
-            html += `<div onclick="openWalletDetail('${acc.id}')" class="w-full text-left bg-zinc-900 rounded-2xl p-4 hover:bg-zinc-800/80 transition-colors active:scale-[.99] cursor-pointer">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style="background:${colour}20">
-                        <span>${acc.icon || '🏦'}</span>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold text-sm truncate">${acc.name}</span>
-                            ${defaultBadge}
+            html += `<div class="flex items-center gap-0">
+                <div onclick="openWalletDetail('${acc.id}')" class="flex-1 min-w-0 text-left bg-zinc-900 rounded-2xl p-4 hover:bg-zinc-800/80 transition-colors active:scale-[.99] cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style="background:${colour}20">
+                            <span>${acc.icon || '🏦'}</span>
                         </div>
-                        <div class="text-[11px] text-zinc-500 mt-0.5">${balLabel}</div>
-                    </div>
-                    <div class="text-right shrink-0">
-                        <div class="font-semibold text-sm tabular-nums ${isDebt ? 'text-rose-400' : ''}">${isDebt ? '-' : ''}${_walletFmt(balVal)}</div>
-                        ${hasGoal ? `<div class="text-[10px] text-zinc-600 mt-0.5">${isDebt ? 'of ' + _walletFmt(goalVal) + ' paid' : 'of ' + _walletFmt(goalVal)}</div>` : ''}
-                    </div>
-                    ${reorderBtns}
-                </div>`;
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold text-sm truncate">${acc.name}</span>
+                                ${defaultBadge}
+                            </div>
+                            <div class="text-[11px] text-zinc-500 mt-0.5">${balLabel}</div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <div class="font-semibold text-sm tabular-nums ${isDebt ? 'text-rose-400' : ''}">${isDebt ? '-' : ''}${_walletFmt(balVal)}</div>
+                            ${hasGoal ? `<div class="text-[10px] text-zinc-600 mt-0.5">${isDebt ? 'of ' + _walletFmt(goalVal) + ' paid' : 'of ' + _walletFmt(goalVal)}</div>` : ''}
+                        </div>
+                    </div>`;
 
             if (hasGoal && pct >= 0) {
                 html += `<div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-1">
                     <div class="h-full rounded-full progress-bar" style="width:${Math.max(pct,0)}%;background:${colour}"></div>
                 </div>`;
             }
-            html += `</div>`;
+            html += `</div>${reorderBtns}</div>`;
         });
 
         html += `</div></div>`;
@@ -400,39 +412,42 @@ function openWalletDetail(id) {
         progWrap.classList.add('hidden');
     }
 
-    // Transactions linked to this account (transfers + expense/income with walletAccountId)
+    // Transactions linked to this account (top 3 recent, overview-style)
     const txList  = document.getElementById('wd-tx-list');
     const txEmpty = document.getElementById('wd-tx-empty');
     const linked = transactions.filter(t =>
         (t.type === 'transfer' && (t.fromAccountId === id || t.toAccountId === id)) ||
         ((t.type === 'expense' || t.type === 'income') && t.walletAccountId === id)
-    ).slice(-10).reverse();
+    ).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
     if (linked.length) {
         txEmpty.classList.add('hidden');
         txList.innerHTML = linked.map(t => {
+            let emoji, amtCls, sign, title, dateLbl;
+            dateLbl = _walletDateLabel(t.date);
             if (t.type === 'transfer') {
                 const isOutgoing = t.fromAccountId === id;
                 const otherAcc = _getAccById(isOutgoing ? t.toAccountId : t.fromAccountId);
                 const otherName = otherAcc ? otherAcc.name : '?';
-                const label = isOutgoing ? `→ ${otherName}` : `← ${otherName}`;
-                return `<div class="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3">
-                    <div class="min-w-0">
-                        <div class="text-sm font-medium truncate">${t.desc || label}</div>
-                        <div class="text-[10px] text-zinc-600 mt-0.5">${t.date} · ${label}</div>
-                    </div>
-                    <div class="text-sm font-semibold tabular-nums ${isOutgoing ? 'text-rose-400' : 'text-emerald-400'}">${isOutgoing ? '-' : '+'}${_walletFmt(parseFloat(t.amount))}</div>
-                </div>`;
+                emoji  = '🔄';
+                amtCls = isOutgoing ? 'text-rose-400' : 'text-emerald-400';
+                sign   = isOutgoing ? '\u2212' : '+';
+                title  = t.desc || (isOutgoing ? '→ ' + otherName : '← ' + otherName);
             } else {
                 const isInc = t.type === 'income';
-                const catLabel = t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : '');
-                return `<div class="flex items-center justify-between bg-zinc-900 rounded-xl px-4 py-3">
-                    <div class="min-w-0">
-                        <div class="text-sm font-medium truncate">${t.desc || catLabel}</div>
-                        <div class="text-[10px] text-zinc-600 mt-0.5">${t.date} · ${isInc ? 'Income' : 'Expense'}</div>
-                    </div>
-                    <div class="text-sm font-semibold tabular-nums ${isInc ? 'text-emerald-400' : 'text-rose-400'}">${isInc ? '+' : '-'}${_walletFmt(parseFloat(t.amount))}</div>
-                </div>`;
+                const iconKey = t.mainCategory + ':' + (t.subCategory || '');
+                emoji  = itemIcons[iconKey] || mainEmojis[t.mainCategory] || (isInc ? '💰' : '💸');
+                amtCls = isInc ? 'text-emerald-400' : 'text-zinc-200';
+                sign   = isInc ? '+' : '\u2212';
+                title  = t.desc || (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : ''));
             }
+            return `<div class="flex items-center gap-3 py-2">
+                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">${emoji}</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium leading-snug truncate">${title}</p>
+                    <p class="text-[11px] text-zinc-600 mt-0.5">${dateLbl}</p>
+                </div>
+                <span class="${amtCls} font-semibold text-sm tabular-nums">${sign}$${parseFloat(t.amount).toFixed(2)}</span>
+            </div>`;
         }).join('');
     } else {
         txList.innerHTML = '';

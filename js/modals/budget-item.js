@@ -550,16 +550,17 @@ function _updateTransferBudgetInfo() {
 function _populateExpenseAccountSelect() {
     const sel = document.getElementById('expense-account');
     if (!sel) return;
-    const spending = walletAccounts.filter(a => a.type === 'spending');
+    const typeLabels = { spending: 'Spending', saving: 'Saving', debt: 'Debt' };
     sel.innerHTML = '<option value="">None</option>' +
-        spending.map(a => `<option value="${a.id}">${a.icon || '🏦'} ${a.name}</option>`).join('');
+        walletAccounts.map(a => `<option value="${a.id}">${a.icon || '🏦'} ${a.name} (${typeLabels[a.type] || a.type})</option>`).join('');
 }
 
 function _populateIncomeAccountSelect() {
     const sel = document.getElementById('income-account');
     if (!sel) return;
+    const typeLabels = { spending: 'Spending', saving: 'Saving', debt: 'Debt' };
     sel.innerHTML = '<option value="">None</option>' +
-        walletAccounts.map(a => `<option value="${a.id}">${a.icon || '🏦'} ${a.name} (${a.type})</option>`).join('');
+        walletAccounts.map(a => `<option value="${a.id}">${a.icon || '🏦'} ${a.name} (${typeLabels[a.type] || a.type})</option>`).join('');
     _onIncomeAccountChange();
 }
 
@@ -609,9 +610,21 @@ function _updateAccountBalances(trans, isUndo) {
         const acc = walletAccounts.find(a => a.id === accId);
         if (!acc) return;
         if (trans.type === 'expense') {
-            acc.balance = parseFloat(acc.balance || 0) - amt * sign;
+            if (acc.type === 'debt') {
+                // Expense from debt: debt increases (you owe more)
+                acc.balance = parseFloat(acc.balance || 0) + amt * sign;
+            } else {
+                // Expense from spending/saving: balance decreases
+                acc.balance = parseFloat(acc.balance || 0) - amt * sign;
+            }
         } else if (trans.type === 'income') {
-            acc.balance = parseFloat(acc.balance || 0) + amt * sign;
+            if (acc.type === 'debt') {
+                // Income to debt: debt decreases (paying it off)
+                acc.balance = parseFloat(acc.balance || 0) - amt * sign;
+            } else {
+                // Income to spending/saving: balance increases
+                acc.balance = parseFloat(acc.balance || 0) + amt * sign;
+            }
         }
     }
 }
