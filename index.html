@@ -84,13 +84,13 @@
             <button onclick="prevSharedMonth()" class="w-9 h-9 rounded-full bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors shrink-0">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
             </button>
+            <span id="master-month-label" class="font-semibold text-base"></span>
             <div class="flex items-center gap-2">
-                <span id="master-month-label" class="font-semibold text-base"></span>
-                <button id="master-this-month" onclick="goThisMonth()" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all bg-zinc-800 text-zinc-500">Today</button>
+                <button id="master-this-month" onclick="goThisMonth()" class="hidden px-2.5 py-1 rounded-full text-[10px] font-bold transition-all bg-emerald-500 text-white">Today</button>
+                <button onclick="nextSharedMonth()" class="w-9 h-9 rounded-full bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
             </div>
-            <button onclick="nextSharedMonth()" class="w-9 h-9 rounded-full bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
         </div>
 
         <!-- Tabs — 3 main tabs only -->
@@ -398,7 +398,7 @@
                 class="w-16 h-16 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center shadow-2xl transition-transform duration-300">
                 <svg class="w-8 h-8 text-white transition-transform duration-300" id="fab-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </button>
-            <div id="fab-options" class="flex flex-col items-center gap-2 opacity-0 pointer-events-none transition-all duration-200 translate-y-3">
+            <div id="fab-options" class="flex flex-col items-end gap-2 opacity-0 pointer-events-none transition-all duration-200 translate-y-3">
                 <button onclick="fabAdd('transfer')" class="flex items-center gap-2">
                     <span class="text-[11px] font-semibold text-zinc-300 bg-zinc-800 px-2.5 py-1 rounded-lg shadow">Transfer</span>
                     <div class="w-12 h-12 rounded-full bg-sky-500 flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-sky-500/30">⇄</div>
@@ -809,10 +809,25 @@
                         </div>
                     </div>
 
+                    <div class="h-px bg-zinc-800 mx-5"></div>
+
+                    <!-- Customize Order accordion -->
+                    <button onclick="toggleOrderAccordion()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
+                        <div class="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
+                            <svg width="16" height="16" fill="none" stroke="#a78bfa" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/><circle cx="8" cy="6" r="2" fill="#a78bfa"/><circle cx="16" cy="12" r="2" fill="#a78bfa"/><circle cx="10" cy="18" r="2" fill="#a78bfa"/></svg>
+                        </div>
+                        <div class="flex-1 min-w-0 text-left">
+                            <div class="font-semibold text-sm">Customize Order</div>
+                            <div class="text-[11px] text-zinc-500 mt-0.5">Reorder budget sections &amp; wallet accounts</div>
+                        </div>
+                        <svg id="order-acc-chev" class="w-4 h-4 text-zinc-600 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div id="order-acc-body" class="hidden border-t border-zinc-800">
+                        <div id="order-sections-list" class="px-5 py-4"></div>
+                    </div>
+
                 </div>
             </div>
-
-            <!-- ── DATA ───────────────────────────────────── -->
             <div class="px-5 mb-5">
                 <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Data</div>
                 <div class="bg-zinc-900 rounded-3xl overflow-hidden">
@@ -1366,7 +1381,7 @@
                 </button>
                 <button onclick="hideProfileMenu();showDataModal()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
                     <div class="w-9 h-9 rounded-xl bg-zinc-700/50 flex items-center justify-center shrink-0">
-                        <svg width="16" height="16" fill="none" stroke="#a1a1aa" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     </div>
                     <span class="font-semibold text-sm text-zinc-200">Settings</span>
                 </button>

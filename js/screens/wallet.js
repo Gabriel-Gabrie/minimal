@@ -116,20 +116,7 @@ function renderWallet() {
             const pct = hasGoal ? Math.min((isDebt ? (1 - balVal / goalVal) : (balVal / goalVal)) * 100, 100) : -1;
             const defaultBadge = acc.isDefault ? `<span class="ml-auto text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full" style="background:${colour}20;color:${colour}">Default</span>` : '';
 
-            const isFirstInType = accIdx === 0;
-            const isLastInType = accIdx === sec.items.length - 1;
-            const reorderBtns = sec.items.length > 1 ? `
-                <div class="flex flex-col gap-1 shrink-0 ml-1.5">
-                    <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','up')" class="w-8 h-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors ${isFirstInType?'opacity-20 pointer-events-none':''}" title="Move up">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
-                    </button>
-                    <button onclick="event.stopPropagation();_walletMoveAccount('${acc.id}','down')" class="w-8 h-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors ${isLastInType?'opacity-20 pointer-events-none':''}" title="Move down">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-                    </button>
-                </div>` : '';
-
-            html += `<div class="flex items-center gap-0">
-                <div onclick="openWalletDetail('${acc.id}')" class="flex-1 min-w-0 text-left bg-zinc-900 rounded-2xl p-4 hover:bg-zinc-800/80 transition-colors active:scale-[.99] cursor-pointer">
+            html += `<div onclick="openWalletDetail('${acc.id}')" class="text-left bg-zinc-900 rounded-2xl p-4 hover:bg-zinc-800/80 transition-colors active:scale-[.99] cursor-pointer">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style="background:${colour}20">
                             <span>${acc.icon || '🏦'}</span>
@@ -152,7 +139,7 @@ function renderWallet() {
                     <div class="h-full rounded-full progress-bar" style="width:${Math.max(pct,0)}%;background:${colour}"></div>
                 </div>`;
             }
-            html += `</div>${reorderBtns}</div>`;
+            html += `</div>`;
         });
 
         html += `</div></div>`;

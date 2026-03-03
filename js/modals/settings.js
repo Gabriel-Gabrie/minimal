@@ -387,6 +387,99 @@ function getNotifPrefs() {
     return JSON.parse(localStorage.getItem('notifPrefs') || '{}');
 }
 
+/* ── Customize Order accordion ─────────────────────────────── */
+function toggleOrderAccordion() {
+    const body = document.getElementById('order-acc-body');
+    const chev = document.getElementById('order-acc-chev');
+    if (!body) return;
+    const open = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', open);
+    if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+    if (!open) renderOrderList();
+}
+
+function renderOrderList() {
+    const el = document.getElementById('order-sections-list');
+    if (!el) return;
+
+    // Budget sections
+    const cats = Object.keys(expenseCategories);
+    let html = `<div class="text-[9px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Budget Sections</div>`;
+    html += `<div class="space-y-1 mb-5">`;
+    cats.forEach((cat, i) => {
+        const isFirst = i === 0, isLast = i === cats.length - 1;
+        const cEsc = cat.replace(/'/g, "\\'");
+        html += `<div class="flex items-center gap-2 bg-zinc-800/60 rounded-xl px-3 py-2">
+            <span class="text-base shrink-0">${mainEmojis[cat] || '📂'}</span>
+            <span class="text-sm font-medium text-zinc-200 flex-1 truncate">${cat}</span>
+            <button onclick="_orderMoveSection('${cEsc}','up')" class="w-7 h-7 rounded-lg bg-zinc-700/60 hover:bg-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors ${isFirst ? 'opacity-20 pointer-events-none' : ''}">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <button onclick="_orderMoveSection('${cEsc}','down')" class="w-7 h-7 rounded-lg bg-zinc-700/60 hover:bg-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors ${isLast ? 'opacity-20 pointer-events-none' : ''}">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+        </div>`;
+    });
+    html += `</div>`;
+
+    // Wallet accounts by type
+    const types = [
+        { key: 'spending', label: 'Spending Accounts' },
+        { key: 'saving', label: 'Saving Accounts' },
+        { key: 'debt', label: 'Debt Accounts' },
+    ];
+    types.forEach(({ key, label }) => {
+        const accs = walletAccounts.filter(a => a.type === key);
+        if (!accs.length) return;
+        html += `<div class="text-[9px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">${label}</div>`;
+        html += `<div class="space-y-1 mb-5">`;
+        accs.forEach((acc, i) => {
+            const isFirst = i === 0, isLast = i === accs.length - 1;
+            html += `<div class="flex items-center gap-2 bg-zinc-800/60 rounded-xl px-3 py-2">
+                <span class="text-base shrink-0">${acc.icon || '🏦'}</span>
+                <span class="text-sm font-medium text-zinc-200 flex-1 truncate">${acc.name}</span>
+                <button onclick="_orderMoveAccount('${acc.id}','up')" class="w-7 h-7 rounded-lg bg-zinc-700/60 hover:bg-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors ${isFirst ? 'opacity-20 pointer-events-none' : ''}">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+                </button>
+                <button onclick="_orderMoveAccount('${acc.id}','down')" class="w-7 h-7 rounded-lg bg-zinc-700/60 hover:bg-zinc-700 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors ${isLast ? 'opacity-20 pointer-events-none' : ''}">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+            </div>`;
+        });
+        html += `</div>`;
+    });
+
+    el.innerHTML = html;
+}
+
+function _orderMoveSection(cat, dir) {
+    const keys = Object.keys(expenseCategories);
+    const i = keys.indexOf(cat);
+    if (dir === 'up' && i <= 0) return;
+    if (dir === 'down' && (i < 0 || i >= keys.length - 1)) return;
+    const j = dir === 'up' ? i - 1 : i + 1;
+    [keys[i], keys[j]] = [keys[j], keys[i]];
+    const r = {};
+    keys.forEach(k => r[k] = expenseCategories[k]);
+    expenseCategories = r;
+    saveData();
+    renderOrderList();
+}
+
+function _orderMoveAccount(id, dir) {
+    const idx = walletAccounts.findIndex(a => a.id === id);
+    if (idx < 0) return;
+    const acc = walletAccounts[idx];
+    const sameType = walletAccounts.map((a, i) => ({ a, i })).filter(x => x.a.type === acc.type);
+    const posInType = sameType.findIndex(x => x.i === idx);
+    if (dir === 'up' && posInType <= 0) return;
+    if (dir === 'down' && posInType >= sameType.length - 1) return;
+    const swapIdx = dir === 'up' ? sameType[posInType - 1].i : sameType[posInType + 1].i;
+    [walletAccounts[idx], walletAccounts[swapIdx]] = [walletAccounts[swapIdx], walletAccounts[idx]];
+    saveData();
+    renderOrderList();
+}
+
 /* ── In-app notification checks (called after data changes) ── */
 function checkNotifications() {
     const prefs = getNotifPrefs();
