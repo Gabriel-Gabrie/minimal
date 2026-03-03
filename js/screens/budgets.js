@@ -1,12 +1,7 @@
 function renderBudgets() {
-    if (!selectedBudgetMonth || !selectedBudgetMonth.match(/^\d{4}-\d{2}$/)) selectedBudgetMonth = getCurrentMonthKey();
-
-    // Update month display
-    const mDisplay = document.getElementById('budget-month-display');
-    if (mDisplay) {
-        const spans = mDisplay.querySelectorAll('span');
-        if (spans[0]) spans[0].textContent = formatMonthName(selectedBudgetMonth);
-    }
+    // Sync from shared month
+    _initSharedMonth();
+    selectedBudgetMonth = selectedMonth;
 
     const monthBudgets = monthlyBudgets[selectedBudgetMonth] || {};
     // hasBudget: true if month key exists in monthlyBudgets (even with all zeros — user deliberately created it)
@@ -607,9 +602,8 @@ function _toggleBalLegend() {
 }
 
 function attachBudgetSwipe() {
-    const container = document.getElementById('budgets-swipe-container');
-    const clone = container.cloneNode(true);
-    container.parentNode.replaceChild(clone, container);
+    // Month navigation now handled by master month bar
+    return;
     let startX = 0;
     clone.addEventListener('touchstart', e => startX = e.touches[0].clientX);
     clone.addEventListener('touchend', e => {

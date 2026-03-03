@@ -427,7 +427,8 @@ function showToast(msg, color) {
 const LAUNCH_TABS = ['Overview', 'Transactions', 'Budgets', 'Reports', 'Wallet'];
 
 function getLaunchTab() {
-    return parseInt(localStorage.getItem('launchTab') || '0', 10);
+    const n = parseInt(localStorage.getItem('launchTab') || '0', 10);
+    return n <= 2 ? n : 0; // clamp to main tabs only
 }
 
 function setLaunchTab(n) {

@@ -29,7 +29,7 @@ function setReportRange(n) {
 function _updateRangePills() {
     [3,6,12].forEach(n => {
         const b = document.getElementById('rbtn-' + n);
-        if (b) b.className = 'px-3 py-1 rounded-full text-[11px] font-semibold transition-colors ' +
+        if (b) b.className = 'px-2.5 py-1.5 rounded-full text-[11px] font-semibold transition-colors ' +
             (n === _rptRange ? 'bg-emerald-500 text-white' : 'bg-zinc-800 text-zinc-500');
     });
 }
@@ -531,27 +531,45 @@ function _tabHoldEnd() {
 function switchTab(n) {
     document.querySelectorAll('[id^="screen-"]').forEach(s => s.classList.add('hidden'));
     document.getElementById(`screen-${n}`).classList.remove('hidden');
+
+    const isMainTab = n <= 2; // 0=Overview, 1=Transactions, 2=Budgets
+
+    // Tab bar highlight — only for main tabs (0-2)
     document.querySelectorAll('[id^="tab-"]').forEach(t => {
         t.classList.remove('tab-active');
         t.classList.add('text-zinc-500');
         t.classList.remove('text-white');
     });
-    const active = document.getElementById(`tab-${n}`);
-    active.classList.add('tab-active');
-    active.classList.remove('text-zinc-500');
-    active.classList.add('text-white');
+    if (isMainTab) {
+        const active = document.getElementById(`tab-${n}`);
+        if (active) {
+            active.classList.add('tab-active');
+            active.classList.remove('text-zinc-500');
+            active.classList.add('text-white');
+        }
+    }
+
+    // Show/hide master month selector and tab bar on non-main screens
+    const monthBar = document.getElementById('master-month-bar');
+    const tabsWrap = document.getElementById('tabs-fade-wrap');
+    const homeBtn  = document.getElementById('header-home-btn');
+    if (monthBar) monthBar.style.display = isMainTab ? '' : 'none';
+    if (tabsWrap) tabsWrap.style.display = isMainTab ? '' : 'none';
+    if (homeBtn)  homeBtn.classList.toggle('hidden', isMainTab);
+
+    // Sync shared month into aliases before rendering main tabs
+    if (isMainTab) {
+        _initSharedMonth();
+        _syncMonthAliases();
+        _updateMasterMonthUI();
+    }
+
     [renderOverview, renderTransactions, renderBudgets, renderWallet, renderReports][n]?.();
 }
 
-function prevBudgetMonth() {
-    selectedBudgetMonth = getPrevMonth(selectedBudgetMonth);
-    renderBudgets();
-}
+function prevBudgetMonth() { prevSharedMonth(); }
 
-function nextBudgetMonth() {
-    selectedBudgetMonth = getNextMonth(selectedBudgetMonth);
-    renderBudgets();
-}
+function nextBudgetMonth() { nextSharedMonth(); }
 
 function copyFromPreviousMonth() {
     const prev = getPrevMonth(selectedBudgetMonth);
