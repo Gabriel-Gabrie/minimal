@@ -38,12 +38,9 @@ function _dateLabel(ds) {
 
 /* ── Main render ─────────────────────────────────── */
 function renderTransactions() {
-    // Initialise selected month to current
-    if (!selectedTxMonth) selectedTxMonth = getCurrentMonthKey();
-
-    // Update month label
-    const mDisp = document.getElementById('tx-month-display');
-    if (mDisp) mDisp.textContent = formatMonthName(selectedTxMonth);
+    // Sync from shared month
+    _initSharedMonth();
+    selectedTxMonth = selectedMonth;
 
     // Transactions for this month only
     const monthTx = transactions.filter(t => t.date.startsWith(selectedTxMonth));
@@ -173,14 +170,8 @@ function _txRowHTML(t) {
     </div>`;
 }
 
-function prevTxMonth() {
-    selectedTxMonth = getPrevMonth(selectedTxMonth || getCurrentMonthKey());
-    renderTransactions();
-}
-function nextTxMonth() {
-    selectedTxMonth = getNextMonth(selectedTxMonth || getCurrentMonthKey());
-    renderTransactions();
-}
+function prevTxMonth() { prevSharedMonth(); }
+function nextTxMonth() { nextSharedMonth(); }
 function toggleTxSort() {
     const order = ['date-desc','date-asc','amount-desc','amount-asc'];
     txSort = order[(order.indexOf(txSort) + 1) % order.length];
