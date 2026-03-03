@@ -62,13 +62,16 @@
         </div>
 
         <!-- Header -->
-        <div class="px-6 pt-10 pb-6 border-b border-zinc-800 flex justify-between items-center">
+        <div class="px-6 pt-10 pb-4 flex justify-between items-center">
             <div onclick="switchTab(0)" class="cursor-pointer">
                 <h1 class="text-3xl font-semibold tracking-tighter">Minimal</h1>
                 <p class="text-emerald-400 text-sm italic">easy budgeting</p>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="showDataModal()" class="w-9 h-9 flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors" aria-label="Settings"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+                <!-- Home button — visible on Wallet/Reports screens -->
+                <button id="header-home-btn" onclick="switchTab(0)" class="hidden w-9 h-9 flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors" aria-label="Home">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/></svg>
+                </button>
                 <button id="user-avatar-btn" onclick="showProfileMenu()" class="w-9 h-9 rounded-full bg-zinc-800 overflow-hidden flex items-center justify-center shrink-0 ring-2 ring-zinc-700 hover:ring-emerald-500/50 transition-all">
                     <span id="user-avatar-initials" class="text-xs font-bold text-zinc-300"></span>
                     <img id="user-avatar-img" class="w-full h-full object-cover hidden" alt=""/>
@@ -76,90 +79,49 @@
             </div>
         </div>
 
-        <!-- Tabs -->
-        <!-- Long-press any tab to set it as your home screen -->
-        <div class="tabs-fade-wrap border-b border-zinc-800" id="tabs-fade-wrap">
-            <div class="tabs-container overflow-x-auto whitespace-nowrap text-sm flex" id="tabs-scroller">
-
-                <!-- Overview -->
-                <button
-                    onclick="_tabTap(0)"
-                    onmousedown="_tabHoldStart(0, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
-                    ontouchstart="_tabHoldStart(0, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
-                    id="tab-0" class="tab-active relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/></svg>
-                    <span>Overview</span>
-                    <!-- home dot — visible when this is the launch tab -->
-                    <span id="home-dot-0" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
-                </button>
-                <!-- Transactions -->
-                <button
-                    onclick="_tabTap(1)"
-                    onmousedown="_tabHoldStart(1, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
-                    ontouchstart="_tabHoldStart(1, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
-                    id="tab-1" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"/><path d="M8 10h8M8 14h4"/><circle cx="19" cy="19" r="3"/><path d="M19 17v2l1.5 1"/></svg>
-                    <span>Transactions</span>
-                    <!-- home dot — visible when this is the launch tab -->
-                    <span id="home-dot-1" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
-                </button>
-                <!-- Budgets -->
-                <button
-                    onclick="_tabTap(2)"
-                    onmousedown="_tabHoldStart(2, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
-                    ontouchstart="_tabHoldStart(2, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
-                    id="tab-2" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5.2 5.2"/></svg>
-                    <span>Budgets</span>
-                    <!-- home dot — visible when this is the launch tab -->
-                    <span id="home-dot-2" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
-                </button>
-                <!-- Wallet -->
-                <button
-                    onclick="_tabTap(3)"
-                    onmousedown="_tabHoldStart(3, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
-                    ontouchstart="_tabHoldStart(3, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
-                    id="tab-3" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 4H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M16 12h.01"/><path d="M1 10h22"/></svg>
-                    <span>Wallet</span>
-                    <span id="home-dot-3" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
-                </button>
-                <!-- Reports -->
-                <button
-                    onclick="_tabTap(4)"
-                    onmousedown="_tabHoldStart(4, this)" onmouseup="_tabHoldEnd()" onmouseleave="_tabHoldEnd()"
-                    ontouchstart="_tabHoldStart(4, this)" ontouchend="_tabHoldEnd()" ontouchcancel="_tabHoldEnd()"
-                    id="tab-4" class="text-zinc-500 relative flex flex-col items-center gap-0.5 px-5 py-2.5 text-xs shrink-0">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    <span>Reports</span>
-                    <!-- home dot — visible when this is the launch tab -->
-                    <span id="home-dot-4" class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500 hidden"></span>
-                </button>
-
+        <!-- Master Month Selector — shared across Overview, Transactions, Budgets -->
+        <div id="master-month-bar" class="px-5 pb-2 flex items-center justify-between gap-2">
+            <button onclick="prevSharedMonth()" class="w-9 h-9 rounded-full bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div class="flex items-center gap-2">
+                <span id="master-month-label" class="font-semibold text-base"></span>
+                <button id="master-this-month" onclick="goThisMonth()" class="px-2.5 py-1 rounded-full text-[10px] font-bold transition-all bg-zinc-800 text-zinc-500">Today</button>
             </div>
+            <button onclick="nextSharedMonth()" class="w-9 h-9 rounded-full bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
         </div>
 
-        <!-- Long-press home tooltip -->
-        <div id="tab-home-tip" class="hidden fixed z-[500] px-3 py-1.5 bg-zinc-800 border border-zinc-700 rounded-xl text-[11px] font-semibold text-zinc-200 shadow-xl pointer-events-none whitespace-nowrap" style="transform:translateX(-50%)">
-            ⌂ Set as home
+        <!-- Tabs — 3 main tabs only -->
+        <div class="border-b border-zinc-800" id="tabs-fade-wrap">
+            <div class="flex text-sm" id="tabs-scroller">
+                <!-- Overview -->
+                <button onclick="_tabTap(0)" id="tab-0"
+                    class="tab-active flex-1 flex flex-col items-center gap-0.5 py-2.5 text-xs">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/></svg>
+                    <span>Overview</span>
+                </button>
+                <!-- Transactions -->
+                <button onclick="_tabTap(1)" id="tab-1"
+                    class="text-zinc-500 flex-1 flex flex-col items-center gap-0.5 py-2.5 text-xs">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"/><path d="M8 10h8M8 14h4"/><circle cx="19" cy="19" r="3"/><path d="M19 17v2l1.5 1"/></svg>
+                    <span>Transactions</span>
+                </button>
+                <!-- Budgets -->
+                <button onclick="_tabTap(2)" id="tab-2"
+                    class="text-zinc-500 flex-1 flex flex-col items-center gap-0.5 py-2.5 text-xs">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5.2 5.2"/></svg>
+                    <span>Budgets</span>
+                </button>
+            </div>
         </div>
 
         <!-- OVERVIEW -->
         <div id="screen-0" class="pb-16 overflow-y-auto">
 
-            <!-- ── Month Selector ── -->
-            <div class="flex items-center justify-between px-5 pt-5 pb-2">
-                <button onclick="prevOvMonth()" class="w-9 h-9 rounded-full bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-                </button>
-                <div id="ov-month-label" class="font-semibold text-base"></div>
-                <button onclick="nextOvMonth()" class="w-9 h-9 rounded-full bg-zinc-900 hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
-            </div>
-
             <!-- ── Hero Spending Pace Chart ── -->
-            <div class="mx-4 mt-2 bg-zinc-900 rounded-3xl overflow-hidden">
+            <div class="mx-4 mt-4 bg-zinc-900 rounded-3xl overflow-hidden">
                 <!-- Chart header row -->
                 <div class="flex items-start justify-between px-5 pt-4 pb-1">
                     <div>
@@ -231,21 +193,8 @@
         <!-- TRANSACTIONS -->
         <div id="screen-1" class="hidden flex flex-col" style="min-height:0">
 
-            <!-- Month navigator — same style as Budgets tab -->
-            <div class="px-5 pt-5 pb-4 shrink-0">
-                <div class="flex items-center justify-between">
-                    <button onclick="prevTxMonth()" class="w-10 h-10 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-                    </button>
-                    <div id="tx-month-display" class="font-semibold text-base"></div>
-                    <button onclick="nextTxMonth()" class="w-10 h-10 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
-                </div>
-            </div>
-
             <!-- Search + filter + sort (hidden when month is empty) -->
-            <div id="tx-controls" class="shrink-0">
+            <div id="tx-controls" class="shrink-0 pt-4">
                 <div class="px-5 pb-2 flex items-center gap-2">
                     <div class="flex-1 flex items-center gap-2 bg-zinc-900 rounded-2xl px-4 py-3 ring-1 ring-transparent focus-within:ring-emerald-500 transition-all min-w-0">
                         <svg class="w-4 h-4 text-zinc-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -292,23 +241,8 @@
         <!-- BUDGETS -->
         <div id="screen-2" class="hidden pb-12">
 
-            <!-- Month navigator -->
-            <div class="px-5 pt-5 pb-4">
-                <div id="budgets-swipe-container" class="flex items-center justify-between">
-                    <button onclick="prevBudgetMonth()" class="w-10 h-10 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-                    </button>
-                    <div id="budget-month-display" class="font-semibold text-base flex items-center gap-2">
-                        <span></span>
-                    </div>
-                    <button onclick="nextBudgetMonth()" class="w-10 h-10 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
-                </div>
-            </div>
-
             <!-- Month health summary -->
-            <div id="budget-summary" class="mx-5 mb-5"></div>
+            <div id="budget-summary" class="mx-5 mt-4 mb-5"></div>
 
             <!-- Plan / Remaining toggle -->
             <div id="budget-view-toggle" class="hidden mx-5 mb-4">
@@ -354,9 +288,9 @@
                 </div>
             </div>
 
-            <!-- ── Segment control + time range (below chart) ── -->
-            <div class="px-4 pt-3 pb-1">
-                <div class="flex bg-zinc-900 rounded-2xl p-1">
+            <!-- ── Segment control + time range (same row) ── -->
+            <div class="px-4 pt-3 pb-3 flex items-center gap-2">
+                <div class="flex bg-zinc-900 rounded-2xl p-1 flex-1">
                     <button onclick="setReportView('spending')" id="rv-spending"
                         class="flex-1 py-2 rounded-xl text-xs font-semibold transition-all bg-zinc-700 text-white">Spending</button>
                     <button onclick="setReportView('income')" id="rv-income"
@@ -364,11 +298,11 @@
                     <button onclick="setReportView('surplus')" id="rv-surplus"
                         class="flex-1 py-2 rounded-xl text-xs font-semibold transition-all text-zinc-500">Surplus</button>
                 </div>
-            </div>
-            <div class="flex justify-center gap-1.5 px-4 pt-2 pb-3">
-                <button onclick="setReportRange(3)"  id="rbtn-3"  class="px-3 py-1 rounded-full text-[11px] font-semibold transition-colors">3M</button>
-                <button onclick="setReportRange(6)"  id="rbtn-6"  class="px-3 py-1 rounded-full text-[11px] font-semibold transition-colors">6M</button>
-                <button onclick="setReportRange(12)" id="rbtn-12" class="px-3 py-1 rounded-full text-[11px] font-semibold transition-colors">12M</button>
+                <div class="flex gap-1 shrink-0">
+                    <button onclick="setReportRange(3)"  id="rbtn-3"  class="px-2.5 py-1.5 rounded-full text-[11px] font-semibold transition-colors">3M</button>
+                    <button onclick="setReportRange(6)"  id="rbtn-6"  class="px-2.5 py-1.5 rounded-full text-[11px] font-semibold transition-colors">6M</button>
+                    <button onclick="setReportRange(12)" id="rbtn-12" class="px-2.5 py-1.5 rounded-full text-[11px] font-semibold transition-colors">12M</button>
+                </div>
             </div>
 
             <!-- ── 3-stat row ── -->
@@ -1349,6 +1283,26 @@
                     <div id="profile-name" class="font-semibold text-sm truncate"></div>
                     <div id="profile-email-display" class="text-xs text-zinc-500 truncate"></div>
                 </div>
+            </div>
+            <div class="bg-zinc-900 rounded-3xl overflow-hidden mb-3">
+                <button onclick="hideProfileMenu();switchTab(3)" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors border-b border-zinc-800/50">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
+                        <svg width="16" height="16" fill="none" stroke="#34d399" stroke-width="2" viewBox="0 0 24 24"><path d="M21 4H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M16 12h.01"/><path d="M1 10h22"/></svg>
+                    </div>
+                    <span class="font-semibold text-sm text-zinc-200">Wallet</span>
+                </button>
+                <button onclick="hideProfileMenu();switchTab(4)" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors border-b border-zinc-800/50">
+                    <div class="w-9 h-9 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
+                        <svg width="16" height="16" fill="none" stroke="#38bdf8" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <span class="font-semibold text-sm text-zinc-200">Reports</span>
+                </button>
+                <button onclick="hideProfileMenu();showDataModal()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
+                    <div class="w-9 h-9 rounded-xl bg-zinc-700/50 flex items-center justify-center shrink-0">
+                        <svg width="16" height="16" fill="none" stroke="#a1a1aa" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    </div>
+                    <span class="font-semibold text-sm text-zinc-200">Settings</span>
+                </button>
             </div>
             <div class="bg-zinc-900 rounded-3xl overflow-hidden">
                 <button onclick="authSignOut()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">

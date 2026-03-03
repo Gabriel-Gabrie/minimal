@@ -2,27 +2,20 @@
    OVERVIEW — Redesigned dashboard
 ══════════════════════════════════════════════ */
 
+/* _ovSelectedMonth is now an alias for the shared selectedMonth */
 let _ovSelectedMonth = '';
 
 function _initOvMonth() {
-    if (!_ovSelectedMonth) _ovSelectedMonth = getCurrentMonthKey();
+    _initSharedMonth();
+    _ovSelectedMonth = selectedMonth;
 }
 
-function prevOvMonth() {
-    _initOvMonth();
-    _ovSelectedMonth = getPrevMonth(_ovSelectedMonth);
-    renderOverview();
-}
-
-function nextOvMonth() {
-    _initOvMonth();
-    _ovSelectedMonth = getNextMonth(_ovSelectedMonth);
-    renderOverview();
-}
+function prevOvMonth() { prevSharedMonth(); }
+function nextOvMonth() { nextSharedMonth(); }
 
 function renderOverview() {
     _initOvMonth();
-    const monthKey  = _ovSelectedMonth;
+    const monthKey  = selectedMonth;
     const currentMK = getCurrentMonthKey();
     const isCurrentMonth = (monthKey === currentMK);
     const today     = getCurrentDateEST();

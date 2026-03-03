@@ -13,7 +13,8 @@ let _fbDb   = null;
 let _demoMode = false;
 
 let currentType = 'expense';
-let selectedBudgetMonth = "";
+let selectedMonth = '';       // single shared month across Overview, Transactions, Budgets
+let selectedBudgetMonth = ""; // alias — kept for backward compat, synced via selectedMonth
 let _rCharts = {};  // report chart instances keyed by card id
 let _rCardOpen = { expenses: true, income: false, surplus: false, spendBreak: true, incBreak: false };
 let _rSectOpen = { trends: true, breakdowns: true };
@@ -21,7 +22,7 @@ let _trendMonthCount = 6;     // Trends section (default 6M)
 let _breakMonthCount = 1;     // Breakdowns section (1 = ring chart, default)
 let _breakdownMode = 'category'; // 'category' | 'item'
 let txFilter = 'all';
-let selectedTxMonth = '';   // 'YYYY-MM' for the tx view
+let selectedTxMonth = '';   // alias — kept for backward compat, synced via selectedMonth
 let txSort = 'date-desc';     // 'date-desc'|'date-asc'|'amount-desc'|'amount-asc'
 let _undoData = null, _undoTimer = null;
 let _editingTxIdx = null;
@@ -105,7 +106,9 @@ function _applyData(d) {
     itemIcons         = d.itemIcons         || {};
     walletAccounts    = d.walletAccounts    || [];
     incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
-    selectedBudgetMonth = getCurrentMonthKey();
+    selectedMonth = getCurrentMonthKey();
+    selectedBudgetMonth = selectedMonth;
+    selectedTxMonth = selectedMonth;
 
     // ── Migration 1: "Living" → "Household" ────────────────────────
     if ('Living' in expenseCategories && !('Household' in expenseCategories)) {
@@ -203,6 +206,57 @@ function formatMonthName(key) {
     if (!key || !key.match(/^\d{4}-\d{2}$/)) return "Invalid Date";
     const [y, m] = key.split('-').map(Number);
     return new Date(y, m-1).toLocaleString('default', { month: 'long', year: 'numeric' });
+}
+
+/* ── Shared month selector (syncs Overview, Transactions, Budgets) ── */
+
+function _initSharedMonth() {
+    if (!selectedMonth) selectedMonth = getCurrentMonthKey();
+}
+
+function _syncMonthAliases() {
+    selectedBudgetMonth = selectedMonth;
+    selectedTxMonth = selectedMonth;
+    if (typeof _ovSelectedMonth !== 'undefined') _ovSelectedMonth = selectedMonth;
+}
+
+function setSharedMonth(key) {
+    selectedMonth = key;
+    _syncMonthAliases();
+    _updateMasterMonthUI();
+    // Re-render the active main tab
+    const active = document.querySelector('[id^="tab-"].tab-active');
+    if (!active) return;
+    const n = parseInt(active.id.replace('tab-', ''), 10);
+    [renderOverview, renderTransactions, renderBudgets][n]?.();
+}
+
+function prevSharedMonth() {
+    _initSharedMonth();
+    setSharedMonth(getPrevMonth(selectedMonth));
+}
+
+function nextSharedMonth() {
+    _initSharedMonth();
+    setSharedMonth(getNextMonth(selectedMonth));
+}
+
+function goThisMonth() {
+    setSharedMonth(getCurrentMonthKey());
+}
+
+function _updateMasterMonthUI() {
+    _initSharedMonth();
+    const label = document.getElementById('master-month-label');
+    if (label) label.textContent = formatMonthName(selectedMonth);
+    const thisBtn = document.getElementById('master-this-month');
+    if (thisBtn) {
+        const isCurrent = selectedMonth === getCurrentMonthKey();
+        thisBtn.classList.toggle('bg-emerald-500', !isCurrent);
+        thisBtn.classList.toggle('text-white', !isCurrent);
+        thisBtn.classList.toggle('bg-zinc-800', isCurrent);
+        thisBtn.classList.toggle('text-zinc-500', isCurrent);
+    }
 }
 
 function calculateTotals() {
