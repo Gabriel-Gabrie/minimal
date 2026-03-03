@@ -247,19 +247,9 @@ function renderBudgets() {
         const subs = expenseCategories[main];
 
         html += `<div class="mb-5">`;
-        const catKeys = Object.keys(expenseCategories);
-        const catIdx = catKeys.indexOf(main);
-        const isFirstCat = catIdx === 0;
-        const isLastCat = catIdx === catKeys.length - 1;
         html += `<div class="flex items-center gap-2 px-1 mb-2">
             <span class="text-lg">${mainEmojis[main] || '📂'}</span>
             <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase flex-1">${main}</span>
-            <button onclick="event.stopPropagation();_budgetMoveSection('${main.replace(/'/g,"\\'")}','up')" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isFirstCat?'opacity-20 pointer-events-none':''}" title="Move up">
-                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
-            </button>
-            <button onclick="event.stopPropagation();_budgetMoveSection('${main.replace(/'/g,"\\'")}','down')" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isLastCat?'opacity-20 pointer-events-none':''}" title="Move down">
-                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
         </div>`;
 
         html += `<div class="space-y-1.5">`;
@@ -537,36 +527,6 @@ function _setBudgetViewMode(mode) {
 }
 
 /* ── Budget section/category reordering ─────────────── */
-function _budgetMoveSection(cat, dir) {
-    const keys = Object.keys(expenseCategories);
-    const i = keys.indexOf(cat);
-    if (dir === 'up' && i <= 0) return;
-    if (dir === 'down' && (i < 0 || i >= keys.length - 1)) return;
-    const j = dir === 'up' ? i - 1 : i + 1;
-    [keys[i], keys[j]] = [keys[j], keys[i]];
-    const r = {};
-    keys.forEach(k => r[k] = expenseCategories[k]);
-    expenseCategories = r;
-    saveData();
-    renderBudgets();
-}
-
-/* ── Wallet account reordering ─────────────────────── */
-function _walletMoveAccount(id, dir) {
-    const idx = walletAccounts.findIndex(a => a.id === id);
-    if (idx < 0) return;
-    const acc = walletAccounts[idx];
-    // Find same-type accounts and their indices
-    const sameType = walletAccounts.map((a, i) => ({a, i})).filter(x => x.a.type === acc.type);
-    const posInType = sameType.findIndex(x => x.i === idx);
-    if (dir === 'up' && posInType <= 0) return;
-    if (dir === 'down' && posInType >= sameType.length - 1) return;
-    const swapIdx = dir === 'up' ? sameType[posInType - 1].i : sameType[posInType + 1].i;
-    [walletAccounts[idx], walletAccounts[swapIdx]] = [walletAccounts[swapIdx], walletAccounts[idx]];
-    saveData();
-    renderWallet();
-}
-
 function _toggleBalLegend() {
     _balLegendOpen = !_balLegendOpen;
     const panel = document.getElementById('bal-leg-panel');

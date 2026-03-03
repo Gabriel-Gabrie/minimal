@@ -809,10 +809,25 @@
                         </div>
                     </div>
 
+                    <div class="h-px bg-zinc-800 mx-5"></div>
+
+                    <!-- Customize Order accordion -->
+                    <button onclick="toggleOrderAccordion()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
+                        <div class="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center shrink-0">
+                            <svg width="16" height="16" fill="none" stroke="#a78bfa" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/><circle cx="8" cy="6" r="2" fill="#a78bfa"/><circle cx="16" cy="12" r="2" fill="#a78bfa"/><circle cx="10" cy="18" r="2" fill="#a78bfa"/></svg>
+                        </div>
+                        <div class="flex-1 min-w-0 text-left">
+                            <div class="font-semibold text-sm">Customize Order</div>
+                            <div class="text-[11px] text-zinc-500 mt-0.5">Reorder budget sections &amp; wallet accounts</div>
+                        </div>
+                        <svg id="order-acc-chev" class="w-4 h-4 text-zinc-600 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div id="order-acc-body" class="hidden border-t border-zinc-800">
+                        <div id="order-sections-list" class="px-5 py-4"></div>
+                    </div>
+
                 </div>
             </div>
-
-            <!-- ── DATA ───────────────────────────────────── -->
             <div class="px-5 mb-5">
                 <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Data</div>
                 <div class="bg-zinc-900 rounded-3xl overflow-hidden">
