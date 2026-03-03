@@ -22,7 +22,7 @@ function _updatePills(nAll, nExp, nInc, nTrf) {
             txFilter === 'income'   ? 'bg-emerald-500/20 text-emerald-400' :
             txFilter === 'transfer' ? 'bg-sky-500/20 text-sky-400' :
                                       'bg-zinc-900 text-zinc-400 hover:bg-zinc-800';
-        btn.className = 'shrink-0 flex items-center gap-1 px-3 py-3 rounded-2xl text-xs font-semibold transition-colors ' + activeClass;
+        btn.className = 'shrink-0 flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-semibold transition-colors ' + activeClass;
     }
 }
 
@@ -77,12 +77,11 @@ function renderTransactions() {
         if (txSort === 'date-asc')    return new Date(a.date) - new Date(b.date);
         return new Date(b.date) - new Date(a.date); // date-desc default
     });
-    const SORT_LABELS = {'date-desc':'Date ↓','date-asc':'Date ↑','amount-desc':'Amount ↓','amount-asc':'Amount ↑'};
+    const SORT_LABELS = {'date-desc':'Date ↓','date-asc':'Date ↑','amount-desc':'Amt ↓','amount-asc':'Amt ↑'};
     const sortLbl = document.getElementById('tx-sort-label');
     if (sortLbl) sortLbl.textContent = SORT_LABELS[txSort] || 'Date ↓';
 
     // Filter by type + search query
-    const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳' };
     const filtered = sorted.filter(t => {
         if (txFilter !== 'all' && t.type !== txFilter) return false;
         if (!q) return true;
@@ -120,44 +119,38 @@ function renderTransactions() {
 }
 
 function _txRowHTML(t) {
-    const CAT_EMOJI = { Food:'🍔', Living:'🏠', Personal:'👤', Health:'🩺', Transportation:'🚗', Debt:'💳' };
     const realIdx = transactions.indexOf(t);
     const isInc   = t.type === 'income';
     const isTrf   = t.type === 'transfer';
     const isExcl  = !!t.excluded;
 
-    let bar, amtCls, sign, emoji, title, meta;
+    let amtCls, sign, emoji, title, subtitle;
     if (isTrf) {
         const fromAcc = _getAccById(t.fromAccountId);
         const toAcc   = _getAccById(t.toAccountId);
-        bar     = '#0ea5e9'; // sky
         amtCls  = _isTransferExcluded(t) ? 'text-zinc-600' : 'text-sky-400';
         sign    = '⇄';
         emoji   = '🔄';
         title   = t.desc || ((fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?'));
-        meta    = (fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?');
-        if (_isTransferExcluded(t)) meta += ' · Excluded';
+        subtitle = (fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?');
     } else {
-        bar     = isExcl ? '#3f3f46' : isInc ? '#10b981' : '#f43f5e';
-        amtCls  = isExcl ? 'text-zinc-600 line-through' : isInc ? 'text-emerald-400' : 'text-rose-400';
-        sign    = isInc ? '+' : '−';
-        emoji   = isExcl ? '🚫' : isInc ? '💰' : (CAT_EMOJI[t.mainCategory] || '💸');
-        title   = t.desc || (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : ''));
+        const iconKey = t.mainCategory + ':' + (t.subCategory || '');
+        amtCls  = isExcl ? 'text-zinc-600 line-through' : isInc ? 'text-emerald-400' : 'text-zinc-200';
+        sign    = isInc ? '+' : '\u2212';
+        emoji   = isExcl ? '🚫' : (itemIcons[iconKey] || mainEmojis[t.mainCategory] || (isInc ? '💰' : '💸'));
+        title   = t.desc || (t.mainCategory + (t.subCategory ? ' \u00B7 ' + t.subCategory : ''));
         const linkedAcc = t.walletAccountId ? _getAccById(t.walletAccountId) : null;
-        const accLabel = linkedAcc ? ' · ' + linkedAcc.name : '';
-        meta    = isExcl ? 'Excluded from budget' : (t.desc ? (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : '') + accLabel) : accLabel.slice(3));
+        subtitle = linkedAcc ? linkedAcc.name : (t.mainCategory || '');
     }
-    return `<div class="tx-item mb-1.5" data-index="${realIdx}">
-        <div class="tx-content flex items-stretch" onclick="openEditTx(${realIdx})" style="cursor:pointer">
-            <div style="width:3px;background:${bar};border-radius:2px 0 0 2px;flex-shrink:0;margin:8px 0 8px 8px"></div>
-            <div class="flex items-center justify-center w-10 shrink-0 text-lg">${emoji}</div>
-            <div class="flex-1 min-w-0 py-3.5 pl-1 pr-3">
-                <div class="font-semibold text-sm leading-snug truncate">${title}</div>
-                ${meta ? `<div class="text-xs text-zinc-500 mt-0.5 truncate">${meta}</div>` : ''}
+
+    return `<div class="tx-item mb-1" data-index="${realIdx}">
+        <div class="tx-content flex items-center gap-3 px-3 py-2.5" onclick="showTxSummary(${realIdx})" style="cursor:pointer">
+            <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">${emoji}</div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium leading-snug truncate">${title}</p>
+                <p class="text-[11px] text-zinc-600 mt-0.5 truncate">${subtitle}</p>
             </div>
-            <div class="flex items-center pr-4 shrink-0">
-                <span class="${amtCls} font-semibold text-base tabular-nums">${sign}$${parseFloat(t.amount).toFixed(2)}</span>
-            </div>
+            <span class="${amtCls} font-semibold text-sm tabular-nums shrink-0">${sign}$${parseFloat(t.amount).toFixed(2)}</span>
         </div>
         <div class="tx-delete">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -176,6 +169,162 @@ function toggleTxSort() {
     const order = ['date-desc','date-asc','amount-desc','amount-asc'];
     txSort = order[(order.indexOf(txSort) + 1) % order.length];
     renderTransactions();
+}
+
+/* ══════════════════════════════════════════════
+   TRANSACTION SUMMARY MODAL
+══════════════════════════════════════════════ */
+
+function showTxSummary(idx) {
+    const t = transactions[idx];
+    if (!t) return;
+
+    const modal = document.getElementById('tx-summary-modal');
+    if (!modal) return;
+
+    const isInc  = t.type === 'income';
+    const isTrf  = t.type === 'transfer';
+    const isExcl = !!t.excluded;
+
+    // Amount display
+    let sign, amtColor;
+    if (isTrf) {
+        sign = '⇄'; amtColor = 'text-sky-400';
+    } else if (isInc) {
+        sign = '+'; amtColor = 'text-emerald-400';
+    } else {
+        sign = '\u2212'; amtColor = isExcl ? 'text-zinc-500' : 'text-rose-400';
+    }
+
+    // Emoji
+    let emoji;
+    if (isTrf) {
+        emoji = '🔄';
+    } else if (isExcl) {
+        emoji = '🚫';
+    } else {
+        const iconKey = t.mainCategory + ':' + (t.subCategory || '');
+        emoji = itemIcons[iconKey] || mainEmojis[t.mainCategory] || (isInc ? '💰' : '💸');
+    }
+
+    // Type badge
+    const typeBadges = {
+        expense:  { label: 'Expense',  cls: 'bg-rose-500/15 text-rose-400' },
+        income:   { label: 'Income',   cls: 'bg-emerald-500/15 text-emerald-400' },
+        transfer: { label: 'Transfer', cls: 'bg-sky-500/15 text-sky-400' },
+    };
+    const badge = typeBadges[t.type] || typeBadges.expense;
+    if (isExcl) { badge.label = 'Excluded'; badge.cls = 'bg-zinc-700/50 text-zinc-400'; }
+
+    // Description / title
+    let title;
+    if (isTrf) {
+        const fromAcc = _getAccById(t.fromAccountId);
+        const toAcc   = _getAccById(t.toAccountId);
+        title = t.desc || ((fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?'));
+    } else {
+        title = t.desc || (t.mainCategory + (t.subCategory ? ' \u00B7 ' + t.subCategory : ''));
+    }
+
+    // Date formatted
+    const [y, mo, day] = t.date.split('-').map(Number);
+    const dateFormatted = new Date(y, mo - 1, day).toLocaleDateString('default', {
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+    });
+
+    // Date added (from transaction id — timestamp)
+    let dateAdded = '';
+    if (t.id && typeof t.id === 'number' && t.id > 1000000000000) {
+        const addedDate = new Date(t.id);
+        dateAdded = addedDate.toLocaleDateString('default', {
+            month: 'short', day: 'numeric', year: 'numeric'
+        }) + ' at ' + addedDate.toLocaleTimeString('default', {
+            hour: 'numeric', minute: '2-digit'
+        });
+    }
+
+    // Build detail rows
+    let detailRows = '';
+
+    // Category (for non-transfers)
+    if (!isTrf && t.mainCategory) {
+        const catLabel = t.mainCategory + (t.subCategory ? ' \u00B7 ' + t.subCategory : '');
+        detailRows += _summaryRow('Category', catLabel);
+    }
+
+    // Account
+    if (isTrf) {
+        const fromAcc = _getAccById(t.fromAccountId);
+        const toAcc   = _getAccById(t.toAccountId);
+        detailRows += _summaryRow('From', fromAcc ? (fromAcc.icon || '🏦') + ' ' + fromAcc.name : '?');
+        detailRows += _summaryRow('To', toAcc ? (toAcc.icon || '🏦') + ' ' + toAcc.name : '?');
+    } else if (t.walletAccountId) {
+        const acc = _getAccById(t.walletAccountId);
+        if (acc) detailRows += _summaryRow('Account', (acc.icon || '🏦') + ' ' + acc.name);
+    }
+
+    // Date
+    detailRows += _summaryRow('Date', dateFormatted);
+
+    // Note / description
+    if (t.desc) {
+        detailRows += _summaryRow('Note', t.desc);
+    }
+
+    // Excluded badge
+    if (isExcl) {
+        detailRows += _summaryRow('Status', 'Excluded from budget & reports');
+    }
+    if (isTrf && _isTransferExcluded(t)) {
+        detailRows += _summaryRow('Status', 'Same-type transfer (excluded)');
+    }
+
+    // Date added
+    if (dateAdded) {
+        detailRows += _summaryRow('Added', dateAdded);
+    }
+
+    const content = document.getElementById('tx-summary-content');
+    content.innerHTML = `
+        <!-- Header -->
+        <div class="flex flex-col items-center pt-2 pb-5">
+            <div class="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center text-3xl mb-4">${emoji}</div>
+            <span class="text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full mb-3 ${badge.cls}">${badge.label}</span>
+            <p class="${amtColor} text-4xl font-bold tracking-tight">${sign}$${parseFloat(t.amount).toFixed(2)}</p>
+            <p class="text-sm text-zinc-400 mt-1.5 text-center px-4 truncate max-w-full">${title}</p>
+        </div>
+
+        <!-- Detail card -->
+        <div class="mx-1 rounded-2xl bg-zinc-800/50 overflow-hidden mb-5">
+            ${detailRows}
+        </div>
+
+        <!-- Actions -->
+        <div class="space-y-2 px-1">
+            <button onclick="hideTxSummary();openEditTx(${idx})"
+                class="w-full bg-zinc-800 hover:bg-zinc-700 py-3.5 rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                Edit Transaction
+            </button>
+            <button onclick="hideTxSummary();_showUndo(${idx});renderTransactions()"
+                class="w-full py-3 rounded-2xl text-sm text-rose-400 hover:bg-rose-500/10 transition-colors font-medium">
+                Delete
+            </button>
+        </div>`;
+
+    modal.classList.remove('hidden');
+}
+
+function _summaryRow(label, value) {
+    return `<div class="flex items-center justify-between px-4 py-3 border-b border-zinc-700/30 last:border-0">
+        <span class="text-[11px] text-zinc-500 font-medium uppercase tracking-wider shrink-0">${label}</span>
+        <span class="text-sm text-zinc-200 text-right truncate ml-4">${value}</span>
+    </div>`;
+}
+
+function hideTxSummary() {
+    const modal = document.getElementById('tx-summary-modal');
+    if (modal) modal.classList.add('hidden');
 }
 
 /* ── Direction-locked swipe-to-delete ────────────── */
@@ -331,5 +480,3 @@ function deleteBudgetMonth() {
     renderBudgets();
     showToast('Budget deleted');
 }
-
-

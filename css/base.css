@@ -65,7 +65,7 @@ body { font-family: 'Inter', system_ui, sans-serif; }
     50%      { opacity:.55; } }
 .budget-bar-over { animation:_budgetOver 1.6s ease-in-out infinite; }
 /* ── Transactions ── */
-.tx-item { position:relative; overflow:hidden; background:#18181b; border-radius:16px; user-select:none; }
+.tx-item { position:relative; overflow:hidden; background:#18181b; border-radius:14px; user-select:none; }
 .tx-content { position:relative; z-index:1; background:#18181b; will-change:transform; transition:transform .3s cubic-bezier(.25,.46,.45,.94); }
 .tx-item.swiping .tx-content { transition:none; }
 .tx-delete { position:absolute; right:0; top:0; bottom:0; width:76px; background:#ef4444;
