@@ -315,7 +315,7 @@ function renderBudgets() {
         html += `<button class="add-budget-item-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all"
                      data-main="${mEscQ}">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="text-xs">Add item</span>
+            <span class="text-xs">Add category</span>
         </button>`;
 
         html += `</div></div>`;

@@ -252,10 +252,7 @@ function _updateMasterMonthUI() {
     const thisBtn = document.getElementById('master-this-month');
     if (thisBtn) {
         const isCurrent = selectedMonth === getCurrentMonthKey();
-        thisBtn.classList.toggle('bg-emerald-500', !isCurrent);
-        thisBtn.classList.toggle('text-white', !isCurrent);
-        thisBtn.classList.toggle('bg-zinc-800', isCurrent);
-        thisBtn.classList.toggle('text-zinc-500', isCurrent);
+        thisBtn.classList.toggle('hidden', isCurrent);
     }
 }
 
