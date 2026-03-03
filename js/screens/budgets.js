@@ -38,6 +38,8 @@ function renderBudgets() {
         attachBudgetSwipe();
         const footerEl2 = document.getElementById('budget-actions-footer');
         if (footerEl2) footerEl2.classList.add('hidden');
+        const toggleEl2 = document.getElementById('budget-view-toggle');
+        if (toggleEl2) toggleEl2.classList.add('hidden');
         return;
     }
 
@@ -243,15 +245,13 @@ function renderBudgets() {
     Object.keys(expenseCategories).forEach(main => {
         const isIncome = main === 'Income';
         const subs = expenseCategories[main];
-        const R = 28, CX = 36, CY = 36;
-        const CIRC = 2 * Math.PI * R; // ≈ 175.93
 
         html += `<div class="mb-5">`;
         const catKeys = Object.keys(expenseCategories);
         const catIdx = catKeys.indexOf(main);
         const isFirstCat = catIdx === 0;
         const isLastCat = catIdx === catKeys.length - 1;
-        html += `<div class="flex items-center gap-2 px-1 mb-3">
+        html += `<div class="flex items-center gap-2 px-1 mb-2">
             <span class="text-lg">${mainEmojis[main] || '📂'}</span>
             <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase flex-1">${main}</span>
             <button onclick="event.stopPropagation();_budgetMoveSection('${main.replace(/'/g,"\\'")}','up')" class="w-6 h-6 flex items-center justify-center text-zinc-700 hover:text-zinc-400 transition-colors ${isFirstCat?'opacity-20 pointer-events-none':''}" title="Move up">
@@ -262,7 +262,7 @@ function renderBudgets() {
             </button>
         </div>`;
 
-        html += `<div class="grid grid-cols-3 gap-3">`;
+        html += `<div class="space-y-1.5">`;
         subs.forEach(sub => {
             monthBudgets[main] = monthBudgets[main] || {};
             const budget = monthBudgets[main][sub] || 0;
@@ -276,71 +276,56 @@ function renderBudgets() {
             const sEsc = sub.replace(/'/g,"\\'");
 
             if (_budgetViewMode === 'plan') {
-                // Plan mode: large icon, no ring, tappable planned amount
                 const planAmtText = budget === 0 ? 'Set amount' : `$${Math.round(budget)}`;
                 const planAmtCls  = budget === 0 ? 'text-zinc-600' : 'text-zinc-300';
-                html += `<div class="bg-zinc-900 rounded-3xl p-3 flex flex-col items-center cursor-pointer active:scale-95 transition-transform select-none"
+                html += `<div class="flex items-center gap-3 bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
                              onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
-                    <div class="text-[36px] leading-none mb-2 mt-1">${icon}</div>
-                    <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-1 w-full truncate px-1">${sub}</div>
-                    <div class="text-[12px] font-bold text-center ${planAmtCls} w-full truncate px-1"
-                         >${planAmtText}</div>
+                    <div class="text-2xl shrink-0">${icon}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-zinc-200 truncate">${sub}</div>
+                    </div>
+                    <div class="text-sm font-bold ${planAmtCls} shrink-0">${planAmtText}</div>
                 </div>`;
             } else {
-                // Remaining mode: donut ring, remaining amount in center (SVG text), $spent/$planned below
-                const dashFill = Math.min(pct / 100, 1) * CIRC;
-                const arcSVG = dashFill > 0
-                    ? `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${donutColor}" stroke-width="8"
-                        stroke-dasharray="${dashFill.toFixed(2)} ${(CIRC - dashFill).toFixed(2)}"
-                        stroke-linecap="round" transform="rotate(-90 ${CX} ${CY})"/>`
-                    : '';
-
-                // Center text: remaining / surplus
-                let centerTxt, centerColor;
+                // Remaining mode: row with progress bar
+                const barPct = Math.min(pct, 100);
+                let leftText, leftColor;
                 if (budget === 0) {
-                    centerTxt = '—'; centerColor = '#52525b';
+                    leftText = 'No budget'; leftColor = 'text-zinc-600';
                 } else if (isIncome) {
                     const diff = actual - budget;
-                    centerTxt  = diff >= 0 ? `+$${Math.round(diff)}` : `$${Math.round(budget - actual)}`;
-                    centerColor = donutColor;
+                    leftText = diff >= 0 ? `+$${Math.round(diff)}` : `$${Math.round(budget - actual)} left`;
+                    leftColor = diff >= 0 ? 'text-emerald-400' : 'text-amber-400';
                 } else {
                     const left = budget - actual;
-                    centerTxt  = left >= 0 ? `$${Math.round(left)}` : `-$${Math.round(-left)}`;
-                    centerColor = donutColor;
+                    leftText = left >= 0 ? `$${Math.round(left)} left` : `-$${Math.round(-left)} over`;
+                    leftColor = left >= 0 ? 'text-emerald-400' : 'text-rose-400';
                 }
-
-                // Below: $spent / $planned
-                let amtLabel, amtCls;
-                if (budget === 0) {
-                    amtLabel = 'No budget'; amtCls = 'text-zinc-600';
-                } else {
-                    amtLabel = `$${Math.round(actual)} / $${Math.round(budget)}`;
-                    amtCls = 'text-zinc-500';
-                }
-
-                html += `<div class="bg-zinc-900 rounded-3xl p-3 flex flex-col items-center cursor-pointer active:scale-95 transition-transform select-none"
+                html += `<div class="bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
                              onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
-                    <div class="relative mb-2" style="width:72px;height:72px">
-                        <svg width="72" height="72" viewBox="0 0 72 72">
-                            <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#27272a" stroke-width="8"/>
-                            ${arcSVG}
-                            <text x="${CX}" y="${CY+5}" text-anchor="middle" fill="${centerColor}" font-size="10" font-weight="700" font-family="system-ui,sans-serif">${centerTxt}</text>
-                        </svg>
+                    <div class="flex items-center gap-3 ${budget > 0 ? 'mb-2' : ''}">
+                        <div class="text-2xl shrink-0">${icon}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-semibold text-zinc-200 truncate">${sub}</div>
+                        </div>
+                        <div class="text-xs font-bold ${leftColor} shrink-0">${leftText}</div>
                     </div>
-                    <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-0.5 w-full truncate px-1">${sub}</div>
-                    <div class="text-[11px] text-center ${amtCls} w-full truncate px-1">${amtLabel}</div>
+                    ${budget > 0 ? `<div class="ml-11">
+                        <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-1">
+                            <div class="h-full rounded-full progress-bar" style="width:${barPct}%;background:${donutColor}"></div>
+                        </div>
+                        <div class="text-[11px] text-zinc-500">$${Math.round(actual)} / $${Math.round(budget)}</div>
+                    </div>` : ''}
                 </div>`;
             }
         });
 
-        // Add item card
+        // Add item row
         const mEscQ = main.replace(/"/g,'&quot;');
-        html += `<button class="add-budget-item-btn bg-zinc-900/40 border border-dashed border-zinc-800 hover:border-emerald-500/40 rounded-3xl p-3 flex flex-col items-center justify-center active:scale-95 transition-all"
+        html += `<button class="add-budget-item-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all"
                      data-main="${mEscQ}">
-            <div class="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center mb-1.5">
-                <svg class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            </div>
-            <div class="text-[11px] text-zinc-600">Add</div>
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            <span class="text-xs">Add item</span>
         </button>`;
 
         html += `</div></div>`;
@@ -348,20 +333,18 @@ function renderBudgets() {
 
     // ── Dynamic Saving & Debt sections (driven by wallet accounts) ──
     ['Saving', 'Debt'].forEach(secType => {
-        const wType = secType.toLowerCase();  // 'saving' or 'debt'
+        const wType = secType.toLowerCase();
         const accs = walletAccounts.filter(a => a.type === wType);
         if (!accs.length) return;
 
         const isDebt = wType === 'debt';
-        const R = 28, CX = 36, CY = 36;
-        const CIRC = 2 * Math.PI * R;
 
         html += `<div class="mb-5">`;
-        html += `<div class="flex items-center gap-2 px-1 mb-3">
+        html += `<div class="flex items-center gap-2 px-1 mb-2">
             <span class="text-lg">${mainEmojis[secType] || '📂'}</span>
             <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase">${secType}</span>
         </div>`;
-        html += `<div class="grid grid-cols-3 gap-3">`;
+        html += `<div class="space-y-1.5">`;
 
         accs.forEach(acc => {
             const sub = acc.name;
@@ -377,56 +360,47 @@ function renderBudgets() {
             if (_budgetViewMode === 'plan') {
                 const planAmtText = budget === 0 ? 'Set amount' : `$${Math.round(budget)}`;
                 const planAmtCls  = budget === 0 ? 'text-zinc-600' : 'text-zinc-300';
-                html += `<div class="bg-zinc-900 rounded-3xl p-3 flex flex-col items-center cursor-pointer active:scale-95 transition-transform select-none"
+                html += `<div class="flex items-center gap-3 bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
                              onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
-                    <div class="text-[36px] leading-none mb-2 mt-1">${icon}</div>
-                    <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-1 w-full truncate px-1">${sub}</div>
-                    <div class="text-[12px] font-bold text-center ${planAmtCls} w-full truncate px-1"
-                         >${planAmtText}</div>
+                    <div class="text-2xl shrink-0">${icon}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-zinc-200 truncate">${sub}</div>
+                    </div>
+                    <div class="text-sm font-bold ${planAmtCls} shrink-0">${planAmtText}</div>
                 </div>`;
             } else {
-                const dashFill = Math.min(pct / 100, 1) * CIRC;
-                const arcSVG = dashFill > 0
-                    ? `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${donutColor}" stroke-width="8"
-                        stroke-dasharray="${dashFill.toFixed(2)} ${(CIRC - dashFill).toFixed(2)}"
-                        stroke-linecap="round" transform="rotate(-90 ${CX} ${CY})"/>`
-                    : '';
-                let centerTxt, centerColor;
+                const barPct = Math.min(pct, 100);
+                let leftText, leftColor;
                 if (budget === 0) {
-                    centerTxt = '—'; centerColor = '#52525b';
+                    leftText = 'No budget'; leftColor = 'text-zinc-600';
                 } else {
                     const left = budget - actual;
-                    centerTxt  = left >= 0 ? `$${Math.round(left)}` : `-$${Math.round(-left)}`;
-                    centerColor = donutColor;
+                    leftText = left >= 0 ? `$${Math.round(left)} left` : `-$${Math.round(-left)} over`;
+                    leftColor = left >= 0 ? 'text-emerald-400' : 'text-rose-400';
                 }
-                let amtLabel, amtCls;
-                if (budget === 0) {
-                    amtLabel = 'No budget'; amtCls = 'text-zinc-600';
-                } else {
-                    amtLabel = `$${Math.round(actual)} / $${Math.round(budget)}`;
-                    amtCls = 'text-zinc-500';
-                }
-                html += `<div class="bg-zinc-900 rounded-3xl p-3 flex flex-col items-center cursor-pointer active:scale-95 transition-transform select-none"
+                html += `<div class="bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
                              onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
-                    <div class="relative mb-2" style="width:72px;height:72px">
-                        <svg width="72" height="72" viewBox="0 0 72 72">
-                            <circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="#27272a" stroke-width="8"/>
-                            ${arcSVG}
-                            <text x="${CX}" y="${CY+5}" text-anchor="middle" fill="${centerColor}" font-size="10" font-weight="700" font-family="system-ui,sans-serif">${centerTxt}</text>
-                        </svg>
+                    <div class="flex items-center gap-3 ${budget > 0 ? 'mb-2' : ''}">
+                        <div class="text-2xl shrink-0">${icon}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-semibold text-zinc-200 truncate">${sub}</div>
+                        </div>
+                        <div class="text-xs font-bold ${leftColor} shrink-0">${leftText}</div>
                     </div>
-                    <div class="text-xs font-semibold text-center text-zinc-200 leading-tight mb-0.5 w-full truncate px-1">${sub}</div>
-                    <div class="text-[11px] text-center ${amtCls} w-full truncate px-1">${amtLabel}</div>
+                    ${budget > 0 ? `<div class="ml-11">
+                        <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-1">
+                            <div class="h-full rounded-full progress-bar" style="width:${barPct}%;background:${donutColor}"></div>
+                        </div>
+                        <div class="text-[11px] text-zinc-500">$${Math.round(actual)} / $${Math.round(budget)}</div>
+                    </div>` : ''}
                 </div>`;
             }
         });
 
-        // Add account card (redirects to wallet)
-        html += `<button onclick="switchTab(3);showWalletAddModal();setWalletType('${wType}')" class="bg-zinc-900/40 border border-dashed border-zinc-800 hover:border-emerald-500/40 rounded-3xl p-3 flex flex-col items-center justify-center active:scale-95 transition-all">
-            <div class="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center mb-1.5">
-                <svg class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            </div>
-            <div class="text-[11px] text-zinc-600">Add Account</div>
+        // Add account row
+        html += `<button onclick="switchTab(3);showWalletAddModal();setWalletType('${wType}')" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            <span class="text-xs">Add Account</span>
         </button>`;
 
         html += `</div></div>`;

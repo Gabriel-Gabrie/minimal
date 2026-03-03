@@ -1,4 +1,4 @@
-/* ── Budget Item Edit Modal ──────────────────────────────────── */
+/* ── Budget Category Modals ─────────────────────────────────── */
 const BUDGET_ICONS = [
     '🛒','🍔','🍕','🌮','🥑','☕','🍜','🍷','🧃','🍰',
     '🏠','🛋️','💡','🔧','🧹','🌿','📦','🔑','🛁','🖥️',
@@ -10,15 +10,93 @@ const BUDGET_ICONS = [
     '🌍','📅','🔔','⚡','🌟','❤️','🎁','✨','🐾','☂️',
 ];
 
+let _catModalMain = null, _catModalSub = null;
+let _catModalReturnTo = null; // 'plan' | 'remaining'
+let _aimEditingMain = null, _aimEditingSub = null;
+
+/* ── Helper: resolve icon for a budget item ──────────────────── */
+function _resolveBudgetIcon(main, sub) {
+    const isDynamic = (main === 'Saving' || main === 'Debt');
+    if (isDynamic) {
+        const acc = walletAccounts.find(a => a.name === sub && a.type === main.toLowerCase());
+        return acc ? (acc.icon || (main === 'Debt' ? '💳' : '🐷')) : '💸';
+    }
+    return itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || (main === 'Income' ? '💵' : '💸');
+}
+
+/* ── Router ──────────────────────────────────────────────────── */
 function openBudgetItemModal(main, sub) {
-    _bimMain = main;
-    _bimSub  = sub;
-    _bimSelectedIcon = null;
+    if (_budgetViewMode === 'plan') {
+        _openCategoryPlanModal(main, sub);
+    } else {
+        _openCategoryRemainingModal(main, sub);
+    }
+}
+
+/* ══════════════════════════════════════════════
+   CATEGORY PLAN MODAL
+══════════════════════════════════════════════ */
+function _openCategoryPlanModal(main, sub) {
+    _catModalMain = main;
+    _catModalSub = sub;
+    _catModalReturnTo = 'plan';
 
     const isDynamic = (main === 'Saving' || main === 'Debt');
-    const mb     = monthlyBudgets[selectedBudgetMonth] || {};
+    const mb = monthlyBudgets[selectedBudgetMonth] || {};
     const budget = (mb[main] || {})[sub] || 0;
-    const isInc  = main === 'Income';
+    const icon = _resolveBudgetIcon(main, sub);
+
+    document.getElementById('bpm-icon').textContent = icon;
+    document.getElementById('bpm-name').textContent = sub;
+
+    const amtInput = document.getElementById('bpm-amount');
+    amtInput.value = budget > 0 ? Math.round(budget) : '';
+
+    // Hide edit button for dynamic sections
+    const editBtn = document.getElementById('bpm-edit-btn');
+    if (editBtn) editBtn.classList.toggle('hidden', isDynamic);
+
+    document.getElementById('budget-plan-modal').classList.remove('hidden');
+    setTimeout(() => amtInput.focus(), 80);
+}
+
+function _savePlanModal() {
+    if (!_catModalMain || !_catModalSub) return;
+    const amtInput = document.getElementById('bpm-amount');
+    const amt = Math.round(parseFloat(amtInput.value) || 0);
+
+    if (!monthlyBudgets[selectedBudgetMonth]) monthlyBudgets[selectedBudgetMonth] = {};
+    if (!monthlyBudgets[selectedBudgetMonth][_catModalMain]) monthlyBudgets[selectedBudgetMonth][_catModalMain] = {};
+    monthlyBudgets[selectedBudgetMonth][_catModalMain][_catModalSub] = amt;
+
+    saveData();
+    _closePlanModal();
+    renderBudgets();
+}
+
+function _closePlanModal() {
+    document.getElementById('budget-plan-modal').classList.add('hidden');
+    _catModalMain = null;
+    _catModalSub = null;
+}
+
+function _bpmBackdrop(e) {
+    if (e.target === document.getElementById('budget-plan-modal')) _closePlanModal();
+}
+
+/* ══════════════════════════════════════════════
+   CATEGORY REMAINING MODAL
+══════════════════════════════════════════════ */
+function _openCategoryRemainingModal(main, sub) {
+    _catModalMain = main;
+    _catModalSub = sub;
+    _catModalReturnTo = 'remaining';
+
+    const isDynamic = (main === 'Saving' || main === 'Debt');
+    const isInc = main === 'Income';
+    const mb = monthlyBudgets[selectedBudgetMonth] || {};
+    const budget = (mb[main] || {})[sub] || 0;
+    const icon = _resolveBudgetIcon(main, sub);
 
     let actual;
     if (isDynamic) {
@@ -29,47 +107,29 @@ function openBudgetItemModal(main, sub) {
                        : calculateSpentInMonth(selectedBudgetMonth, main, sub);
     }
 
-    let icon;
-    if (isDynamic) {
-        const acc = walletAccounts.find(a => a.name === sub && a.type === main.toLowerCase());
-        icon = acc ? (acc.icon || (main === 'Debt' ? '💳' : '🐷')) : '💸';
-    } else {
-        icon = itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || (isInc ? '💵' : '💸');
-    }
-
-    const pct    = budget > 0 ? Math.abs(actual) / budget * 100 : 0;
-    const color  = _budgetItemColor(pct, isInc);
+    const pct = budget > 0 ? Math.abs(actual) / budget * 100 : 0;
+    const color = _budgetItemColor(pct, isInc);
     const remaining = budget - actual;
 
-    // Header icon
-    const hdrIcon = document.getElementById('bim-hdr-icon');
-    if (hdrIcon) hdrIcon.textContent = icon;
+    // Header
+    document.getElementById('brm-icon').textContent = icon;
+    document.getElementById('brm-name').textContent = sub;
+    const editBtn = document.getElementById('brm-edit-btn');
+    if (editBtn) editBtn.classList.toggle('hidden', isDynamic);
 
-    // Centered name + category
-    const nameEl = document.getElementById('bim-name-display');
-    if (nameEl) {
-        nameEl.textContent = sub;
-        nameEl.onclick = isDynamic ? null : function() { _bimInlineEditName(this); };
-        nameEl.style.cursor = isDynamic ? 'default' : 'pointer';
-    }
-    const catEl = document.getElementById('bim-cat-label');
-    if (catEl) catEl.textContent = main;
+    // Stats
+    const budgetedEl = document.getElementById('brm-stat-budgeted');
+    if (budgetedEl) budgetedEl.textContent = budget > 0 ? `$${Math.round(budget)}` : 'Not set';
 
-    // Stats row
-    const budgetedEl = document.getElementById('bim-stat-budgeted');
-    if (budgetedEl) {
-        budgetedEl.textContent = budget > 0 ? `$${Math.round(budget)}` : 'Not set';
-        budgetedEl.onclick = function() { _bimInlineEditAmount(this); };
-    }
-    const spentEl = document.getElementById('bim-stat-spent');
+    const spentEl = document.getElementById('brm-stat-spent');
     if (spentEl) {
         spentEl.textContent = `$${Math.round(Math.abs(actual))}`;
         spentEl.className = 'text-sm font-bold ' + (isInc ? 'text-emerald-400' : 'text-rose-400');
-        // Update label for income
         const spentLabel = spentEl.parentElement?.querySelector('.text-zinc-600');
         if (spentLabel) spentLabel.textContent = isInc ? 'Received' : 'Spent';
     }
-    const leftEl = document.getElementById('bim-stat-left');
+
+    const leftEl = document.getElementById('brm-stat-left');
     if (leftEl) {
         if (budget > 0) {
             leftEl.textContent = remaining >= 0 ? `$${Math.round(remaining)}` : `-$${Math.round(-remaining)}`;
@@ -81,103 +141,35 @@ function openBudgetItemModal(main, sub) {
     }
 
     // Progress bar
-    const progWrap = document.getElementById('bim-progress-wrap');
-    const progBar  = document.getElementById('bim-progress-bar');
-    const progPct  = document.getElementById('bim-progress-pct');
+    const progWrap = document.getElementById('brm-progress-wrap');
+    const progBar = document.getElementById('brm-progress-bar');
+    const progPct = document.getElementById('brm-progress-pct');
     if (budget > 0 && progWrap) {
         progWrap.classList.remove('hidden');
         const barPct = Math.min(pct, 100);
-        if (progBar) {
-            progBar.style.width = barPct + '%';
-            progBar.style.backgroundColor = color;
-        }
-        if (progPct) {
-            progPct.textContent = Math.round(pct) + '%';
-            progPct.style.color = color;
-        }
+        if (progBar) { progBar.style.width = barPct + '%'; progBar.style.backgroundColor = color; }
+        if (progPct) { progPct.textContent = Math.round(pct) + '%'; progPct.style.color = color; }
     } else if (progWrap) {
         progWrap.classList.add('hidden');
     }
 
-    // Icon picker — hidden for dynamic sections, populate grid for others
-    const pickerEl = document.getElementById('bim-icon-picker');
-    if (pickerEl) pickerEl.classList.add('hidden');
-    const grid = document.getElementById('bim-icon-grid');
-    if (grid && !isDynamic) {
-        grid.innerHTML = BUDGET_ICONS.map(e =>
-            `<button type="button" onclick="_bimSelectIcon('${e}')"
-                class="text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all ${e === icon ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700'}">${e}</button>`
-        ).join('');
-    }
+    // Transactions
+    _brmPopulateTxList(main, sub, isInc, isDynamic);
 
-    // Show/hide edit button — hidden for dynamic sections
-    const editBtn = document.getElementById('bim-edit-btn');
-    if (editBtn) editBtn.classList.toggle('hidden', isDynamic);
-
-    // Show/hide delete — hidden for dynamic sections (managed by wallet)
-    const del = document.getElementById('bim-delete-btn');
-    if (isDynamic) {
-        if (del) del.classList.add('hidden');
-    } else {
-        const arr = expenseCategories[main] || [];
-        if (del) del.classList.toggle('hidden', arr.length <= 1);
-    }
-
-    // Populate transaction list
-    _bimPopulateTxList(main, sub, isInc, isDynamic);
-
-    document.getElementById('budget-item-modal').classList.remove('hidden');
+    document.getElementById('budget-remaining-modal').classList.remove('hidden');
 }
 
-// Edit button handler — opens add-budget-item modal in edit mode
-function _bimStartEdit() {
-    const main = _bimMain, sub = _bimSub;
-    if (!main || !sub) return;
-    document.getElementById('budget-item-modal').classList.add('hidden');
-    // Open add-item modal pre-populated for editing
-    const mb = monthlyBudgets[selectedBudgetMonth] || {};
-    const budget = (mb[main] || {})[sub] || 0;
-    const icon = itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || '💸';
-    const modal = document.getElementById('add-budget-item-modal');
-    const catLabel = document.getElementById('aim-cat-label');
-    const nameInput = document.getElementById('aim-name-input');
-    const amtInput = document.getElementById('aim-amount-input');
-    const hdrIcon = document.getElementById('aim-hdr-icon');
-    if (catLabel) catLabel.textContent = main;
-    if (nameInput) nameInput.value = sub;
-    if (amtInput) amtInput.value = budget || '';
-    if (hdrIcon) hdrIcon.textContent = icon;
-    _aimSelectedIcon = icon;
-    _aimEditingMain = main;
-    _aimEditingSub = sub;
-    // Update button text
-    const addBtn = modal?.querySelector('button[onclick="_aimConfirm()"]');
-    if (addBtn) addBtn.textContent = 'Save Changes';
-    // Populate icon picker
-    const grid = document.getElementById('aim-icon-grid');
-    if (grid) {
-        grid.innerHTML = BUDGET_ICONS.map(e =>
-            `<button type="button" onclick="_aimSelectIcon('${e}')"
-                class="text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all ${e === icon ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700'}">${e}</button>`
-        ).join('');
-    }
-    if (modal) modal.classList.remove('hidden');
-}
-let _aimEditingMain = null, _aimEditingSub = null;
-
-function _bimPopulateTxList(main, sub, isInc, isDynamic) {
+function _brmPopulateTxList(main, sub, isInc, isDynamic) {
     const [year, month] = selectedBudgetMonth.split('-').map(Number);
     let monthTxs;
     if (isDynamic) {
-        // Show transfers involving this account
         const acc = walletAccounts.find(a => a.name === sub && a.type === main.toLowerCase());
         monthTxs = acc ? transactions.filter(t => {
             if (t.type !== 'transfer') return false;
             const d = new Date(t.date + 'T00:00:00');
             if (d.getFullYear() !== year || (d.getMonth() + 1) !== month) return false;
             const fromType = _getAccType(t.fromAccountId);
-            const toType   = _getAccType(t.toAccountId);
-            // spending→saving/debt to this account, or this account→spending
+            const toType = _getAccType(t.toAccountId);
             return (fromType === 'spending' && t.toAccountId === acc.id) ||
                    (t.fromAccountId === acc.id && toType === 'spending');
         }).sort((a, b) => new Date(b.date) - new Date(a.date)) : [];
@@ -191,11 +183,11 @@ function _bimPopulateTxList(main, sub, isInc, isDynamic) {
         }).sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
-    const listEl  = document.getElementById('bim-tx-list');
-    const emptyEl = document.getElementById('bim-tx-empty');
+    const listEl = document.getElementById('brm-tx-list');
+    const emptyEl = document.getElementById('brm-tx-empty');
 
     if (monthTxs.length === 0) {
-        if (listEl)  listEl.innerHTML = '';
+        if (listEl) listEl.innerHTML = '';
         if (emptyEl) emptyEl.classList.remove('hidden');
         return;
     }
@@ -204,7 +196,7 @@ function _bimPopulateTxList(main, sub, isInc, isDynamic) {
     const sign = isInc ? '+' : '-';
     const amtStyle = isInc ? 'color:#34d399' : 'color:#e4e4e7';
     listEl.innerHTML = monthTxs.map(t => {
-        const d   = new Date(t.date + 'T00:00:00');
+        const d = new Date(t.date + 'T00:00:00');
         const day = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         return `<div class="flex items-center justify-between bg-zinc-900 rounded-2xl px-4 py-3">
             <div class="min-w-0 flex-1">
@@ -216,180 +208,274 @@ function _bimPopulateTxList(main, sub, isInc, isDynamic) {
     }).join('');
 }
 
-function _bimToggleIconPicker() {
-    const picker = document.getElementById('bim-icon-picker');
+function _brmAddTransaction() {
+    const main = _catModalMain;
+    const sub = _catModalSub;
+    const isInc = main === 'Income';
+    const isDynamic = (main === 'Saving' || main === 'Debt');
+    _closeRemainingModal();
+
+    if (isDynamic) {
+        showAddModal('transfer');
+    } else if (isInc) {
+        showAddModal('income');
+        setTimeout(() => {
+            const sel = document.getElementById('income-cat');
+            if (sel) sel.value = sub;
+        }, 50);
+    } else {
+        showAddModal('expense');
+        setTimeout(() => {
+            const mainSel = document.getElementById('main-cat');
+            if (mainSel) {
+                mainSel.value = main;
+                updateSubOptions();
+                const subSel = document.getElementById('sub-cat');
+                if (subSel) subSel.value = sub;
+            }
+        }, 50);
+    }
+}
+
+function _closeRemainingModal() {
+    document.getElementById('budget-remaining-modal').classList.add('hidden');
+    _catModalMain = null;
+    _catModalSub = null;
+}
+
+function _brmBackdrop(e) {
+    if (e.target === document.getElementById('budget-remaining-modal')) _closeRemainingModal();
+}
+
+/* ══════════════════════════════════════════════
+   EDIT CATEGORY MODAL
+══════════════════════════════════════════════ */
+let _becmSelectedIcon = null;
+let _becmOrigMain = null, _becmOrigSub = null;
+
+function _openEditCategoryModal() {
+    const main = _catModalMain;
+    const sub = _catModalSub;
+    if (!main || !sub) return;
+
+    _becmOrigMain = main;
+    _becmOrigSub = sub;
+
+    // Close parent modal
+    document.getElementById('budget-plan-modal').classList.add('hidden');
+    document.getElementById('budget-remaining-modal').classList.add('hidden');
+
+    const isInc = main === 'Income';
+    const icon = itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || (isInc ? '💵' : '💸');
+    _becmSelectedIcon = icon;
+
+    // Name
+    document.getElementById('becm-name').value = sub;
+
+    // Icon preview
+    document.getElementById('becm-icon-preview').textContent = icon;
+
+    // Icon picker
+    const picker = document.getElementById('becm-icon-picker');
+    if (picker) picker.classList.add('hidden');
+    const grid = document.getElementById('becm-icon-grid');
+    if (grid) {
+        grid.innerHTML = BUDGET_ICONS.map(e =>
+            `<button type="button" onclick="_becmSelectIcon('${e}')"
+                class="text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all ${e === icon ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700'}">${e}</button>`
+        ).join('');
+    }
+
+    // Section dropdown
+    const sel = document.getElementById('becm-section');
+    sel.innerHTML = '';
+    Object.keys(expenseCategories).forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = `${mainEmojis[cat] || '📂'} ${cat}`;
+        if (cat === main) opt.selected = true;
+        sel.appendChild(opt);
+    });
+
+    // Delete button — hidden if last item in section
+    const arr = expenseCategories[main] || [];
+    const del = document.getElementById('becm-delete-btn');
+    if (del) del.classList.toggle('hidden', arr.length <= 1);
+
+    document.getElementById('budget-edit-cat-modal').classList.remove('hidden');
+}
+
+function _becmToggleIconPicker() {
+    const picker = document.getElementById('becm-icon-picker');
     if (picker) picker.classList.toggle('hidden');
 }
 
-function _bimSelectIcon(emoji) {
-    _bimSelectedIcon = emoji;
-    const hdrIcon = document.getElementById('bim-hdr-icon');
-    if (hdrIcon) hdrIcon.textContent = emoji;
-    document.querySelectorAll('#bim-icon-grid button').forEach(btn => {
+function _becmSelectIcon(emoji) {
+    _becmSelectedIcon = emoji;
+    document.getElementById('becm-icon-preview').textContent = emoji;
+    document.querySelectorAll('#becm-icon-grid button').forEach(btn => {
         const sel = btn.textContent.trim() === emoji;
         btn.className = 'text-xl w-8 h-8 flex items-center justify-center rounded-xl active:scale-90 transition-all '
             + (sel ? 'bg-zinc-700 ring-2 ring-emerald-500' : 'hover:bg-zinc-700');
     });
-    // Save immediately and close picker
-    if (_bimMain && _bimSub) {
-        itemIcons[`${_bimMain}:${_bimSub}`] = emoji;
-        saveData();
-        renderBudgets();
-    }
-    document.getElementById('bim-icon-picker').classList.add('hidden');
+    document.getElementById('becm-icon-picker').classList.add('hidden');
 }
 
-function _bimInlineEditName(el) {
-    const current = el.textContent.trim();
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = current;
-    input.className = 'w-full bg-zinc-800 rounded-xl px-3 py-1.5 text-base font-bold text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500';
-    el.replaceWith(input);
-    input.focus();
-    input.select();
+function _saveEditCatModal() {
+    const origMain = _becmOrigMain;
+    const origSub = _becmOrigSub;
+    if (!origMain || !origSub) return;
 
-    function commit() {
-        const newName = input.value.trim() || current;
-        if (newName !== current && _bimMain && _bimSub) {
-            if ((expenseCategories[_bimMain] || []).includes(newName)) {
-                alert(`"${newName}" already exists in ${_bimMain}.`);
-            } else {
-                const idx = (expenseCategories[_bimMain] || []).indexOf(_bimSub);
-                if (idx !== -1) expenseCategories[_bimMain][idx] = newName;
-                Object.keys(monthlyBudgets).forEach(mo => {
-                    const mb = monthlyBudgets[mo];
-                    if (mb[_bimMain] && _bimSub in mb[_bimMain]) {
-                        mb[_bimMain][newName] = mb[_bimMain][_bimSub];
-                        delete mb[_bimMain][_bimSub];
-                    }
-                });
-                transactions.forEach(t => {
-                    if (t.mainCategory === _bimMain && t.subCategory === _bimSub) t.subCategory = newName;
-                });
+    const newName = document.getElementById('becm-name').value.trim();
+    if (!newName) return;
 
-                if (itemIcons[`${_bimMain}:${_bimSub}`]) {
-                    itemIcons[`${_bimMain}:${newName}`] = itemIcons[`${_bimMain}:${_bimSub}`];
-                    delete itemIcons[`${_bimMain}:${_bimSub}`];
-                }
-                _bimSub = newName;
-                saveData();
-                renderBudgets();
+    const newSection = document.getElementById('becm-section').value;
+    const newIcon = _becmSelectedIcon;
+    const sectionChanged = newSection !== origMain;
+    const nameChanged = newName !== origSub;
+
+    // Validate no duplicates in target section
+    if ((nameChanged || sectionChanged) && (expenseCategories[newSection] || []).includes(newName)) {
+        alert(`"${newName}" already exists in ${newSection}.`);
+        return;
+    }
+
+    if (sectionChanged) {
+        // Move item to new section
+        expenseCategories[origMain] = (expenseCategories[origMain] || []).filter(s => s !== origSub);
+        if (!expenseCategories[newSection]) expenseCategories[newSection] = [];
+        expenseCategories[newSection].push(newName);
+        Object.keys(monthlyBudgets).forEach(mo => {
+            const mb = monthlyBudgets[mo];
+            if (mb[origMain] && origSub in mb[origMain]) {
+                if (!mb[newSection]) mb[newSection] = {};
+                mb[newSection][newName] = mb[origMain][origSub];
+                delete mb[origMain][origSub];
             }
+        });
+        transactions.forEach(t => {
+            if (t.mainCategory === origMain && t.subCategory === origSub) {
+                t.mainCategory = newSection;
+                t.subCategory = newName;
+            }
+        });
+        if (itemIcons[`${origMain}:${origSub}`]) delete itemIcons[`${origMain}:${origSub}`];
+        if (newIcon) itemIcons[`${newSection}:${newName}`] = newIcon;
+    } else if (nameChanged) {
+        // Rename within same section
+        const idx = (expenseCategories[origMain] || []).indexOf(origSub);
+        if (idx >= 0) expenseCategories[origMain][idx] = newName;
+        Object.keys(monthlyBudgets).forEach(mo => {
+            const mb = monthlyBudgets[mo];
+            if (mb[origMain] && origSub in mb[origMain]) {
+                mb[origMain][newName] = mb[origMain][origSub];
+                delete mb[origMain][origSub];
+            }
+        });
+        transactions.forEach(t => {
+            if (t.mainCategory === origMain && t.subCategory === origSub) t.subCategory = newName;
+        });
+        if (itemIcons[`${origMain}:${origSub}`]) {
+            itemIcons[`${origMain}:${newName}`] = itemIcons[`${origMain}:${origSub}`];
+            delete itemIcons[`${origMain}:${origSub}`];
         }
-        const nameEl = document.createElement('div');
-        nameEl.id = 'bim-name-display';
-        nameEl.className = 'text-base font-bold text-zinc-100 mb-0.5 cursor-pointer truncate active:text-emerald-400 transition-colors';
-        nameEl.textContent = _bimSub;
-        nameEl.onclick = function() { _bimInlineEditName(this); };
-        input.replaceWith(nameEl);
+        if (newIcon) itemIcons[`${origMain}:${newName}`] = newIcon;
+    } else {
+        // Only icon changed
+        if (newIcon) itemIcons[`${origMain}:${origSub}`] = newIcon;
     }
 
-    input.addEventListener('blur', commit);
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
-        if (e.key === 'Escape') { input.value = current; input.blur(); }
-    });
-}
-
-function _bimInlineEditAmount(el) {
-    const mb      = monthlyBudgets[selectedBudgetMonth] || {};
-    const current = (mb[_bimMain] || {})[_bimSub] || 0;
-
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.inputMode = 'numeric';
-    input.step = '1';
-    input.min  = '0';
-    input.value = current > 0 ? current : '';
-    input.placeholder = '0';
-    input.className = 'bg-zinc-800 rounded-lg px-2 py-0.5 text-sm font-bold text-zinc-100 w-20 text-center focus:outline-none focus:ring-1 focus:ring-emerald-500';
-    el.replaceWith(input);
-    input.focus();
-    input.select();
-
-    function commit() {
-        const newAmt = Math.round(parseFloat(input.value) || 0);
-        monthlyBudgets[selectedBudgetMonth] = monthlyBudgets[selectedBudgetMonth] || {};
-        monthlyBudgets[selectedBudgetMonth][_bimMain] = monthlyBudgets[selectedBudgetMonth][_bimMain] || {};
-        monthlyBudgets[selectedBudgetMonth][_bimMain][_bimSub] = newAmt;
-        saveData();
-        renderBudgets();
-        // Refresh the modal stats
-        openBudgetItemModal(_bimMain, _bimSub);
-    }
-
-    input.addEventListener('blur', commit);
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
-        if (e.key === 'Escape') {
-            openBudgetItemModal(_bimMain, _bimSub);
-        }
-    });
-}
-
-function _bimInlinePlanAmount(main, sub, el) {
-    const mb      = monthlyBudgets[selectedBudgetMonth] || {};
-    const current = (mb[main] || {})[sub] || 0;
-
-    const input = document.createElement('input');
-    input.type = 'number';
-    input.inputMode = 'numeric';
-    input.step = '1';
-    input.min  = '0';
-    input.value = current > 0 ? current : '';
-    input.placeholder = '0';
-    input.className = 'w-full bg-zinc-800 rounded-lg text-center text-[12px] font-bold text-zinc-100 py-0.5 focus:outline-none focus:ring-1 focus:ring-emerald-500';
-    el.replaceWith(input);
-    input.focus();
-    input.select();
-
-    function commit() {
-        const newAmt = Math.round(parseFloat(input.value) || 0);
-        monthlyBudgets[selectedBudgetMonth] = monthlyBudgets[selectedBudgetMonth] || {};
-        monthlyBudgets[selectedBudgetMonth][main] = monthlyBudgets[selectedBudgetMonth][main] || {};
-        monthlyBudgets[selectedBudgetMonth][main][sub] = newAmt;
-        saveData();
-        renderBudgets();
-    }
-
-    input.addEventListener('blur', commit);
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
-        if (e.key === 'Escape') { renderBudgets(); }
-    });
-}
-
-function closeBudgetItemModal() {
-    document.getElementById('budget-item-modal').classList.add('hidden');
-    _bimMain = null; _bimSub = null; _bimSelectedIcon = null;
-}
-
-function _bimBackdrop(e) {
-    if (e.target === document.getElementById('budget-item-modal')) closeBudgetItemModal();
-}
-
-function deleteBudgetItemFromModal() {
-    if (!_bimMain || !_bimSub) return;
-    if (!confirm(`Delete category "${_bimSub}" from ${_bimMain}?\nTransactions using it will stay.`)) return;
-    expenseCategories[_bimMain] = (expenseCategories[_bimMain] || []).filter(s => s !== _bimSub);
-    Object.keys(monthlyBudgets).forEach(k => {
-        if (monthlyBudgets[k]?.[_bimMain]) delete monthlyBudgets[k][_bimMain][_bimSub];
-    });
-    delete itemIcons[`${_bimMain}:${_bimSub}`];
+    _syncIncomeCats();
     saveData();
-    closeBudgetItemModal();
+    _closeEditCatModal();
     renderBudgets();
 }
 
-function showAddModal() {
+function _deleteFromEditCatModal() {
+    const main = _becmOrigMain;
+    const sub = _becmOrigSub;
+    if (!main || !sub) return;
+    if (!confirm(`Delete "${sub}" from ${main}?\nTransactions using it will stay.`)) return;
+
+    expenseCategories[main] = (expenseCategories[main] || []).filter(s => s !== sub);
+    Object.keys(monthlyBudgets).forEach(k => {
+        if (monthlyBudgets[k]?.[main]) delete monthlyBudgets[k][main][sub];
+    });
+    delete itemIcons[`${main}:${sub}`];
+    _syncIncomeCats();
+    saveData();
+    _closeEditCatModal();
+    renderBudgets();
+}
+
+function _closeEditCatModal() {
+    document.getElementById('budget-edit-cat-modal').classList.add('hidden');
+    _becmOrigMain = null;
+    _becmOrigSub = null;
+    _becmSelectedIcon = null;
+    _catModalMain = null;
+    _catModalSub = null;
+}
+
+function _becmBackdrop(e) {
+    if (e.target === document.getElementById('budget-edit-cat-modal')) _closeEditCatModal();
+}
+
+/* ── Legacy compat ───────────────────────────────────────────── */
+function closeBudgetItemModal() {
+    _closePlanModal();
+    _closeRemainingModal();
+}
+
+function deleteBudgetItemFromModal() {
+    _deleteFromEditCatModal();
+}
+
+/* ══════════════════════════════════════════════
+   SPEED DIAL FAB
+══════════════════════════════════════════════ */
+let _fabOpen = false;
+
+function toggleFab() {
+    _fabOpen ? closeFab() : openFab();
+}
+
+function openFab() {
+    _fabOpen = true;
+    const icon = document.getElementById('fab-icon');
+    const opts = document.getElementById('fab-options');
+    const bg   = document.getElementById('fab-backdrop');
+    if (icon) icon.style.transform = 'rotate(45deg)';
+    if (opts) { opts.classList.remove('opacity-0','pointer-events-none','translate-y-3'); opts.classList.add('opacity-100','pointer-events-auto','translate-y-0'); }
+    if (bg)   bg.classList.remove('hidden');
+}
+
+function closeFab() {
+    _fabOpen = false;
+    const icon = document.getElementById('fab-icon');
+    const opts = document.getElementById('fab-options');
+    const bg   = document.getElementById('fab-backdrop');
+    if (icon) icon.style.transform = '';
+    if (opts) { opts.classList.add('opacity-0','pointer-events-none','translate-y-3'); opts.classList.remove('opacity-100','pointer-events-auto','translate-y-0'); }
+    if (bg)   bg.classList.add('hidden');
+}
+
+function fabAdd(type) {
+    closeFab();
+    showAddModal(type);
+}
+
+/* ══════════════════════════════════════════════
+   ADD / EDIT TRANSACTION MODAL
+══════════════════════════════════════════════ */
+function showAddModal(type) {
     document.getElementById('add-modal').classList.remove('hidden');
     document.getElementById('date').value = getCurrentDateEST();
     document.getElementById('amount').value = '';
     document.getElementById('desc').value = '';
     const excl = document.getElementById('tx-exclude');
     if (excl) excl.checked = false;
-    setType('expense');
+    setType(type || 'expense');
     updateExcludeUI();
 }
 
@@ -398,10 +484,8 @@ function updateExcludeUI() {
     const fields  = document.getElementById('expense-fields');
     const incRow  = document.getElementById('income-cat-row');
     const trfFields = document.getElementById('transfer-fields');
-    const typeBar = document.getElementById('type-toggle-bar');
     if (fields)  fields.style.opacity  = excl ? '0.3' : '';
     if (incRow)  incRow.style.opacity   = excl ? '0.3' : '';
-    if (typeBar) typeBar.style.opacity  = excl ? '0.3' : '';
     // Disable category interaction when excluded
     if (fields)  fields.querySelectorAll('select,input').forEach(function(el) { el.disabled = excl; });
     if (incRow)  incRow.querySelectorAll('select,input').forEach(function(el) { el.disabled = excl; });
@@ -419,9 +503,6 @@ function hideModal() {
 
 function setType(type) {
     currentType = type;
-    const expBtn    = document.getElementById('type-expense');
-    const incBtn    = document.getElementById('type-income');
-    const trfBtn    = document.getElementById('type-transfer');
     const expFields = document.getElementById('expense-fields');
     const incCatRow = document.getElementById('income-cat-row');
     const trfFields = document.getElementById('transfer-fields');
@@ -429,17 +510,9 @@ function setType(type) {
     const amtInput  = document.getElementById('amount');
     const amtPrefix = document.getElementById('amount-prefix');
     const saveBtn   = document.getElementById('save-transaction-btn');
+    const badge     = document.getElementById('modal-type-badge');
 
-    const BASE_BTN    = 'flex flex-col items-center gap-1 py-4 transition-colors ';
-    const EXP_ACTIVE  = BASE_BTN + 'bg-rose-500/20 text-rose-400';
-    const INC_ACTIVE  = BASE_BTN + 'bg-emerald-500/20 text-emerald-400';
-    const TRF_ACTIVE  = BASE_BTN + 'bg-sky-500/20 text-sky-400';
-    const INACTIVE    = BASE_BTN + 'text-zinc-500';
-
-    // Reset all
-    expBtn.className = INACTIVE;
-    incBtn.className = INACTIVE;
-    if (trfBtn) trfBtn.className = INACTIVE;
+    // Reset field visibility
     expFields.classList.add('hidden');
     incCatRow.classList.add('hidden');
     if (trfFields) trfFields.classList.add('hidden');
@@ -449,35 +522,35 @@ function setType(type) {
     if (exclWrap) exclWrap.classList.toggle('hidden', type === 'transfer');
 
     if (type === 'expense') {
-        expBtn.className = EXP_ACTIVE;
         expFields.classList.remove('hidden');
         amtInput.classList.remove('text-emerald-400','text-sky-400'); amtInput.classList.add('text-rose-400');
         amtPrefix.classList.remove('text-emerald-400','text-sky-400'); amtPrefix.classList.add('text-rose-400');
+        if (badge) { badge.textContent = 'Expense'; badge.className = 'text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-rose-500/15 text-rose-400'; }
         if (saveBtn) {
-            saveBtn.className = 'w-full bg-rose-500 hover:bg-rose-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
+            saveBtn.className = 'w-full bg-rose-500 hover:bg-rose-600 active:scale-[.98] text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
             saveBtn.textContent = 'Save Expense';
         }
         updateMainOptions();
         _populateExpenseAccountSelect();
     } else if (type === 'income') {
-        incBtn.className = INC_ACTIVE;
         incCatRow.classList.remove('hidden');
         amtInput.classList.remove('text-rose-400','text-sky-400'); amtInput.classList.add('text-emerald-400');
         amtPrefix.classList.remove('text-rose-400','text-sky-400'); amtPrefix.classList.add('text-emerald-400');
+        if (badge) { badge.textContent = 'Income'; badge.className = 'text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400'; }
         if (saveBtn) {
-            saveBtn.className = 'w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
+            saveBtn.className = 'w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[.98] text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
             saveBtn.textContent = 'Save Income';
         }
         incSelect.innerHTML = '';
         (expenseCategories['Income'] || incomeCats).forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; incSelect.appendChild(opt); });
         _populateIncomeAccountSelect();
     } else if (type === 'transfer') {
-        if (trfBtn) trfBtn.className = TRF_ACTIVE;
         if (trfFields) trfFields.classList.remove('hidden');
         amtInput.classList.remove('text-rose-400','text-emerald-400'); amtInput.classList.add('text-sky-400');
         amtPrefix.classList.remove('text-rose-400','text-emerald-400'); amtPrefix.classList.add('text-sky-400');
+        if (badge) { badge.textContent = 'Transfer'; badge.className = 'text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-sky-500/15 text-sky-400'; }
         if (saveBtn) {
-            saveBtn.className = 'w-full bg-sky-500 hover:bg-sky-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
+            saveBtn.className = 'w-full bg-sky-500 hover:bg-sky-600 active:scale-[.98] text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
             saveBtn.textContent = 'Save Transfer';
         }
         _populateTransferAccounts();
