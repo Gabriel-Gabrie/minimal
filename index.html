@@ -63,7 +63,7 @@
 
         <!-- Header -->
         <div class="px-6 pt-10 pb-6 border-b border-zinc-800 flex justify-between items-center">
-            <div>
+            <div onclick="switchTab(0)" class="cursor-pointer">
                 <h1 class="text-3xl font-semibold tracking-tighter">Minimal</h1>
                 <p class="text-emerald-400 text-sm italic">easy budgeting</p>
             </div>
@@ -341,8 +341,21 @@
         <!-- REPORTS -->
         <div id="screen-4" class="hidden pb-16 overflow-y-auto">
 
-            <!-- ── Segment control: Spending / Income / Surplus ── -->
-            <div class="px-4 pt-5 pb-2">
+            <!-- ── Hero summary stat ── -->
+            <div class="px-5 pt-5 mb-2">
+                <p id="rpt-hero-amount" class="text-3xl font-bold tracking-tight leading-none text-center">—</p>
+                <p id="rpt-hero-sub" class="text-xs text-zinc-500 text-center mt-1"></p>
+            </div>
+
+            <!-- ── Trend chart (interactive) ── -->
+            <div class="mx-4 bg-zinc-900 rounded-3xl overflow-hidden">
+                <div class="px-3 pt-3 pb-1" style="height:240px;position:relative">
+                    <canvas id="rpt-trend-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- ── Segment control + time range (below chart) ── -->
+            <div class="px-4 pt-3 pb-1">
                 <div class="flex bg-zinc-900 rounded-2xl p-1">
                     <button onclick="setReportView('spending')" id="rv-spending"
                         class="flex-1 py-2 rounded-xl text-xs font-semibold transition-all bg-zinc-700 text-white">Spending</button>
@@ -352,38 +365,14 @@
                         class="flex-1 py-2 rounded-xl text-xs font-semibold transition-all text-zinc-500">Surplus</button>
                 </div>
             </div>
-
-            <!-- ── Time range pills ── -->
-            <div class="flex justify-center gap-1.5 px-4 pt-1 pb-3">
+            <div class="flex justify-center gap-1.5 px-4 pt-2 pb-3">
                 <button onclick="setReportRange(3)"  id="rbtn-3"  class="px-3 py-1 rounded-full text-[11px] font-semibold transition-colors">3M</button>
                 <button onclick="setReportRange(6)"  id="rbtn-6"  class="px-3 py-1 rounded-full text-[11px] font-semibold transition-colors">6M</button>
                 <button onclick="setReportRange(12)" id="rbtn-12" class="px-3 py-1 rounded-full text-[11px] font-semibold transition-colors">12M</button>
             </div>
 
-            <!-- ── Hero summary stat ── -->
-            <div class="px-5 mb-2">
-                <p id="rpt-hero-amount" class="text-3xl font-bold tracking-tight leading-none text-center">—</p>
-                <p id="rpt-hero-sub" class="text-xs text-zinc-500 text-center mt-1"></p>
-            </div>
-
-            <!-- ── Trend chart ── -->
-            <div class="mx-4 bg-zinc-900 rounded-3xl overflow-hidden">
-                <div class="px-3 pt-3 pb-0" style="height:200px;position:relative">
-                    <canvas id="rpt-trend-chart"></canvas>
-                </div>
-            </div>
-
             <!-- ── 3-stat row ── -->
-            <div id="rpt-stats" class="grid grid-cols-3 gap-2 px-4 mt-3"></div>
-
-            <!-- ── Monthly breakdown list ── -->
-            <div class="px-4 mt-4 mb-1">
-                <div class="flex items-center gap-3 mb-2.5">
-                    <span class="text-[9px] font-black tracking-[.12em] text-zinc-600 uppercase shrink-0">Monthly</span>
-                    <div class="flex-1 h-px bg-zinc-800"></div>
-                </div>
-                <div id="rpt-month-list" class="space-y-2"></div>
-            </div>
+            <div id="rpt-stats" class="grid grid-cols-3 gap-2 px-4 mt-1"></div>
 
             <!-- ── Breakdown section ── -->
             <div class="mt-5 mb-2">
