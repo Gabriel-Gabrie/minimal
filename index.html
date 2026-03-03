@@ -227,7 +227,7 @@
                         Import Bank Transactions
                         <input type="file" accept=".csv,.ofx,.qfx" class="hidden" onchange="openBankImport(event)">
                     </label>
-                    <button onclick="showAddModal()"
+                    <button onclick="fabAdd('expense')"
                         class="w-full py-3.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-sm font-semibold text-zinc-300 transition-colors">
                         + Add Transaction
                     </button>
@@ -391,8 +391,28 @@
             </div>
         </div>
 
-        <!-- Floating Add -->
-        <button onclick="showAddModal()" class="fixed bottom-8 right-8 w-16 h-16 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center text-5xl shadow-2xl z-50">+</button>
+        <!-- Speed Dial FAB -->
+        <div id="fab-backdrop" class="hidden fixed inset-0 bg-black/40 z-40" onclick="closeFab()"></div>
+        <div class="fixed bottom-8 right-8 z-50 flex flex-col-reverse items-center gap-3">
+            <button id="fab-main" onclick="toggleFab()"
+                class="w-16 h-16 bg-emerald-500 hover:bg-emerald-600 rounded-full flex items-center justify-center shadow-2xl transition-transform duration-300">
+                <svg class="w-8 h-8 text-white transition-transform duration-300" id="fab-icon" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <div id="fab-options" class="flex flex-col items-center gap-2 opacity-0 pointer-events-none transition-all duration-200 translate-y-3">
+                <button onclick="fabAdd('transfer')" class="flex items-center gap-2">
+                    <span class="text-[11px] font-semibold text-zinc-300 bg-zinc-800 px-2.5 py-1 rounded-lg shadow">Transfer</span>
+                    <div class="w-12 h-12 rounded-full bg-sky-500 flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-sky-500/30">⇄</div>
+                </button>
+                <button onclick="fabAdd('income')" class="flex items-center gap-2">
+                    <span class="text-[11px] font-semibold text-zinc-300 bg-zinc-800 px-2.5 py-1 rounded-lg shadow">Income</span>
+                    <div class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-emerald-500/30">+</div>
+                </button>
+                <button onclick="fabAdd('expense')" class="flex items-center gap-2">
+                    <span class="text-[11px] font-semibold text-zinc-300 bg-zinc-800 px-2.5 py-1 rounded-lg shadow">Expense</span>
+                    <div class="w-12 h-12 rounded-full bg-rose-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg shadow-rose-500/30">&minus;</div>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- NEW TRANSACTION MODAL -->
@@ -407,125 +427,116 @@
                 </button>
             </div>
 
-            <!-- Expense / Income / Transfer toggle -->
-            <div class="grid grid-cols-3 mx-5 mt-5 rounded-2xl overflow-hidden bg-zinc-800" id="type-toggle-bar">
-                <button onclick="setType('expense')" id="type-expense"
-                        class="flex flex-col items-center gap-1 py-4 transition-colors">
-                    <span class="text-xl font-semibold leading-none">−</span>
-                    <span class="text-xs font-semibold tracking-widest uppercase">Expense</span>
-                </button>
-                <button onclick="setType('income')" id="type-income"
-                        class="flex flex-col items-center gap-1 py-4 transition-colors">
-                    <span class="text-xl font-semibold leading-none">+</span>
-                    <span class="text-xs font-semibold tracking-widest uppercase">Income</span>
-                </button>
-                <button onclick="setType('transfer')" id="type-transfer"
-                        class="flex flex-col items-center gap-1 py-4 transition-colors text-zinc-500">
-                    <span class="text-xl font-semibold leading-none">⇄</span>
-                    <span class="text-xs font-semibold tracking-widest uppercase">Transfer</span>
-                </button>
+            <!-- Type toggle (hidden — type set by speed dial, kept for edit mode) -->
+            <div class="hidden" id="type-toggle-bar">
+                <button id="type-expense"></button>
+                <button id="type-income"></button>
+                <button id="type-transfer"></button>
+            </div>
+
+            <!-- Type label -->
+            <div class="flex justify-center pt-3 pb-1">
+                <span id="modal-type-badge" class="text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-rose-500/15 text-rose-400">Expense</span>
             </div>
 
             <!-- Hero amount -->
-            <div class="flex items-baseline justify-center gap-1 pt-7 pb-6 px-6">
-                <span id="amount-prefix" class="text-4xl font-semibold text-rose-400 select-none">$</span>
+            <div class="flex items-baseline justify-center gap-1 pt-3 pb-4 px-6">
+                <span id="amount-prefix" class="text-3xl font-semibold text-rose-400 select-none">$</span>
                 <input id="amount" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
-                       class="text-6xl font-semibold tracking-tighter bg-transparent text-rose-400 text-center focus:outline-none placeholder-zinc-800 w-52 transition-colors">
+                       class="text-5xl font-semibold tracking-tighter bg-transparent text-rose-400 text-center focus:outline-none placeholder-zinc-800 w-48 transition-colors">
             </div>
 
-            <!-- Grouped fields card -->
-            <div class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-3">
+            <!-- Inline fields card -->
+            <div class="mx-5 rounded-2xl overflow-hidden bg-zinc-800/60 mb-2">
 
                 <!-- Date -->
-                <div class="px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Date</div>
+                <div class="flex items-center justify-between px-4 py-3">
+                    <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Date</span>
                     <input id="date" type="date"
-                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none">
+                           class="bg-transparent text-sm text-zinc-100 focus:outline-none text-right">
                 </div>
 
                 <!-- Expense fields -->
                 <div id="expense-fields">
-                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Section</div>
+                    <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
+                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Section</span>
                         <select id="main-cat" onchange="updateSubOptions()"
-                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                                class="bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer text-right flex-1 min-w-0 ml-4"></select>
                     </div>
-                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Category</div>
+                    <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
+                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Category</span>
                         <select id="sub-cat"
-                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                                class="bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer text-right flex-1 min-w-0 ml-4"></select>
                     </div>
-                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account <span class="text-zinc-700 normal-case tracking-normal font-normal">(optional)</span></div>
+                    <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
+                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Account</span>
                         <select id="expense-account"
-                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                                class="bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer text-right flex-1 min-w-0 ml-4"></select>
                     </div>
                 </div>
 
                 <!-- Income category -->
                 <div id="income-cat-row" class="hidden">
-                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Income Type</div>
+                    <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
+                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Type</span>
                         <select id="income-cat"
-                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                                class="bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer text-right flex-1 min-w-0 ml-4"></select>
                     </div>
-                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Account <span class="text-zinc-700 normal-case tracking-normal font-normal">(optional)</span></div>
+                    <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
+                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Account</span>
                         <select id="income-account" onchange="_onIncomeAccountChange()"
-                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                                class="bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer text-right flex-1 min-w-0 ml-4"></select>
                     </div>
                 </div>
 
                 <!-- Transfer fields -->
                 <div id="transfer-fields" class="hidden">
-                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">From Account</div>
+                    <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
+                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">From</span>
                         <select id="transfer-from"
-                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                                class="bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer text-right flex-1 min-w-0 ml-4"></select>
                     </div>
-                    <div class="border-t border-zinc-700/50 px-5 pt-4 pb-3">
-                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">To Account</div>
+                    <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
+                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">To</span>
                         <select id="transfer-to"
-                                class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer"></select>
+                                class="bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer text-right flex-1 min-w-0 ml-4"></select>
                     </div>
-                    <div id="transfer-budget-info" class="hidden px-5 pb-3">
+                    <div id="transfer-budget-info" class="hidden px-4 pb-2">
                         <div class="text-[10px] text-zinc-600 leading-relaxed"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Note -->
-            <div class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-6">
-                <div class="px-5 pt-4 pb-3">
-                    <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-1.5">Note</div>
-                    <input id="desc" type="text" placeholder="Optional description"
-                           class="w-full bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600">
+                <!-- Note (inline) -->
+                <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
+                    <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Note</span>
+                    <input id="desc" type="text" placeholder="Optional"
+                           class="bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600 text-right flex-1 min-w-0 ml-4">
                 </div>
             </div>
 
             <!-- Exclude toggle -->
-            <div id="exclude-toggle-wrap" class="mx-5 rounded-3xl overflow-hidden bg-zinc-800/60 mb-6">
-                <label class="flex items-center justify-between px-5 py-4 cursor-pointer">
+            <div id="exclude-toggle-wrap" class="mx-5 rounded-2xl overflow-hidden bg-zinc-800/60 mb-4 mt-2">
+                <label class="flex items-center justify-between px-4 py-3 cursor-pointer">
                     <div>
-                        <div class="text-[10px] font-semibold tracking-widest text-zinc-500 uppercase mb-0.5">Exclude from Budget &amp; Reports</div>
-                        <div class="text-[11px] text-zinc-600">Saved to history but not counted anywhere</div>
+                        <div class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase">Exclude</div>
+                        <div class="text-[10px] text-zinc-600">Not counted in budget or reports</div>
                     </div>
                     <div class="relative flex-none ml-3">
                         <input type="checkbox" id="tx-exclude" class="sr-only peer" onchange="updateExcludeUI()">
-                        <div class="w-11 h-6 bg-zinc-700 rounded-full peer peer-checked:bg-emerald-500 transition-colors"></div>
-                        <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+                        <div class="w-10 h-5.5 bg-zinc-700 rounded-full peer peer-checked:bg-emerald-500 transition-colors" style="height:22px"></div>
+                        <div class="absolute top-0.5 left-0.5 w-[18px] h-[18px] bg-white rounded-full shadow transition-transform peer-checked:translate-x-[18px]"></div>
                     </div>
                 </label>
             </div>
 
             <!-- Actions -->
-            <div class="px-5 pb-10 space-y-2">
+            <div class="px-5 pb-8 space-y-2">
                 <button onclick="addTransaction()" id="save-transaction-btn"
-                        class="w-full bg-rose-500 hover:bg-rose-600 py-4 rounded-3xl font-semibold text-base transition-colors">
+                        class="w-full bg-rose-500 hover:bg-rose-600 active:scale-[.98] text-white font-semibold py-3.5 rounded-2xl text-sm transition-all">
                     Save Expense
                 </button>
                 <button onclick="hideModal()"
-                        class="w-full py-3 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+                        class="w-full py-2 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
                     Cancel
                 </button>
             </div>

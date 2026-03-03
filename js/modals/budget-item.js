@@ -382,14 +382,51 @@ function deleteBudgetItemFromModal() {
     renderBudgets();
 }
 
-function showAddModal() {
+/* ══════════════════════════════════════════════
+   SPEED DIAL FAB
+══════════════════════════════════════════════ */
+let _fabOpen = false;
+
+function toggleFab() {
+    _fabOpen ? closeFab() : openFab();
+}
+
+function openFab() {
+    _fabOpen = true;
+    const icon = document.getElementById('fab-icon');
+    const opts = document.getElementById('fab-options');
+    const bg   = document.getElementById('fab-backdrop');
+    if (icon) icon.style.transform = 'rotate(45deg)';
+    if (opts) { opts.classList.remove('opacity-0','pointer-events-none','translate-y-3'); opts.classList.add('opacity-100','pointer-events-auto','translate-y-0'); }
+    if (bg)   bg.classList.remove('hidden');
+}
+
+function closeFab() {
+    _fabOpen = false;
+    const icon = document.getElementById('fab-icon');
+    const opts = document.getElementById('fab-options');
+    const bg   = document.getElementById('fab-backdrop');
+    if (icon) icon.style.transform = '';
+    if (opts) { opts.classList.add('opacity-0','pointer-events-none','translate-y-3'); opts.classList.remove('opacity-100','pointer-events-auto','translate-y-0'); }
+    if (bg)   bg.classList.add('hidden');
+}
+
+function fabAdd(type) {
+    closeFab();
+    showAddModal(type);
+}
+
+/* ══════════════════════════════════════════════
+   ADD / EDIT TRANSACTION MODAL
+══════════════════════════════════════════════ */
+function showAddModal(type) {
     document.getElementById('add-modal').classList.remove('hidden');
     document.getElementById('date').value = getCurrentDateEST();
     document.getElementById('amount').value = '';
     document.getElementById('desc').value = '';
     const excl = document.getElementById('tx-exclude');
     if (excl) excl.checked = false;
-    setType('expense');
+    setType(type || 'expense');
     updateExcludeUI();
 }
 
@@ -398,10 +435,8 @@ function updateExcludeUI() {
     const fields  = document.getElementById('expense-fields');
     const incRow  = document.getElementById('income-cat-row');
     const trfFields = document.getElementById('transfer-fields');
-    const typeBar = document.getElementById('type-toggle-bar');
     if (fields)  fields.style.opacity  = excl ? '0.3' : '';
     if (incRow)  incRow.style.opacity   = excl ? '0.3' : '';
-    if (typeBar) typeBar.style.opacity  = excl ? '0.3' : '';
     // Disable category interaction when excluded
     if (fields)  fields.querySelectorAll('select,input').forEach(function(el) { el.disabled = excl; });
     if (incRow)  incRow.querySelectorAll('select,input').forEach(function(el) { el.disabled = excl; });
@@ -419,9 +454,6 @@ function hideModal() {
 
 function setType(type) {
     currentType = type;
-    const expBtn    = document.getElementById('type-expense');
-    const incBtn    = document.getElementById('type-income');
-    const trfBtn    = document.getElementById('type-transfer');
     const expFields = document.getElementById('expense-fields');
     const incCatRow = document.getElementById('income-cat-row');
     const trfFields = document.getElementById('transfer-fields');
@@ -429,17 +461,9 @@ function setType(type) {
     const amtInput  = document.getElementById('amount');
     const amtPrefix = document.getElementById('amount-prefix');
     const saveBtn   = document.getElementById('save-transaction-btn');
+    const badge     = document.getElementById('modal-type-badge');
 
-    const BASE_BTN    = 'flex flex-col items-center gap-1 py-4 transition-colors ';
-    const EXP_ACTIVE  = BASE_BTN + 'bg-rose-500/20 text-rose-400';
-    const INC_ACTIVE  = BASE_BTN + 'bg-emerald-500/20 text-emerald-400';
-    const TRF_ACTIVE  = BASE_BTN + 'bg-sky-500/20 text-sky-400';
-    const INACTIVE    = BASE_BTN + 'text-zinc-500';
-
-    // Reset all
-    expBtn.className = INACTIVE;
-    incBtn.className = INACTIVE;
-    if (trfBtn) trfBtn.className = INACTIVE;
+    // Reset field visibility
     expFields.classList.add('hidden');
     incCatRow.classList.add('hidden');
     if (trfFields) trfFields.classList.add('hidden');
@@ -449,35 +473,35 @@ function setType(type) {
     if (exclWrap) exclWrap.classList.toggle('hidden', type === 'transfer');
 
     if (type === 'expense') {
-        expBtn.className = EXP_ACTIVE;
         expFields.classList.remove('hidden');
         amtInput.classList.remove('text-emerald-400','text-sky-400'); amtInput.classList.add('text-rose-400');
         amtPrefix.classList.remove('text-emerald-400','text-sky-400'); amtPrefix.classList.add('text-rose-400');
+        if (badge) { badge.textContent = 'Expense'; badge.className = 'text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-rose-500/15 text-rose-400'; }
         if (saveBtn) {
-            saveBtn.className = 'w-full bg-rose-500 hover:bg-rose-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
+            saveBtn.className = 'w-full bg-rose-500 hover:bg-rose-600 active:scale-[.98] text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
             saveBtn.textContent = 'Save Expense';
         }
         updateMainOptions();
         _populateExpenseAccountSelect();
     } else if (type === 'income') {
-        incBtn.className = INC_ACTIVE;
         incCatRow.classList.remove('hidden');
         amtInput.classList.remove('text-rose-400','text-sky-400'); amtInput.classList.add('text-emerald-400');
         amtPrefix.classList.remove('text-rose-400','text-sky-400'); amtPrefix.classList.add('text-emerald-400');
+        if (badge) { badge.textContent = 'Income'; badge.className = 'text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400'; }
         if (saveBtn) {
-            saveBtn.className = 'w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
+            saveBtn.className = 'w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[.98] text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
             saveBtn.textContent = 'Save Income';
         }
         incSelect.innerHTML = '';
         (expenseCategories['Income'] || incomeCats).forEach(c => { const opt = document.createElement('option'); opt.value = c; opt.textContent = c; incSelect.appendChild(opt); });
         _populateIncomeAccountSelect();
     } else if (type === 'transfer') {
-        if (trfBtn) trfBtn.className = TRF_ACTIVE;
         if (trfFields) trfFields.classList.remove('hidden');
         amtInput.classList.remove('text-rose-400','text-emerald-400'); amtInput.classList.add('text-sky-400');
         amtPrefix.classList.remove('text-rose-400','text-emerald-400'); amtPrefix.classList.add('text-sky-400');
+        if (badge) { badge.textContent = 'Transfer'; badge.className = 'text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-sky-500/15 text-sky-400'; }
         if (saveBtn) {
-            saveBtn.className = 'w-full bg-sky-500 hover:bg-sky-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
+            saveBtn.className = 'w-full bg-sky-500 hover:bg-sky-600 active:scale-[.98] text-white font-semibold py-3.5 rounded-2xl text-sm transition-all';
             saveBtn.textContent = 'Save Transfer';
         }
         _populateTransferAccounts();
