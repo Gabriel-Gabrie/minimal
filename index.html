@@ -193,24 +193,24 @@
         <!-- TRANSACTIONS -->
         <div id="screen-1" class="hidden flex flex-col" style="min-height:0">
 
-            <!-- Search + filter + sort (hidden when month is empty) -->
-            <div id="tx-controls" class="shrink-0 pt-4">
-                <div class="px-5 pb-2 flex items-center gap-2">
-                    <div class="flex-1 flex items-center gap-2 bg-zinc-900 rounded-2xl px-4 py-3 ring-1 ring-transparent focus-within:ring-emerald-500 transition-all min-w-0">
-                        <svg class="w-4 h-4 text-zinc-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <!-- Search + filter + sort (compact single row) -->
+            <div id="tx-controls" class="shrink-0 px-5 pt-3 pb-1">
+                <div class="flex items-center gap-1.5">
+                    <div class="flex-1 flex items-center gap-1.5 bg-zinc-900 rounded-xl px-3 py-2 ring-1 ring-transparent focus-within:ring-emerald-500 transition-all min-w-0">
+                        <svg class="w-3.5 h-3.5 text-zinc-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                         <input id="search" type="text" placeholder="Search…"
-                               class="flex-1 bg-transparent text-sm focus:outline-none placeholder-zinc-600 min-w-0"
+                               class="flex-1 bg-transparent text-xs focus:outline-none placeholder-zinc-600 min-w-0"
                                oninput="renderTransactions()">
-                        <button id="search-clear" onclick="clearTxSearch()" class="hidden w-5 h-5 rounded-full bg-zinc-700 text-zinc-300 text-xs flex items-center justify-center leading-none shrink-0">×</button>
+                        <button id="search-clear" onclick="clearTxSearch()" class="hidden w-4 h-4 rounded-full bg-zinc-700 text-zinc-300 text-[10px] flex items-center justify-center leading-none shrink-0">×</button>
                     </div>
                     <button onclick="cycleTxFilter()" id="tx-filter-btn"
-                        class="shrink-0 flex items-center gap-1 px-3 py-3 rounded-2xl bg-zinc-900 text-zinc-400 text-xs font-semibold transition-colors hover:bg-zinc-800">
-                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                        class="shrink-0 flex items-center gap-1 px-2.5 py-2 rounded-xl bg-zinc-900 text-zinc-400 text-xs font-semibold transition-colors hover:bg-zinc-800">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                         <span id="tx-filter-label">All</span>
                     </button>
                     <button onclick="toggleTxSort()" id="tx-sort-btn"
-                        class="shrink-0 flex items-center gap-1 px-3 py-3 rounded-2xl bg-zinc-900 text-zinc-400 text-xs font-semibold transition-colors hover:bg-zinc-800">
-                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                        class="shrink-0 flex items-center gap-1 px-2.5 py-2 rounded-xl bg-zinc-900 text-zinc-400 text-xs font-semibold transition-colors hover:bg-zinc-800">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                         <span id="tx-sort-label">Date</span>
                     </button>
                 </div>
@@ -533,6 +533,20 @@
     </div>
 
 
+
+    <!-- TRANSACTION SUMMARY MODAL -->
+    <div id="tx-summary-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50" onclick="if(event.target===this)hideTxSummary()">
+        <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl max-h-[85vh] overflow-auto">
+            <!-- Drag handle + close -->
+            <div class="flex justify-center pt-3 pb-0 relative">
+                <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
+                <button onclick="hideTxSummary()" class="absolute right-3 top-2 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors" title="Close">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="tx-summary-content" class="px-5 pb-8"></div>
+        </div>
+    </div>
 
     <!-- BUDGET CATEGORY MODAL (redesigned like wallet detail modal) -->
     <div id="budget-item-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end z-50" onclick="_bimBackdrop(event)">
