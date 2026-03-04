@@ -59,6 +59,14 @@ body { font-family: 'Inter', system_ui, sans-serif; }
     width: 6px;
 }
 .tut-dot.active { background: #10b981; width: 22px; }
+.tut-step-badge {
+    display: inline-block;
+    font-size: 9px; font-weight: 800;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: #10b981; background: rgba(16,185,129,.10);
+    padding: 4px 12px; border-radius: 20px;
+    margin-bottom: 8px;
+}
 /* Budget over-limit bar pulse */
 @keyframes _budgetOver {
     0%,100% { opacity:1; }
