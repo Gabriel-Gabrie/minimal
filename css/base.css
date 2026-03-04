@@ -29,43 +29,54 @@ body { font-family: 'Inter', system_ui, sans-serif; }
 @keyframes _tabCue {
     0%,100% { transform:translateY(-50%) translateX(0);   opacity:.7; }
     50%      { transform:translateY(-50%) translateX(3px); opacity:1; } }
-/* ── Tutorial ───────────────────────────────── */
-#tut-modal {
-    background: #09090b;
-    z-index: 200;
+/* ── Tutorial (interactive walk-through) ────── */
+#tut-overlay {
+    transition: clip-path .45s cubic-bezier(.4,0,.2,1);
 }
-/* Slide track — all slides sit side-by-side */
-#tut-track {
-    display: flex;
-    height: 100%;
-    will-change: transform;
-    transition: transform .38s cubic-bezier(.32,.72,0,1);
+#tut-ring {
+    position: fixed;
+    z-index: 10000;
+    border-radius: 14px;
+    border: 2px solid rgba(16,185,129,.5);
+    box-shadow: 0 0 0 4px rgba(16,185,129,.08), inset 0 0 12px rgba(16,185,129,.06);
+    pointer-events: none;
+    transition: all .4s cubic-bezier(.4,0,.2,1);
 }
-#tut-track.dragging { transition: none; }
-.tut-slide {
-    min-width: 100%;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 0 2rem 1rem;
-    text-align: center;
+#tut-tip {
+    background: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 16px;
+    padding: 16px 20px;
+    max-width: 260px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
 }
-.tut-dot {
-    height: 6px; border-radius: 3px;
-    background: #3f3f46;
-    transition: background .25s, width .25s cubic-bezier(.34,1.56,.64,1);
-    width: 6px;
+/* Tooltip arrows */
+.tut-arrow {
+    position: absolute;
+    width: 12px; height: 12px;
+    background: #18181b;
+    border: 1px solid #27272a;
+    pointer-events: none;
 }
-.tut-dot.active { background: #10b981; width: 22px; }
-.tut-step-badge {
-    display: inline-block;
-    font-size: 9px; font-weight: 800;
-    letter-spacing: .16em; text-transform: uppercase;
-    color: #10b981; background: rgba(16,185,129,.10);
-    padding: 4px 12px; border-radius: 20px;
-    margin-bottom: 8px;
+.tut-arrow-up {
+    top: -7px; left: 24px;
+    transform: rotate(45deg);
+    border-bottom: none; border-right: none;
+}
+.tut-arrow-down {
+    bottom: -7px; left: 24px;
+    transform: rotate(45deg);
+    border-top: none; border-left: none;
+}
+.tut-arrow-right {
+    right: -7px; top: 20px;
+    transform: rotate(45deg);
+    border-bottom: none; border-left: none;
+}
+.tut-arrow-left {
+    left: -7px; top: 20px;
+    transform: rotate(45deg);
+    border-top: none; border-right: none;
 }
 /* Budget over-limit bar pulse */
 @keyframes _budgetOver {
@@ -119,4 +130,4 @@ select { background-image: none; }
 /* ── Theme transition ── */
 *, *::before, *::after { transition-property:background-color,border-color,color; transition-duration:.18s; }
 /* Exclude animation-dependent elements */
-.progress-bar, .tut-dot, .tog-track, .tog-track::after, canvas { transition-duration:0s !important; }
+.progress-bar, .tog-track, .tog-track::after, canvas { transition-duration:0s !important; }
