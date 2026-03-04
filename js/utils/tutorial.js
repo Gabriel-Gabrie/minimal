@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════
    TUTORIAL
 ══════════════════════════════════════════════ */
-const TUT_TOTAL = 6;
+const TUT_TOTAL = 8;
 let _tutIdx = 0;
 
 function tutOpen() {
@@ -50,6 +50,18 @@ function _tutSetTrack(idx, animate) {
 }
 
 function _tutRender() {
+    // Step label (top-left)
+    const stepLabel = document.getElementById('tut-step-label');
+    if (stepLabel) {
+        if (_tutIdx === 0) {
+            stepLabel.textContent = '';
+        } else if (_tutIdx === TUT_TOTAL - 1) {
+            stepLabel.textContent = '';
+        } else {
+            stepLabel.textContent = `Step ${_tutIdx} of ${TUT_TOTAL - 2}`;
+        }
+    }
+
     // Dots
     const dots = document.getElementById('tut-dots-row');
     if (dots) {
