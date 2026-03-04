@@ -4,8 +4,9 @@ html.light { color-scheme: light; }
 html.light body,
 html.light #app,
 html.light [id^="screen-"],
-html.light .fixed.inset-0:not(#tut-overlay):not(#auth-screen) { background-color: #f4f4f5 !important; }
+html.light .fixed.inset-0:not(#tut-modal):not(#auth-screen) { background-color: #f4f4f5 !important; }
 html.light #auth-screen { background-color: #f4f4f5 !important; }
+html.light #tut-modal   { background-color: #09090b !important; }
 /* Zinc scale remap */
 html.light .bg-zinc-950 { background-color: #f4f4f5 !important; }
 html.light .bg-zinc-900 { background-color: #ffffff !important; }

@@ -993,55 +993,239 @@
 
 
     <!-- ═══════════════════════════════════════
-         TUTORIAL — Interactive Walk-through
+         TUTORIAL MODAL
     ═══════════════════════════════════════ -->
-    <div id="tut-overlay" class="hidden fixed inset-0 select-none"
-         style="z-index:9999; background:rgba(0,0,0,.82)">
+    <div id="tut-modal" class="hidden fixed inset-0 flex flex-col select-none" style="z-index:200">
 
-        <!-- Highlight ring around spotlight target -->
-        <div id="tut-ring" class="hidden"></div>
-
-        <!-- Tooltip (near spotlight target) -->
-        <div id="tut-tip" class="hidden" style="position:fixed; z-index:10001; pointer-events:auto">
-            <div id="tut-tip-arrow" class="tut-arrow"></div>
-            <p id="tut-tip-title" class="font-semibold text-white text-[15px] tracking-tight mb-1"></p>
-            <p id="tut-tip-body" class="text-zinc-400 text-[13px] leading-relaxed" style="white-space:pre-line"></p>
-            <div class="flex items-center justify-between mt-4">
-                <span id="tut-tip-step" class="text-[10px] text-zinc-600 font-bold tracking-wider"></span>
-                <button id="tut-tip-btn" onclick="_tutTipBtn()"
-                    class="hidden bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-semibold px-5 py-2 rounded-full transition-all">
-                    Next
-                </button>
-            </div>
+        <!-- Top bar: step label + skip -->
+        <div class="flex items-center justify-between px-6 shrink-0" style="padding-top: env(safe-area-inset-top, 48px); padding-top: max(env(safe-area-inset-top,0px), 48px)">
+            <span id="tut-step-label" class="text-[10px] font-black tracking-[.18em] text-zinc-700 uppercase"></span>
+            <button onclick="tutSkip()" class="text-zinc-600 text-xs font-semibold tracking-widest uppercase hover:text-zinc-300 transition-colors py-2">Skip</button>
         </div>
 
-        <!-- Center modal card (welcome / done) -->
-        <div id="tut-card" class="hidden fixed inset-0 flex items-center justify-center px-8" style="z-index:10001">
-            <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 text-center" style="max-width:320px">
-                <div id="tut-card-icon" class="mb-5">
-                    <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
-                        <circle cx="36" cy="36" r="32" stroke="rgba(16,185,129,.15)" stroke-width="1"/>
-                        <circle cx="36" cy="36" r="22" stroke="rgba(16,185,129,.25)" stroke-width="1"/>
-                        <path d="M36 50 Q36 34 26 26 Q36 25 46 34 Q46 44 36 50Z" fill="rgba(16,185,129,.5)"/>
-                        <path d="M36 50 Q36 34 46 26 Q49 36 42 45Z" fill="rgba(16,185,129,.3)"/>
-                        <line x1="36" y1="50" x2="36" y2="58" stroke="#10b981" stroke-width="2" stroke-linecap="round"/>
+        <!-- Slides -->
+        <div class="flex-1 relative overflow-hidden" id="tut-slide-wrap">
+        <div id="tut-track">
+
+            <!-- ── SLIDE 0 · Welcome ──────────────────── -->
+            <div class="tut-slide active" id="tut-0">
+                <div class="mb-10">
+                    <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
+                        <circle cx="70" cy="70" r="64" stroke="rgba(16,185,129,.10)" stroke-width="1"/>
+                        <circle cx="70" cy="70" r="44" stroke="rgba(16,185,129,.18)" stroke-width="1"/>
+                        <circle cx="70" cy="70" r="24" stroke="rgba(16,185,129,.30)" stroke-width="1"/>
+                        <!-- Sprout -->
+                        <path d="M70 96 Q70 68 50 52 Q70 50 90 68 Q90 88 70 96Z" fill="rgba(16,185,129,.55)"/>
+                        <path d="M70 96 Q70 68 90 52 Q96 72 82 88Z" fill="rgba(16,185,129,.30)"/>
+                        <line x1="70" y1="96" x2="70" y2="112" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- Sparkles -->
+                        <line x1="108" y1="38" x2="108" y2="30" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+                        <line x1="104" y1="34" x2="112" y2="34" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+                        <line x1="32" y1="104" x2="32" y2="98" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+                        <line x1="29" y1="101" x2="35" y2="101" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" opacity=".35"/>
+                        <circle cx="38" cy="42" r="2.5" fill="#10b981" opacity=".3"/>
+                        <circle cx="104" cy="98" r="2" fill="#10b981" opacity=".3"/>
                     </svg>
                 </div>
-                <h2 id="tut-card-title" class="text-2xl font-semibold tracking-tight text-white mb-3"></h2>
-                <p id="tut-card-body" class="text-zinc-400 text-sm leading-relaxed mb-6" style="white-space:pre-line"></p>
-                <button id="tut-card-btn" onclick="_tutCardBtn()"
-                    class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold px-10 py-3.5 rounded-full transition-all text-sm"
-                    style="box-shadow:0 6px 24px rgba(16,185,129,.25)">
-                </button>
+                <p class="text-[10px] font-black tracking-[.22em] text-emerald-500 uppercase mb-3">Welcome to</p>
+                <h1 class="text-5xl font-semibold tracking-tighter text-white mb-4">Minimal</h1>
+                <p class="text-zinc-400 text-base leading-relaxed" style="max-width:17rem">
+                    A robust yet easy budgeting tool.
+                </p>
+                <p class="text-zinc-700 text-xs mt-10 tracking-widest uppercase">Tap → to begin</p>
             </div>
+
+            <!-- ── SLIDE 1 · Overview ─────────────────── -->
+            <div class="tut-slide" id="tut-1">
+                <svg width="220" height="148" viewBox="0 0 220 148" fill="none" class="mb-8">
+                    <!-- Card bg -->
+                    <rect x="20" y="8" width="180" height="132" rx="20" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+                    <!-- Net balance -->
+                    <text x="110" y="40" text-anchor="middle" font-size="10" fill="#52525b" font-family="system-ui,sans-serif" font-weight="700" letter-spacing="2.5">NET BALANCE</text>
+                    <text x="110" y="68" text-anchor="middle" font-size="28" fill="#10b981" font-family="system-ui,sans-serif" font-weight="600">$2,840</text>
+                    <!-- Ratio bar -->
+                    <rect x="60" y="78" width="100" height="5" rx="2.5" fill="#27272a"/>
+                    <rect x="60" y="78" width="67" height="5" rx="2.5" fill="#10b981"/>
+                    <!-- Income pill -->
+                    <rect x="34" y="95" width="70" height="34" rx="10" fill="#27272a"/>
+                    <text x="69" y="110" text-anchor="middle" font-size="7.5" fill="#10b981" font-family="system-ui,sans-serif" font-weight="700" letter-spacing="1.5">INCOME</text>
+                    <text x="69" y="123" text-anchor="middle" font-size="11" fill="#f4f4f5" font-family="system-ui,sans-serif" font-weight="600">$4,200</text>
+                    <!-- Expense pill -->
+                    <rect x="116" y="95" width="70" height="34" rx="10" fill="#27272a"/>
+                    <text x="151" y="110" text-anchor="middle" font-size="7.5" fill="#f43f5e" font-family="system-ui,sans-serif" font-weight="700" letter-spacing="1.5">SPENT</text>
+                    <text x="151" y="123" text-anchor="middle" font-size="11" fill="#f4f4f5" font-family="system-ui,sans-serif" font-weight="600">$1,360</text>
+                    <!-- Glow -->
+                    <ellipse cx="110" cy="65" rx="48" ry="14" fill="rgba(16,185,129,.06)"/>
+                </svg>
+                <h2 class="text-2xl font-semibold tracking-tight text-white mb-3">Overview</h2>
+                <p class="text-zinc-400 text-sm leading-relaxed" style="max-width:17rem">Your financial pulse!<br>Income vs Expenses at a glance.</p>
+            </div>
+
+            <!-- ── SLIDE 2 · Transactions ─────────────── -->
+            <div class="tut-slide" id="tut-2">
+                <svg width="220" height="158" viewBox="0 0 220 158" fill="none" class="mb-8">
+                    <!-- Row 1 — income -->
+                    <rect x="20" y="8" width="180" height="40" rx="12" fill="#18181b"/>
+                    <rect x="30" y="17" width="3.5" height="22" rx="1.75" fill="#10b981"/>
+                    <text x="44" y="31" font-size="9" fill="#f4f4f5" font-family="system-ui,sans-serif" font-weight="600">Salary</text>
+                    <text x="44" y="42" font-size="8" fill="#52525b" font-family="system-ui,sans-serif">Freelance</text>
+                    <text x="192" y="34" text-anchor="end" font-size="10" fill="#10b981" font-family="system-ui,sans-serif" font-weight="600">+$3,000</text>
+                    <!-- Row 2 — expense -->
+                    <rect x="20" y="56" width="180" height="40" rx="12" fill="#18181b"/>
+                    <rect x="30" y="65" width="3.5" height="22" rx="1.75" fill="#f43f5e"/>
+                    <text x="44" y="79" font-size="9" fill="#f4f4f5" font-family="system-ui,sans-serif" font-weight="600">Groceries</text>
+                    <text x="44" y="90" font-size="8" fill="#52525b" font-family="system-ui,sans-serif">Food · Supermarket</text>
+                    <text x="192" y="82" text-anchor="end" font-size="10" fill="#f43f5e" font-family="system-ui,sans-serif" font-weight="600">−$84</text>
+                    <!-- Row 3 — swiped to reveal delete -->
+                    <rect x="20" y="104" width="180" height="40" rx="12" fill="#ef4444"/>
+                    <!-- trash icon in red zone -->
+                    <line x1="175" y1="120" x2="195" y2="120" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M177 120 l.8 10h12l.8-10" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    <path d="M179.5 120v-2.5h9v2.5" stroke="white" stroke-width="1.5" fill="none"/>
+                    <!-- content shifted left -->
+                    <rect x="20" y="104" width="146" height="40" rx="12" fill="#18181b"/>
+                    <rect x="30" y="113" width="3.5" height="22" rx="1.75" fill="#f43f5e"/>
+                    <text x="44" y="127" font-size="9" fill="#f4f4f5" font-family="system-ui,sans-serif" font-weight="600">Netflix</text>
+                    <text x="157" y="130" text-anchor="end" font-size="10" fill="#f43f5e" font-family="system-ui,sans-serif" font-weight="600">−$17</text>
+                    <!-- Swipe arrow -->
+                    <path d="M30 152 l-10 0 m0 0 l5-5 m-5 5 l5 5" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>
+                    <text x="28" y="156" font-size="7" fill="#3f3f46" font-family="system-ui,sans-serif">swipe to delete · tap to edit</text>
+                </svg>
+                <h2 class="text-2xl font-semibold tracking-tight text-white mb-3">Transactions</h2>
+                <p class="text-zinc-400 text-sm leading-relaxed" style="max-width:17rem">Tap <span class="font-bold text-white inline-flex w-5 h-5 bg-emerald-500 rounded-full items-center justify-center text-base leading-none">+</span> to log income or an expense.<br><strong class="text-zinc-300 font-medium">Tap</strong> any row to edit it.<br><strong class="text-zinc-300 font-medium">Swipe left</strong> to delete.</p>
+            </div>
+
+            <!-- ── SLIDE 3 · Budgets ──────────────────── -->
+            <div class="tut-slide" id="tut-3">
+                <svg width="220" height="170" viewBox="0 0 220 170" fill="none" class="mb-8">
+                    <rect x="20" y="6" width="180" height="158" rx="20" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+                    <!-- Category header -->
+                    <text x="46" y="44" font-size="20" font-family="system-ui">🍔</text>
+                    <text x="72" y="38" font-size="11" fill="#f4f4f5" font-family="system-ui,sans-serif" font-weight="600">Food</text>
+                    <text x="72" y="52" font-size="8.5" fill="#52525b" font-family="system-ui,sans-serif">$210 / $400</text>
+                    <rect x="182" y="29" width="0" height="0"/>
+                    <!-- Healthy badge -->
+                    <rect x="164" y="27" width="28" height="14" rx="7" fill="rgba(16,185,129,.15)"/>
+                    <text x="178" y="38" text-anchor="middle" font-size="7.5" fill="#10b981" font-family="system-ui,sans-serif" font-weight="700">52%</text>
+                    <!-- Main bar -->
+                    <rect x="36" y="60" width="148" height="4" rx="2" fill="#27272a"/>
+                    <rect x="36" y="60" width="77" height="4" rx="2" fill="#10b981"/>
+                    <!-- Sub-item 1: ok -->
+                    <text x="38" y="84" font-size="8.5" fill="#d4d4d8" font-family="system-ui,sans-serif">Groceries</text>
+                    <text x="182" y="84" text-anchor="end" font-size="8" fill="#52525b" font-family="system-ui,sans-serif">$120 / $250</text>
+                    <rect x="38" y="89" width="144" height="2.5" rx="1.25" fill="#27272a"/>
+                    <rect x="38" y="89" width="69" height="2.5" rx="1.25" fill="#10b981"/>
+                    <!-- Sub-item 2: over -->
+                    <text x="38" y="114" font-size="8.5" fill="#d4d4d8" font-family="system-ui,sans-serif">Restaurants</text>
+                    <text x="182" y="114" text-anchor="end" font-size="8" fill="#f43f5e" font-family="system-ui,sans-serif">$90 / $60</text>
+                    <rect x="38" y="119" width="144" height="2.5" rx="1.25" fill="#27272a"/>
+                    <rect x="38" y="119" width="144" height="2.5" rx="1.25" fill="#ef4444"/>
+                    <!-- over badge -->
+                    <rect x="116" y="106" width="30" height="12" rx="6" fill="rgba(239,68,68,.15)"/>
+                    <text x="131" y="115" text-anchor="middle" font-size="7.5" fill="#f87171" font-family="system-ui,sans-serif" font-weight="700">150%</text>
+                    <!-- Month nav hint -->
+                    <text x="110" y="150" text-anchor="middle" font-size="7.5" fill="#3f3f46" font-family="system-ui,sans-serif">← navigate by month →</text>
+                </svg>
+                <h2 class="text-2xl font-semibold tracking-tight text-white mb-3">Budgets</h2>
+                <p class="text-zinc-400 text-sm leading-relaxed" style="max-width:18rem">Set monthly limits per category in each section.<br>Budgets glow <span class="text-emerald-400 font-medium">green</span> when on-track, <span class="text-amber-400 font-medium">amber</span> when tight, and <span class="text-rose-400 font-medium">red</span> when over-budget.<br>Simply tap any budget to edit.</p>
+            </div>
+
+
+            <!-- ── SLIDE 5 · Reports ────────────────────── -->
+            <div class="tut-slide" id="tut-5">
+                <svg width="220" height="160" viewBox="0 0 220 160" fill="none" class="mb-8">
+                    <!-- Card bg -->
+                    <rect x="20" y="8" width="180" height="144" rx="18" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+                    <!-- Report type pills -->
+                    <rect x="34" y="22" width="40" height="14" rx="7" fill="#10b981"/>
+                    <text x="54" y="32" text-anchor="middle" font-size="7" fill="white" font-family="system-ui,sans-serif" font-weight="700">Spending</text>
+                    <rect x="80" y="22" width="34" height="14" rx="7" fill="#27272a"/>
+                    <text x="97" y="32" text-anchor="middle" font-size="7" fill="#71717a" font-family="system-ui,sans-serif">Surplus</text>
+                    <rect x="120" y="22" width="30" height="14" rx="7" fill="#27272a"/>
+                    <text x="135" y="32" text-anchor="middle" font-size="7" fill="#71717a" font-family="system-ui,sans-serif">Income</text>
+                    <!-- Stat cards row -->
+                    <rect x="34" y="46" width="44" height="26" rx="8" fill="#27272a"/>
+                    <text x="56" y="57" text-anchor="middle" font-size="6" fill="#52525b" font-family="system-ui,sans-serif" font-weight="700" letter-spacing="1">TOTAL</text>
+                    <text x="56" y="67" text-anchor="middle" font-size="9" fill="#10b981" font-family="system-ui,sans-serif" font-weight="600">$4.2k</text>
+                    <rect x="84" y="46" width="44" height="26" rx="8" fill="#27272a"/>
+                    <text x="106" y="57" text-anchor="middle" font-size="6" fill="#52525b" font-family="system-ui,sans-serif" font-weight="700" letter-spacing="1">AVG/MO</text>
+                    <text x="106" y="67" text-anchor="middle" font-size="9" fill="#10b981" font-family="system-ui,sans-serif" font-weight="600">$1.4k</text>
+                    <rect x="134" y="46" width="44" height="26" rx="8" fill="#27272a"/>
+                    <text x="156" y="57" text-anchor="middle" font-size="6" fill="#52525b" font-family="system-ui,sans-serif" font-weight="700" letter-spacing="1">PEAK</text>
+                    <text x="156" y="67" text-anchor="middle" font-size="9" fill="#10b981" font-family="system-ui,sans-serif" font-weight="600">$1.8k</text>
+                    <!-- Line chart -->
+                    <rect x="34" y="80" width="152" height="46" rx="10" fill="#09090b"/>
+                    <polyline points="46,116 66,104 86,110 106,94 126,100 146,88 166,96"
+                              stroke="#10b981" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    <polygon points="46,116 66,104 86,110 106,94 126,100 146,88 166,96 166,126 46,126"
+                             fill="rgba(16,185,129,.08)"/>
+                    <!-- x-axis labels -->
+                    <text x="46"  y="135" text-anchor="middle" font-size="6" fill="#3f3f46" font-family="system-ui,sans-serif">Sep</text>
+                    <text x="86"  y="135" text-anchor="middle" font-size="6" fill="#3f3f46" font-family="system-ui,sans-serif">Oct</text>
+                    <text x="126" y="135" text-anchor="middle" font-size="6" fill="#3f3f46" font-family="system-ui,sans-serif">Nov</text>
+                    <text x="166" y="135" text-anchor="middle" font-size="6" fill="#3f3f46" font-family="system-ui,sans-serif">Dec</text>
+                    <!-- Month range pills -->
+                    <rect x="34" y="143" width="18" height="7" rx="3.5" fill="#27272a"/>
+                    <text x="43" y="149" text-anchor="middle" font-size="5.5" fill="#71717a" font-family="system-ui,sans-serif">3M</text>
+                    <rect x="58" y="143" width="18" height="7" rx="3.5" fill="#10b981"/>
+                    <text x="67" y="149" text-anchor="middle" font-size="5.5" fill="white" font-family="system-ui,sans-serif">6M</text>
+                    <rect x="82" y="143" width="20" height="7" rx="3.5" fill="#27272a"/>
+                    <text x="92" y="149" text-anchor="middle" font-size="5.5" fill="#71717a" font-family="system-ui,sans-serif">12M</text>
+                </svg>
+                <h2 class="text-2xl font-semibold tracking-tight text-white mb-3">Reports</h2>
+                <p class="text-zinc-400 text-sm leading-relaxed" style="max-width:17rem">Visualize your data to help you spot trends in your spending over time.</p>
+            </div>
+
+            <!-- ── SLIDE 6 · Ready ────────────────────── -->
+            <div class="tut-slide" id="tut-6">
+                <div class="mb-10">
+                    <svg width="140" height="140" viewBox="0 0 140 140" fill="none">
+                        <circle cx="70" cy="70" r="62" stroke="rgba(16,185,129,.08)" stroke-width="1"/>
+                        <circle cx="70" cy="70" r="44" fill="rgba(16,185,129,.07)" stroke="rgba(16,185,129,.18)" stroke-width="1"/>
+                        <circle cx="70" cy="70" r="30" fill="rgba(16,185,129,.12)" stroke="#10b981" stroke-width="1.5"/>
+                        <polyline points="54,70 65,81 88,56" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <!-- sparkles -->
+                        <line x1="112" y1="30" x2="112" y2="22" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+                        <line x1="108" y1="26" x2="116" y2="26" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>
+                        <line x1="28" y1="108" x2="28" y2="101" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" opacity=".4"/>
+                        <line x1="24.5" y1="104.5" x2="31.5" y2="104.5" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" opacity=".4"/>
+                        <circle cx="38" cy="36" r="3" fill="#10b981" opacity=".25"/>
+                        <circle cx="105" cy="100" r="2.5" fill="#10b981" opacity=".3"/>
+                        <circle cx="22" cy="58" r="2" fill="#10b981" opacity=".2"/>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-semibold tracking-tighter text-white mb-3">You&rsquo;re all set.</h2>
+                <p class="text-zinc-500 text-sm leading-relaxed mb-10" style="max-width:16rem">
+                    Tap <span class="inline-flex items-center justify-center w-5 h-5 bg-emerald-500 rounded-full text-white font-bold" style="font-size:16px;line-height:1">+</span> to log your first transaction.
+                </p>
+                <button onclick="tutFinish()"
+                    class="bg-emerald-500 active:bg-emerald-600 text-white font-semibold text-base px-12 py-4 rounded-full transition-all shadow-xl"
+                    style="box-shadow:0 8px 32px rgba(16,185,129,.30)">
+                    Start budgeting
+                </button>
+
+            </div>
+
+        </div><!-- /tut-track -->
+        </div><!-- /tut-slide-wrap -->
+
+        <!-- Bottom: dots + prev / next -->
+        <div class="flex items-center justify-between px-8 pb-12 pt-4 shrink-0">
+            <button onclick="tutPrev()" id="tut-btn-prev"
+                class="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                style="background:rgba(255,255,255,.05)">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="text-zinc-600"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+
+            <div class="flex items-center gap-2" id="tut-dots-row"></div>
+
+            <button onclick="tutNext()" id="tut-btn-next"
+                class="w-11 h-11 rounded-full flex items-center justify-center transition-all"
+                style="background:rgba(16,185,129,.15); border:1px solid rgba(16,185,129,.3)">
+                <svg width="16" height="16" fill="none" stroke="#10b981" stroke-width="2.5" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
         </div>
 
-        <!-- Skip button -->
-        <button onclick="tutSkip()"
-            class="fixed top-12 right-5 text-zinc-600 text-xs font-semibold tracking-widest uppercase hover:text-zinc-300 transition-colors py-2 px-2"
-            style="z-index:10002">
-            Skip
-        </button>
     </div>
 
     <!-- ═══════════════════════════════════════════════════
