@@ -59,6 +59,42 @@ body { font-family: 'Inter', system_ui, sans-serif; }
     width: 6px;
 }
 .tut-dot.active { background: #10b981; width: 22px; }
+
+/* ── Tutorial phone frame ──────────────── */
+.tut-phone {
+    width: 100%; max-width: 260px;
+    border-radius: 24px; padding: 12px;
+    position: relative; overflow: hidden;
+    text-align: left;
+    background: #09090b; border: 1px solid #27272a;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+
+/* ── Tutorial dark-mode tokens (default) ── */
+.tut-heading      { color: #f4f4f5; }
+.tut-text-muted   { color: #a1a1aa; }
+.tut-text-faint   { color: #52525b; }
+.tut-text-accent  { color: #d4d4d8; }
+.tut-card-mock    { background: #18181b; border-radius: 14px; }
+.tut-bar-bg       { background: #27272a; }
+.tut-icon-bg      { background: #27272a; }
+.tut-divider      { background: #27272a; }
+.tut-chart-bg     { fill: #0a0a0a; }
+
+/* ── Tutorial light-mode tokens ────────── */
+html.light #tut-modal   { background: #f4f4f5; }
+html.light .tut-heading  { color: #18181b; }
+html.light .tut-text-muted { color: #71717a; }
+html.light .tut-text-faint { color: #a1a1aa; }
+html.light .tut-text-accent { color: #3f3f46; }
+html.light .tut-card-mock { background: #ffffff; }
+html.light .tut-bar-bg    { background: #e4e4e7; }
+html.light .tut-icon-bg   { background: #f4f4f5; }
+html.light .tut-divider   { background: #e4e4e7; }
+html.light .tut-phone     { background: #f4f4f5; border-color: #e4e4e7; box-shadow: 0 8px 32px rgba(0,0,0,.08); }
+html.light .tut-chart-bg  { fill: #f4f4f5; }
+html.light .tut-dot        { background: #d4d4d8; }
+html.light .tut-dot.active { background: #10b981; }
 /* Budget over-limit bar pulse */
 @keyframes _budgetOver {
     0%,100% { opacity:1; }
