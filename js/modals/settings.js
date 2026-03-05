@@ -7,6 +7,7 @@ function showDataModal() {
     _updateThemePills();
     _updateHomeDot();
     renderShareIcon();
+    renderLaunchPills();
     _refreshSettingsAccount();
 }
 
@@ -521,7 +522,7 @@ const LAUNCH_TABS = ['Overview', 'Transactions', 'Budgets', 'Reports', 'Wallet']
 
 function getLaunchTab() {
     const n = parseInt(localStorage.getItem('launchTab') || '0', 10);
-    return n <= 2 ? n : 0; // clamp to main tabs only
+    return (n >= 0 && n <= 4) ? n : 0;
 }
 
 function setLaunchTab(n) {
@@ -537,7 +538,26 @@ function _updateHomeDot() {
     }
 }
 
-function renderLaunchPills() { _updateHomeDot(); } // pills replaced by tab-bar dots
+function renderLaunchPills() {
+    _updateHomeDot();
+    const wrap = document.getElementById('launch-screen-pills');
+    if (!wrap) return;
+    const current = getLaunchTab();
+    const icons = [
+        '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+        '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>',
+        '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 3"/></svg>',
+        '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/></svg>',
+        '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-5 4 3 5-6"/></svg>'
+    ];
+    wrap.innerHTML = LAUNCH_TABS.map((name, i) => {
+        const sel = i === current;
+        return `<button onclick="setLaunchTab(${i}); renderLaunchPills();"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors
+            ${sel ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}"
+            >${icons[i]} ${name}</button>`;
+    }).join('');
+}
 
 function renderShareIcon() {
     const el = document.getElementById('share-icon');
