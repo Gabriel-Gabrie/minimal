@@ -674,8 +674,22 @@ function _updateAccountBalances(trans, isUndo) {
         // Transfers always update balances regardless of exclusion
         const fromAcc = walletAccounts.find(a => a.id === trans.fromAccountId);
         const toAcc   = walletAccounts.find(a => a.id === trans.toAccountId);
-        if (fromAcc) fromAcc.balance = parseFloat(fromAcc.balance || 0) - amt * sign;
-        if (toAcc)   toAcc.balance   = parseFloat(toAcc.balance || 0) + amt * sign;
+        if (fromAcc) {
+            // From debt = borrowing more (increase debt); from non-debt = balance decreases
+            if (fromAcc.type === 'debt') {
+                fromAcc.balance = parseFloat(fromAcc.balance || 0) + amt * sign;
+            } else {
+                fromAcc.balance = parseFloat(fromAcc.balance || 0) - amt * sign;
+            }
+        }
+        if (toAcc) {
+            // To debt = paying off (decrease debt); to non-debt = balance increases
+            if (toAcc.type === 'debt') {
+                toAcc.balance = parseFloat(toAcc.balance || 0) - amt * sign;
+            } else {
+                toAcc.balance = parseFloat(toAcc.balance || 0) + amt * sign;
+            }
+        }
     } else if (!trans.excluded) {
         // Non-excluded expense/income update linked account
         const accId = trans.walletAccountId;

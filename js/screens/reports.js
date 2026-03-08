@@ -532,15 +532,16 @@ function switchTab(n) {
     document.querySelectorAll('[id^="screen-"]').forEach(s => s.classList.add('hidden'));
     document.getElementById(`screen-${n}`).classList.remove('hidden');
 
-    const isMainTab = n <= 2; // 0=Overview, 1=Transactions, 2=Budgets
+    const isTabBar = n <= 3; // 0=Overview, 1=Transactions, 2=Budgets, 3=Reports
+    const isWallet = n === 4;
 
-    // Tab bar highlight — only for main tabs (0-2)
+    // Tab bar highlight — for tab-bar screens (0-3)
     document.querySelectorAll('[id^="tab-"]').forEach(t => {
         t.classList.remove('tab-active');
         t.classList.add('text-zinc-500');
         t.classList.remove('text-white');
     });
-    if (isMainTab) {
+    if (isTabBar) {
         const active = document.getElementById(`tab-${n}`);
         if (active) {
             active.classList.add('tab-active');
@@ -549,37 +550,38 @@ function switchTab(n) {
         }
     }
 
-    // Show/hide master month selector and tab bar on non-main screens
-    const monthBar = document.getElementById('master-month-bar');
+    // Show/hide tab bar on wallet screen only
     const tabsWrap = document.getElementById('tabs-fade-wrap');
-    if (monthBar) monthBar.style.display = isMainTab ? '' : 'none';
-    if (tabsWrap) tabsWrap.style.display = isMainTab ? '' : 'none';
+    if (tabsWrap) tabsWrap.style.display = isWallet ? 'none' : '';
+
+    // Month selector — visible on main tabs (0-2), hidden on reports & wallet
+    const monthBar = document.getElementById('master-month-bar');
+    if (monthBar) monthBar.style.display = (n <= 2) ? '' : 'none';
 
     // FAB — only on main tabs (Overview, Transactions, Budgets)
     const fabWrap = document.getElementById('fab-wrap');
-    if (fabWrap) fabWrap.style.display = isMainTab ? '' : 'none';
-    if (!isMainTab) closeFab();
+    if (fabWrap) fabWrap.style.display = (n <= 2) ? '' : 'none';
+    if (n > 2) closeFab();
 
     // Wallet / Home button — always visible, icon changes per screen
     const homeBtn = document.getElementById('header-home-btn');
     if (homeBtn) {
         homeBtn.classList.remove('hidden');
-        const isWallet = n === 3;
         homeBtn.querySelector('svg').innerHTML = isWallet
             ? '<path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/>'
-            : '<path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 010 4H3"/>';
+            : '<path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><circle cx="18" cy="14" r="2"/>';
         homeBtn.setAttribute('aria-label', isWallet ? 'Home' : 'Wallet');
-        homeBtn.onclick = function () { switchTab(isWallet ? getLaunchTab() : 3); };
+        homeBtn.onclick = function () { switchTab(isWallet ? getLaunchTab() : 4); };
     }
 
     // Sync shared month into aliases before rendering main tabs
-    if (isMainTab) {
+    if (n <= 2) {
         _initSharedMonth();
         _syncMonthAliases();
         _updateMasterMonthUI();
     }
 
-    [renderOverview, renderTransactions, renderBudgets, renderWallet, renderReports][n]?.();
+    [renderOverview, renderTransactions, renderBudgets, renderReports, renderWallet][n]?.();
 }
 
 function prevBudgetMonth() { prevSharedMonth(); }
