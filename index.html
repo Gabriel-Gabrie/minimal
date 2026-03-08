@@ -1592,58 +1592,25 @@
     ═══════════════════════════════════════════════════ -->
     
     <div id="bank-import-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[160]" onclick="if(event.target===this)closeBankImport()">
-        <div class="modal-panel w-full max-w-md mx-auto bg-zinc-950 rounded-t-3xl flex flex-col" style="max-height:90vh">
+        <div class="modal-panel w-full max-w-md mx-auto bg-zinc-950 rounded-t-3xl flex flex-col" style="max-height:92vh">
 
-            <!-- Handle + header -->
-            <div class="px-6 pt-4 pb-4 border-b border-zinc-800 shrink-0">
-                <div class="flex justify-center mb-3"><div class="w-10 h-1 rounded-full bg-zinc-800"></div></div>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="font-semibold text-base">Review Transactions</h2>
-                        <p class="text-xs text-zinc-500 mt-0.5" id="import-modal-subtitle"></p>
-                    </div>
-                    <button onclick="closeBankImport()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors text-lg leading-none">×</button>
+            <!-- Handle -->
+            <div class="flex justify-center pt-3 pb-1 shrink-0"><div class="w-10 h-1 rounded-full bg-zinc-800"></div></div>
+
+            <!-- Header -->
+            <div class="px-5 pb-4 pt-2 shrink-0 flex items-center justify-between">
+                <div>
+                    <h2 class="font-semibold text-base" id="imp-title">Import Transactions</h2>
+                    <p class="text-xs text-zinc-500 mt-0.5" id="imp-subtitle"></p>
                 </div>
+                <button onclick="closeBankImport()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors text-lg leading-none">&times;</button>
             </div>
 
-            <!-- Bank + counts bar -->
-            <div class="px-5 py-2.5 bg-zinc-900/60 border-b border-zinc-800 shrink-0 flex items-center gap-3">
-                <p class="flex-1 text-xs text-zinc-400 font-medium truncate" id="import-bank-label"></p>
-                <div class="flex gap-3 text-xs shrink-0">
-                    <span class="text-emerald-400 font-bold" id="import-count-new"></span>
-                    <span class="text-zinc-600"              id="import-count-dup"></span>
-                </div>
-            </div>
+            <!-- Scrollable body -->
+            <div id="imp-body" class="flex-1 overflow-y-auto"></div>
 
-            <!-- Account + batch category -->
-            <div class="px-5 py-3 border-b border-zinc-800 shrink-0 space-y-2">
-                <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-bold tracking-widest text-zinc-600 uppercase shrink-0">Account</span>
-                    <select id="import-account-sel" onchange="_importAccountChange(this)" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500"></select>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span id="import-set-label" class="text-[10px] font-bold tracking-widest text-zinc-600 uppercase shrink-0">Set all</span>
-                    <select id="import-batch-main" onchange="_importBatchMain(this)" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500"></select>
-                    <select id="import-batch-sub" onchange="_importBatchSub(this)" class="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-emerald-500"></select>
-                </div>
-            </div>
-
-            <!-- Select bar + Hint -->
-            <div class="px-5 py-2 shrink-0 flex items-center justify-between">
-                <p class="text-[10px] text-zinc-600">Tap checkboxes to select, then use "Set all" to update selected.</p>
-                <button id="import-select-all-btn" onclick="_importToggleSelectAll()" class="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors shrink-0 ml-2">Select All</button>
-            </div>
-
-            <!-- Transaction review list -->
-            <div id="import-review-list" class="flex-1 overflow-y-auto px-5 py-3"></div>
-
-            <!-- Footer: confirm button -->
-            <div class="px-5 pb-8 pt-3 shrink-0 border-t border-zinc-800">
-                <button id="import-confirm-btn" onclick="confirmBankImport()"
-                    class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl transition-all text-sm shadow-lg shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100">
-                </button>
-            </div>
-
+            <!-- Footer -->
+            <div id="imp-footer" class="px-5 pb-8 pt-3 shrink-0 border-t border-zinc-800 hidden"></div>
         </div>
     </div>
 
