@@ -388,7 +388,7 @@ function renderBudgets() {
         });
 
         // Add account row
-        html += `<button onclick="switchTab(3);showWalletAddModal();setWalletType('${wType}')" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all">
+        html += `<button onclick="switchTab(4);showWalletAddModal();setWalletType('${wType}')" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
             <span class="text-xs">Add Account</span>
         </button>`;
