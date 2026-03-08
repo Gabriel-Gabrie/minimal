@@ -342,7 +342,7 @@ function renderBudgets() {
             const budget = monthBudgets[secType][sub] || 0;
             const actual = _calculateTransferToAccount(selectedBudgetMonth, acc.id);
             const pct = budget > 0 ? actual / budget * 100 : 0;
-            const donutColor = _budgetItemColor(pct, false);
+            const donutColor = _budgetItemColor(pct, true);
             const icon = acc.icon || (isDebt ? '💳' : '🐷');
             const mEsc = secType.replace(/'/g,"\\'");
             const sEsc = sub.replace(/'/g,"\\'");
@@ -364,9 +364,9 @@ function renderBudgets() {
                 if (budget === 0) {
                     leftText = 'No budget'; leftColor = 'text-zinc-600';
                 } else {
-                    const left = budget - actual;
-                    leftText = left >= 0 ? `$${Math.round(left)} left` : `-$${Math.round(-left)} over`;
-                    leftColor = left >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                    const diff = actual - budget;
+                    leftText = diff >= 0 ? `+$${Math.round(diff)}` : `$${Math.round(budget - actual)} left`;
+                    leftColor = diff >= 0 ? 'text-emerald-400' : 'text-amber-400';
                 }
                 html += `<div class="bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
                              onclick="openBudgetItemModal('${mEsc}','${sEsc}')">

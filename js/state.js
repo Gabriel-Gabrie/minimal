@@ -80,7 +80,8 @@ let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
     const snap = {
-        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts
+        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts,
+        categoryOrder: Object.keys(expenseCategories)
         // incomeCats is now derived from expenseCategories['Income'] — not saved separately
     };
     // Always write to localStorage as offline cache
@@ -100,6 +101,13 @@ function saveData() {
 // Populate app state from a plain object
 function _applyData(d) {
     expenseCategories = d.expenseCategories || {...defaultCategories};
+    // Restore category order (Firestore doesn't preserve object key order)
+    if (d.categoryOrder && Array.isArray(d.categoryOrder) && expenseCategories) {
+        const ordered = {};
+        d.categoryOrder.forEach(k => { if (k in expenseCategories) ordered[k] = expenseCategories[k]; });
+        Object.keys(expenseCategories).forEach(k => { if (!(k in ordered)) ordered[k] = expenseCategories[k]; });
+        expenseCategories = ordered;
+    }
     monthlyBudgets    = d.monthlyBudgets    || {};
 
     transactions      = d.transactions      || [];
@@ -150,6 +158,7 @@ function loadData() {
         itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
         walletAccounts:    JSON.parse(localStorage.getItem('walletAccounts')),
         incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
+        categoryOrder:     JSON.parse(localStorage.getItem('categoryOrder')),
     });
 }
 
