@@ -613,7 +613,7 @@
                 </div>
                 <!-- Stats: Budgeted / Spent / Left -->
                 <div id="brm-stats" class="grid grid-cols-3 gap-3 mb-5">
-                    <div class="bg-zinc-900 rounded-2xl p-3 text-center">
+                    <div class="bg-zinc-900 rounded-2xl p-3 text-center cursor-pointer active:bg-zinc-800 transition-colors" onclick="_brmEditBudgeted()">
                         <div class="text-[9px] font-black tracking-[.1em] text-zinc-600 uppercase mb-1">Budgeted</div>
                         <div id="brm-stat-budgeted" class="text-sm font-bold text-zinc-300">$0</div>
                     </div>
@@ -639,7 +639,7 @@
                 <!-- Transactions this month -->
                 <div class="mb-5">
                     <div class="text-[10px] font-black tracking-[.14em] text-zinc-600 uppercase mb-2">Transactions this month</div>
-                    <div id="brm-tx-list" class="space-y-1.5"></div>
+                    <div id="brm-tx-list" class="space-y-0.5"></div>
                     <div id="brm-tx-empty" class="hidden text-xs text-zinc-600 text-center py-5">No transactions this month</div>
                 </div>
                 <!-- Add Transaction + Cancel -->
