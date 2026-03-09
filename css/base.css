@@ -144,6 +144,10 @@ select { background-image: none; }
 /* ── Overview top categories scrollbar hide ── */
 #ov-top-cats::-webkit-scrollbar { display: none; }
 
+/* ── Desktop wrappers: transparent on mobile ── */
+#app-sidebar { display: contents; }
+#app-content { display: contents; }
+
 /* ── Theme transition ── */
 *, *::before, *::after { transition-property:background-color,border-color,color; transition-duration:.18s; }
 /* Exclude animation-dependent elements */
