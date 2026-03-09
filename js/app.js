@@ -181,4 +181,17 @@ function _updateUserUI(user) {
         pInitL.textContent = initials;
         if (pImgL) pImgL.classList.add('hidden');
     }
+
+    // Sidebar user row (desktop)
+    const sName = document.getElementById('sidebar-user-name');
+    const sImg  = document.getElementById('sidebar-user-img');
+    const sInit = document.getElementById('sidebar-user-initials');
+    if (sName) sName.textContent = name || email || 'Account';
+    if (photo && sImg) {
+        sImg.src = photo; sImg.classList.remove('hidden');
+        if (sInit) sInit.classList.add('hidden');
+    } else if (sInit) {
+        sInit.textContent = initials;
+        if (sImg) sImg.classList.add('hidden');
+    }
 }

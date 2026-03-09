@@ -550,9 +550,14 @@ function switchTab(n) {
         }
     }
 
-    // Show/hide tab bar on wallet screen only
+    // Show/hide tab bar on wallet screen only (not on desktop — sidebar always visible)
     const tabsWrap = document.getElementById('tabs-fade-wrap');
-    if (tabsWrap) tabsWrap.style.display = isWallet ? 'none' : '';
+    const isDesktop = window.innerWidth >= 1024;
+    if (tabsWrap) tabsWrap.style.display = (isWallet && !isDesktop) ? 'none' : '';
+
+    // Highlight sidebar wallet button on desktop
+    const sideWallet = document.getElementById('sidebar-wallet-btn');
+    if (sideWallet) sideWallet.style.color = isWallet ? '#10b981' : '';
 
     // Month selector — visible on main tabs (0-2), hidden on reports & wallet
     const monthBar = document.getElementById('master-month-bar');
