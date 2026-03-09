@@ -259,7 +259,8 @@
     }
 
     /* ── Screen content: constrain width and center ── */
-    #screen-0, #screen-2, #screen-3, #screen-4 {
+    /* Use :not(.hidden) to avoid overriding Tailwind's .hidden class */
+    #screen-0:not(.hidden), #screen-2:not(.hidden), #screen-3:not(.hidden), #screen-4:not(.hidden) {
         max-width: 52rem;
         margin-left: auto;
         margin-right: auto;
@@ -268,13 +269,15 @@
         overflow-y: visible; /* Content area handles scrolling */
     }
 
-    /* Transactions screen: full height flex */
-    #screen-1 {
+    /* Transactions screen: fill content area, scroll internally */
+    #screen-1:not(.hidden) {
         max-width: 52rem;
         margin-left: auto;
         margin-right: auto;
         width: 100%;
         flex: 1;
+        min-height: 0;
+        overflow: hidden; /* Children handle scrolling */
     }
 
     /* ── Overview: side-by-side layout ── */
@@ -384,7 +387,7 @@
 @media (min-width: 1280px) {
 
     /* ── Overview: 2-column dashboard ── */
-    #screen-0 {
+    #screen-0:not(.hidden) {
         max-width: 72rem;
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -394,14 +397,14 @@
     }
 
     /* Hero chart: spans full width */
-    #screen-0 > .mx-4.mt-4 {
+    #screen-0:not(.hidden) > .mx-4.mt-4 {
         grid-column: 1 / -1;
         margin-left: 0;
         margin-right: 0;
     }
 
     /* 2-stat row: spans full width */
-    #screen-0 > .grid.grid-cols-2 {
+    #screen-0:not(.hidden) > .grid.grid-cols-2 {
         grid-column: 1 / -1;
         padding-left: 0;
         padding-right: 0;
@@ -409,12 +412,12 @@
     }
 
     /* Top categories section: left column */
-    #screen-0 > .mt-4.mb-1 {
+    #screen-0:not(.hidden) > .mt-4.mb-1 {
         grid-column: 1;
     }
 
     /* Recent transactions section: right column */
-    #screen-0 > .px-5.mt-3.mb-2 {
+    #screen-0:not(.hidden) > .px-5.mt-3.mb-2 {
         grid-column: 2;
     }
 
@@ -439,8 +442,8 @@
         max-width: 64rem;
     }
 
-    /* ── Reports: 2-column layout ── */
-    #screen-3 {
+    /* ── Reports: wider ── */
+    #screen-3:not(.hidden) {
         max-width: 72rem;
     }
 
@@ -462,7 +465,7 @@
         max-width: 64rem;
     }
 
-    #screen-4 {
+    #screen-4:not(.hidden) {
         max-width: 72rem;
     }
 }
