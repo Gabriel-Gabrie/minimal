@@ -25,6 +25,26 @@ let transactions = [];
  * Each key is a category name (e.g., "Food", "Income") and each value is an array of subcategory names.
  */
 let expenseCategories = {};
+
+/**
+ * @typedef {Object.<string, Object.<string, Object.<string, number>>>} MonthlyBudgets
+ * Three-level nested structure mapping month keys to categories to budget items.
+ * First level: Month key in YYYY-MM format (e.g., "2025-03")
+ * Second level: Category name (e.g., "Food", "Income")
+ * Third level: Item name (e.g., "Groceries", "Salary") mapped to budget amount
+ * @example
+ * {
+ *   "2025-03": {
+ *     "Food": {
+ *       "Groceries": 500,
+ *       "Restaurants/Coffee": 200
+ *     },
+ *     "Income": {
+ *       "Salary": 5000
+ *     }
+ *   }
+ * }
+ */
 let monthlyBudgets = {};
 
 /**
