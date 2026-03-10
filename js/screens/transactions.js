@@ -288,10 +288,26 @@ function showTxSummary(idx) {
         detailRows += _summaryRow('Status', 'Same-type transfer (excluded)');
     }
 
+    // Recurring indicator
+    const isRecurring = !!t.recurringId;
+    if (isRecurring) {
+        detailRows += _summaryRow('Recurring', '🔄 Part of recurring series');
+    }
+
     // Date added
     if (dateAdded) {
         detailRows += _summaryRow('Added', dateAdded);
     }
+
+    // Manage recurring button (if recurring transaction)
+    const manageRecurringBtn = isRecurring ? `
+        <button onclick="hideTxSummary();showDataModal();_openRecurringSection()"
+            class="w-full bg-zinc-800 hover:bg-zinc-700 py-3.5 rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            Manage Recurring Series
+        </button>` : '';
 
     const content = document.getElementById('tx-summary-content');
     content.innerHTML = `
@@ -310,6 +326,7 @@ function showTxSummary(idx) {
 
         <!-- Actions -->
         <div class="space-y-2 px-1">
+            ${manageRecurringBtn}
             <button onclick="hideTxSummary();openEditTx(${idx})"
                 class="w-full bg-zinc-800 hover:bg-zinc-700 py-3.5 rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
@@ -334,6 +351,17 @@ function _summaryRow(label, value) {
 function hideTxSummary() {
     const modal = document.getElementById('tx-summary-modal');
     if (modal) modal.classList.add('hidden');
+}
+
+function _openRecurringSection() {
+    // Ensure the recurring accordion is expanded
+    const body = document.getElementById('recurring-acc-body');
+    const chev = document.getElementById('recurring-acc-chev');
+    if (body && body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        if (chev) chev.style.transform = 'rotate(180deg)';
+        renderRecurringTransactions();
+    }
 }
 
 /* ── Direction-locked swipe-to-delete ────────────── */
