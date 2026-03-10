@@ -46,6 +46,117 @@ _Manage categories, profile, and data export/import options_
 ![Overview Dashboard](./screenshots/overview.png)
 ```
 
+## Quick Start
+
+**Minimal** works out-of-the-box with no build step or installation. Just serve the files with any static HTTP server:
+
+```bash
+# Option 1: Python (most systems have this pre-installed)
+python3 -m http.server 8000
+
+# Option 2: Python 2 (older systems)
+python -m SimpleHTTPServer 8000
+
+# Option 3: Node.js
+npx serve .
+
+# Option 4: PHP
+php -S localhost:8000
+```
+
+Then open your browser to `http://localhost:8000` and start tracking your finances!
+
+**No login required** — the app works 100% offline using localStorage. All your data stays on your device unless you choose to enable cloud sync (see Firebase Setup below).
+
+## Firebase Setup (Optional)
+
+Firebase is **only required if you want cross-device sync**. The app works fully offline without it.
+
+To enable cloud sync with email, Google, or Apple sign-in, follow these steps:
+
+### 1. Create a Firebase Project
+
+1. Go to [https://console.firebase.google.com](https://console.firebase.google.com)
+2. Click **Add project** (or **Create a project**)
+3. Enter a project name → **Continue**
+4. (Optional) Disable Google Analytics if you don't need it → **Continue** → **Create project**
+
+### 2. Enable Authentication
+
+1. In the Firebase Console, go to **Build** → **Authentication** (left sidebar)
+2. Click **Get started**
+3. Enable the following sign-in methods:
+   - **Email/Password** — Click to enable, then **Save**
+   - **Google** — Click to enable, then **Save**
+   - **Apple** *(optional)* — Requires an Apple Developer account ($99/yr) and a registered domain (not localhost). See [Firebase docs: Sign in with Apple on web](https://firebase.google.com/docs/auth/web/apple)
+
+### 3. Create Firestore Database
+
+1. Go to **Build** → **Firestore Database** (left sidebar)
+2. Click **Create database**
+3. Choose **Start in production mode** → **Next**
+4. Select the closest region → **Enable**
+
+### 4. Configure Security Rules
+
+⚠️ **Important:** The app stores data at `/users/{userId}` (not `/users/{userId}/data`). Make sure your rules match this structure.
+
+1. In Firestore, click the **Rules** tab
+2. Replace the default rules with:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                         && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+3. Click **Publish**
+
+### 5. Get Your Firebase Config
+
+1. Go to **Project settings** (gear icon in left sidebar) → **General** tab
+2. Scroll to **Your apps** section
+3. Click the **Web** icon (`</>`) → **Register app**
+4. Enter a nickname (e.g., "Minimal Web") → **Register app**
+5. Copy the `firebaseConfig` object
+
+### 6. Add Config to Your App
+
+⚠️ **Security Warning:** This app currently has Firebase config **hardcoded in `js/app.js` lines 46-53**. This is convenient for demos but exposes your API keys in the browser source.
+
+**For production use**, consider:
+- Using Firebase App Check to restrict API key usage
+- Moving sensitive config to environment variables (requires a build step)
+- Implementing Firestore security rules (already done in Step 4)
+
+**To replace the config:**
+
+1. Open `js/app.js`
+2. Find lines 46-53 (the `firebaseConfig` object)
+3. Replace the placeholder values with your own from Step 5
+
+```javascript
+const firebaseConfig = {
+    apiKey:            "YOUR_API_KEY",
+    authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId:         "YOUR_PROJECT_ID",
+    storageBucket:     "YOUR_PROJECT_ID.firebasestorage.app",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId:             "YOUR_APP_ID"
+};
+```
+
+4. Save and refresh the app
+5. You should now see sign-in options instead of "Demo Mode"
+
+**Done!** Your data will now sync across any device where you sign in with the same account.
+
 ## Tech Stack
 
 - **Frontend**: Vanilla ES6+ JavaScript, HTML5, Tailwind CSS (CDN)
