@@ -509,8 +509,11 @@ function showAddModal(type) {
     document.getElementById('desc').value = '';
     const excl = document.getElementById('tx-exclude');
     if (excl) excl.checked = false;
+    const recurring = document.getElementById('tx-recurring');
+    if (recurring) recurring.checked = false;
     setType(type || 'expense');
     updateExcludeUI();
+    updateRecurringUI();
 }
 
 function updateExcludeUI() {
@@ -527,6 +530,18 @@ function updateExcludeUI() {
     if (trfFields && currentType === 'transfer') {
         const exclCb = document.getElementById('tx-exclude');
         if (exclCb) exclCb.checked = false;
+    }
+}
+
+function updateRecurringUI() {
+    const recurring = !!document.getElementById('tx-recurring')?.checked;
+    const recurringFields = document.getElementById('recurring-fields');
+    if (recurringFields) {
+        if (recurring) {
+            recurringFields.classList.remove('hidden');
+        } else {
+            recurringFields.classList.add('hidden');
+        }
     }
 }
 
