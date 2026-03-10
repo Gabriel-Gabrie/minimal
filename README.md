@@ -157,6 +157,224 @@ const firebaseConfig = {
 
 **Done!** Your data will now sync across any device where you sign in with the same account.
 
+## Local Development
+
+**No build step required!** Minimal is a vanilla JavaScript app with zero dependencies. All external libraries (Tailwind CSS, Chart.js, Firebase) are loaded via CDN.
+
+### Running Locally
+
+Serve the files with any static HTTP server. Here are several options:
+
+```bash
+# Option 1: Python 3 (pre-installed on macOS/Linux, available on Windows)
+python3 -m http.server 8000
+
+# Option 2: Python 2 (older systems)
+python -m SimpleHTTPServer 8000
+
+# Option 3: Node.js (if you have npm installed)
+npx serve .
+# or with a custom port:
+npx serve . -p 8000
+
+# Option 4: PHP (if installed)
+php -S localhost:8000
+
+# Option 5: Ruby (if installed)
+ruby -run -ehttpd . -p8000
+
+# Option 6: Caddy (if installed)
+caddy file-server --listen :8000
+```
+
+Then open your browser to `http://localhost:8000`.
+
+### Project Structure
+
+```
+minimal/
+├── index.html              # Main HTML (entire app shell)
+├── manifest.json           # PWA manifest
+├── sw.js                   # Service worker (offline caching)
+├── css/
+│   ├── base.css            # Base styles, animations, custom components
+│   └── themes.css          # Light mode overrides (dark is default)
+└── js/
+    ├── state.js            # Global state, data model, persistence
+    ├── auth.js             # Firebase authentication
+    ├── app.js              # App initialization, theme, routing
+    ├── screens/            # Tab/screen modules
+    ├── modals/             # Modal dialog modules
+    └── utils/              # Utility modules (tutorial, etc.)
+```
+
+### Making Changes
+
+1. **Edit any HTML, CSS, or JS file** — Changes take effect on browser refresh
+2. **Update the service worker cache** (see below) if you add/rename files
+3. **Test offline behavior** by opening DevTools → Application → Service Workers → "Offline" checkbox
+
+### Service Worker Cache Updates
+
+When you add or rename files, you **must** update the service worker cache to ensure they work offline:
+
+1. Open `sw.js`
+2. Find the `ASSETS` array (around line 5-20)
+3. Add the new file path to the array:
+   ```javascript
+   const ASSETS = [
+       './',
+       './index.html',
+       './manifest.json',
+       './css/base.css',
+       './css/themes.css',
+       './js/state.js',
+       // ... add your new file here
+       './js/screens/new-feature.js'
+   ];
+   ```
+4. **Increment the cache version** on line 1:
+   ```javascript
+   const CACHE_NAME = 'minimal-v2'; // was minimal-v1
+   ```
+
+**Important:** If you forget this step, users will get stale cached versions of the app when offline.
+
+### No Build Tools
+
+This project intentionally avoids:
+- ❌ No `package.json` or `npm install`
+- ❌ No webpack, Vite, or bundlers
+- ❌ No Babel or transpilation
+- ❌ No CSS preprocessors (Sass, Less)
+- ❌ No TypeScript compilation
+- ❌ No minification or obfuscation
+
+**Why?** Maximum simplicity and transparency. You can view source in the browser and see the exact code that's running.
+
+## Deployment
+
+Minimal can be deployed to any static hosting service. No server-side logic, databases, or build steps required.
+
+### Recommended Hosting Options
+
+#### 1. **Netlify** (Easiest, free tier available)
+
+**Via Netlify CLI:**
+```bash
+# Install Netlify CLI (one-time)
+npm install -g netlify-cli
+
+# Deploy from the project root
+netlify deploy --prod --dir .
+```
+
+**Via Netlify UI:**
+1. Go to [https://app.netlify.com](https://app.netlify.com)
+2. Drag and drop your project folder onto the Netlify dashboard
+3. Done! Your site is live at `https://[random-name].netlify.app`
+
+**Custom domain:** Go to Site settings → Domain management
+
+#### 2. **Vercel** (Great for Git-based deployments)
+
+**Via Vercel CLI:**
+```bash
+# Install Vercel CLI (one-time)
+npm install -g vercel
+
+# Deploy from the project root
+vercel --prod
+```
+
+**Via Vercel UI:**
+1. Go to [https://vercel.com/new](https://vercel.com/new)
+2. Import your Git repository (GitHub, GitLab, Bitbucket)
+3. Leave build settings empty (no build command needed)
+4. Deploy!
+
+#### 3. **Firebase Hosting** (Recommended if using Firebase for auth/sync)
+
+```bash
+# Install Firebase CLI (one-time)
+npm install -g firebase-tools
+
+# Login to Firebase
+firebase login
+
+# Initialize Firebase Hosting in your project directory
+firebase init hosting
+# Select your Firebase project
+# Set public directory to: . (current directory)
+# Configure as single-page app: Yes
+# Don't overwrite index.html
+
+# Deploy
+firebase deploy --only hosting
+```
+
+Your app will be live at `https://[your-project-id].web.app`
+
+#### 4. **GitHub Pages** (Free, integrates with GitHub repos)
+
+**Option A: Via GitHub UI**
+1. Push your code to a GitHub repository
+2. Go to repository **Settings** → **Pages**
+3. Set Source to "Deploy from a branch"
+4. Select branch: `main` (or `master`), folder: `/ (root)`
+5. Save — your site will be live at `https://[username].github.io/[repo-name]`
+
+**Option B: Via `gh-pages` branch**
+```bash
+# Install gh-pages (one-time)
+npm install -g gh-pages
+
+# Deploy to GitHub Pages
+npx gh-pages -d .
+```
+
+#### 5. **Cloudflare Pages** (Fast global CDN, free tier)
+
+1. Go to [https://pages.cloudflare.com](https://pages.cloudflare.com)
+2. Connect your Git repository
+3. Leave build settings empty
+4. Deploy!
+
+#### 6. **Static File Hosts** (Upload via FTP/SFTP)
+
+Any traditional web host works:
+- Upload all files via FTP/SFTP
+- Point your domain to the uploaded directory
+- Done!
+
+### Deployment Checklist
+
+Before deploying to production:
+
+- [ ] **Replace Firebase config** with your own (see Firebase Setup section)
+- [ ] **Test offline functionality** — open DevTools → Application → Service Workers → Offline checkbox
+- [ ] **Test on mobile devices** — the app is mobile-first, so test on iOS and Android
+- [ ] **Verify PWA installation** — check that "Add to Home Screen" works
+- [ ] **Update `manifest.json`** if you want to customize app name, icons, or theme colors
+- [ ] **Test bank import** with real OFX/CSV files from your banks
+- [ ] **Review Firestore security rules** to ensure data is protected
+
+### Custom Domain
+
+Most hosting providers support custom domains:
+
+- **Netlify:** Site settings → Domain management → Add custom domain
+- **Vercel:** Project settings → Domains → Add domain
+- **Firebase Hosting:** `firebase hosting:channel:deploy production` → Custom domain setup
+- **GitHub Pages:** Repository settings → Pages → Custom domain
+- **Cloudflare Pages:** Pages dashboard → Custom domains → Set up a domain
+
+### HTTPS & Security
+
+All recommended hosting providers automatically provision free SSL certificates via Let's Encrypt. Your app will be served over HTTPS by default.
+
+**Important for PWA:** Service workers require HTTPS to function (except on `localhost`). All hosting options above provide HTTPS automatically.
+
 ## Tech Stack
 
 - **Frontend**: Vanilla ES6+ JavaScript, HTML5, Tailwind CSS (CDN)
