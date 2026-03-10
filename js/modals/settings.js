@@ -547,6 +547,12 @@ function renderRecurringTransactions() {
                 <div class="${typeColor} text-sm font-semibold shrink-0">
                     ${rec.type === 'income' ? '+' : '−'}$${amount}
                 </div>
+                <button onclick="skipNextOccurrence('${rec.id}')" class="w-7 h-7 flex items-center justify-center text-zinc-600 hover:text-amber-400 transition-colors shrink-0" title="Skip next">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M5 4l10 8-10 8V4z"/>
+                        <line x1="19" y1="5" x2="19" y2="19"/>
+                    </svg>
+                </button>
                 <button onclick="editRecurringTransaction('${rec.id}')" class="w-7 h-7 flex items-center justify-center text-zinc-600 hover:text-emerald-400 transition-colors shrink-0" title="Edit">
                     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -650,6 +656,27 @@ function cancelRecurringSeries(id) {
     renderRecurringTransactions();
     renderRecurringCount();
     showToast('Recurring series cancelled', 'emerald');
+}
+
+/* ── Skip next occurrence ───────────────────────── */
+function skipNextOccurrence(id) {
+    const rec = recurringTransactions.find(r => r.id === id);
+    if (!rec) return;
+
+    if (!rec.nextDate) {
+        showToast('No upcoming occurrence to skip', 'rose');
+        return;
+    }
+
+    const desc = rec.desc || rec.subCategory || 'this occurrence';
+    const nextDateFormatted = new Date(rec.nextDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    if (!confirm(`Skip "${desc}" on ${nextDateFormatted}?\n\nThis occurrence will be skipped. The next one will be generated as usual.`)) return;
+
+    if (!rec.skippedDates) rec.skippedDates = [];
+    rec.skippedDates.push(rec.nextDate);
+    saveData();
+    renderRecurringTransactions();
+    showToast('Next occurrence skipped', 'emerald');
 }
 
 /* ── In-app notification checks (called after data changes) ── */
