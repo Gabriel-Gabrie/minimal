@@ -2,6 +2,21 @@
    STATE — Data model, defaults, persistence
 ══════════════════════════════════════════════ */
 
+/**
+ * @typedef {Object} Transaction
+ * @property {number} id - Unique transaction identifier (timestamp-based)
+ * @property {string} type - Transaction type: 'income', 'expense', or 'transfer'
+ * @property {number} amount - Transaction amount
+ * @property {string} date - Transaction date in YYYY-MM-DD format
+ * @property {string} desc - Transaction description
+ * @property {string} mainCategory - Main category name
+ * @property {string} subCategory - Sub-category name
+ * @property {boolean} excluded - Whether transaction is excluded from budgets
+ * @property {string} [walletAccountId] - Wallet account ID (optional, for income/expense)
+ * @property {string} [fromAccountId] - Source account ID (optional, for transfers)
+ * @property {string} [toAccountId] - Destination account ID (optional, for transfers)
+ */
+
 let transactions = [];
 let expenseCategories = {};
 let monthlyBudgets = {};
