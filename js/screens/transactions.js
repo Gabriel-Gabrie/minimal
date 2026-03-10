@@ -123,6 +123,7 @@ function _txRowHTML(t) {
     const isInc   = t.type === 'income';
     const isTrf   = t.type === 'transfer';
     const isExcl  = !!t.excluded;
+    const isRecurring = !!t.recurringId;
 
     let amtCls, sign, emoji, title, subtitle;
     if (isTrf) {
@@ -143,9 +144,17 @@ function _txRowHTML(t) {
         subtitle = linkedAcc ? linkedAcc.name : (t.mainCategory || '');
     }
 
+    // Recurring indicator badge
+    const recurringBadge = isRecurring
+        ? '<div class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-zinc-950 flex items-center justify-center text-[10px]">🔄</div>'
+        : '';
+
     return `<div class="tx-item mb-1" data-index="${realIdx}">
         <div class="tx-content flex items-center gap-3 px-3 py-2.5" onclick="showTxSummary(${realIdx})" style="cursor:pointer">
-            <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">${emoji}</div>
+            <div class="relative w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">
+                ${emoji}
+                ${recurringBadge}
+            </div>
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium leading-snug truncate">${title}</p>
                 <p class="text-[11px] text-zinc-600 mt-0.5 truncate">${subtitle}</p>
