@@ -511,6 +511,10 @@ function showAddModal(type) {
     if (excl) excl.checked = false;
     const recurring = document.getElementById('tx-recurring');
     if (recurring) recurring.checked = false;
+    const recurringFreq = document.getElementById('recurring-frequency');
+    if (recurringFreq) recurringFreq.value = 'monthly';
+    const recurringEndDate = document.getElementById('recurring-end-date');
+    if (recurringEndDate) recurringEndDate.value = '';
     setType(type || 'expense');
     updateExcludeUI();
     updateRecurringUI();
