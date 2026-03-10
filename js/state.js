@@ -20,6 +20,19 @@
 let transactions = [];
 let expenseCategories = {};
 let monthlyBudgets = {};
+
+/**
+ * @typedef {Object} WalletAccount
+ * @property {string} id - Unique account identifier
+ * @property {string} name - Account name
+ * @property {string} type - Account type: 'spending', 'saving', or 'debt'
+ * @property {string} icon - Account icon (emoji)
+ * @property {string} colour - Account color (hex format, e.g., '#10b981')
+ * @property {number} balance - Current account balance
+ * @property {number} goal - Goal amount (for saving accounts) or starting debt (for debt accounts)
+ * @property {boolean} isDefault - Whether this is the default account for transactions
+ * @property {string} createdAt - Creation timestamp in ISO 8601 format
+ */
 let walletAccounts = [];
 
 /* ── Firebase & demo state (shared across modules) ── */
