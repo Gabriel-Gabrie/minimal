@@ -62,32 +62,60 @@ let monthlyBudgets = {};
 let walletAccounts = [];
 
 /* ── Firebase & demo state (shared across modules) ── */
+/** @type {Object|null} Firebase Auth instance */
 let _fbAuth = null;
+/** @type {Object|null} Firebase Firestore instance */
 let _fbDb   = null;
+/** @type {boolean} Demo mode flag (when true, data is not persisted) */
 let _demoMode = false;
 
+/** @type {'income'|'expense'|'transfer'} Current transaction type being entered/displayed */
 let currentType = 'expense';
-let selectedMonth = '';       // single shared month across Overview, Transactions, Budgets
-let selectedBudgetMonth = ""; // alias — kept for backward compat, synced via selectedMonth
-let _rCharts = {};  // report chart instances keyed by card id
+/** @type {string} Single shared month key (YYYY-MM format) across Overview, Transactions, Budgets */
+let selectedMonth = '';
+/** @type {string} Alias for selectedMonth — kept for backward compat, synced via selectedMonth */
+let selectedBudgetMonth = "";
+/** @type {Object.<string, Object>} Report chart instances keyed by card id */
+let _rCharts = {};
+/** @type {{expenses: boolean, income: boolean, surplus: boolean, spendBreak: boolean, incBreak: boolean}} Report card visibility states */
 let _rCardOpen = { expenses: true, income: false, surplus: false, spendBreak: true, incBreak: false };
+/** @type {{trends: boolean, breakdowns: boolean}} Report section visibility states */
 let _rSectOpen = { trends: true, breakdowns: true };
-let _trendMonthCount = 6;     // Trends section (default 6M)
-let _breakMonthCount = 1;     // Breakdowns section (1 = ring chart, default)
-let _breakdownMode = 'category'; // 'category' | 'item'
+/** @type {number} Number of months to show in trends section (default 6) */
+let _trendMonthCount = 6;
+/** @type {number} Number of months to show in breakdowns section (1 = ring chart, default) */
+let _breakMonthCount = 1;
+/** @type {'category'|'item'} Breakdown display mode */
+let _breakdownMode = 'category';
+/** @type {string} Transaction filter mode ('all' or other filter values) */
 let txFilter = 'all';
-let selectedTxMonth = '';   // alias — kept for backward compat, synced via selectedMonth
-let txSort = 'date-desc';     // 'date-desc'|'date-asc'|'amount-desc'|'amount-asc'
-let _undoData = null, _undoTimer = null;
+/** @type {string} Alias for selectedMonth — kept for backward compat, synced via selectedMonth */
+let selectedTxMonth = '';
+/** @type {'date-desc'|'date-asc'|'amount-desc'|'amount-asc'} Transaction list sort order */
+let txSort = 'date-desc';
+/** @type {Object|null} Undo data snapshot for transaction deletion */
+let _undoData = null;
+/** @type {number|null} Undo toast timeout timer ID */
+let _undoTimer = null;
+/** @type {number|null} Index of transaction currently being edited */
 let _editingTxIdx = null;
 
-
+/** @type {Object.<string, string>} Main category emoji icons keyed by category name */
 let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Banking":"🏛️","Saving":"🐷","Debt":"💳" };
-let itemIcons = {}; // keyed "main:sub", e.g. "Food:Groceries" → "🛒"
-let _bimMain = null, _bimSub = null, _bimSelectedIcon = null;
+/** @type {Object.<string, string>} Item emoji icons keyed by "Main:Sub" format (e.g., "Food:Groceries" → "🛒") */
+let itemIcons = {};
+/** @type {string|null} Currently selected main category in budget item modal */
+let _bimMain = null;
+/** @type {string|null} Currently selected sub-category in budget item modal */
+let _bimSub = null;
+/** @type {string|null} Currently selected emoji icon in budget item modal */
+let _bimSelectedIcon = null;
+/** @type {boolean} Wallet balance legend visibility state */
 let _balLegendOpen = false;
-let _budgetViewMode = 'plan'; // 'plan' | 'remaining'
-let incomeCats = ["Salary","Freelance","Investments","Gifts","Other"]; // legacy — now derived from expenseCategories['Income']
+/** @type {'plan'|'remaining'} Budget view mode (plan = budgeted amounts, remaining = remaining amounts) */
+let _budgetViewMode = 'plan';
+/** @type {string[]} Income category items — legacy, now derived from expenseCategories['Income'] */
+let incomeCats = ["Salary","Freelance","Investments","Gifts","Other"];
 
 const defaultCategories = {
     "Income":         ["Salary", "Freelance", "Investments"],
@@ -135,6 +163,7 @@ const defaultItemIcons = {
  * Firestore write by 1.5 seconds to avoid excessive cloud writes.
  * @returns {void}
  */
+/** @type {number|null} Debounce timer ID for Firestore save operations */
 let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
