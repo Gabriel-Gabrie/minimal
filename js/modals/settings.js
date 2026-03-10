@@ -553,6 +553,12 @@ function renderRecurringTransactions() {
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
                 </button>
+                <button onclick="cancelRecurringSeries('${rec.id}')" class="w-7 h-7 flex items-center justify-center text-zinc-600 hover:text-rose-400 transition-colors shrink-0" title="Cancel series">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
             </div>`;
     }).join('');
 }
@@ -629,6 +635,21 @@ function editRecurringTransaction(id) {
             if (saveBtn) saveBtn.textContent = 'Update Recurring';
         }
     }, 0);
+}
+
+/* ── Cancel recurring series ────────────────────── */
+function cancelRecurringSeries(id) {
+    const rec = recurringTransactions.find(r => r.id === id);
+    if (!rec) return;
+
+    const desc = rec.desc || rec.subCategory || 'this recurring transaction';
+    if (!confirm(`Cancel "${desc}"?\n\nNo new transactions will be generated. Past transactions will not be affected.`)) return;
+
+    rec.active = false;
+    saveData();
+    renderRecurringTransactions();
+    renderRecurringCount();
+    showToast('Recurring series cancelled', 'emerald');
 }
 
 /* ── In-app notification checks (called after data changes) ── */
