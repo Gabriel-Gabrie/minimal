@@ -3,6 +3,7 @@
 ══════════════════════════════════════════════ */
 
 let transactions = [];
+let recurringTransactions = [];
 let expenseCategories = {};
 let monthlyBudgets = {};
 let walletAccounts = [];
@@ -80,7 +81,7 @@ let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
     const snap = {
-        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts,
+        transactions, recurringTransactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts,
         categoryOrder: Object.keys(expenseCategories)
         // incomeCats is now derived from expenseCategories['Income'] — not saved separately
     };
@@ -111,6 +112,7 @@ function _applyData(d) {
     monthlyBudgets    = d.monthlyBudgets    || {};
 
     transactions      = d.transactions      || [];
+    recurringTransactions = d.recurringTransactions || [];
     itemIcons         = d.itemIcons         || {};
     walletAccounts    = d.walletAccounts    || [];
     incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
@@ -155,6 +157,7 @@ function loadData() {
         monthlyBudgets:    JSON.parse(localStorage.getItem('monthlyBudgets')),
 
         transactions:      JSON.parse(localStorage.getItem('transactions')),
+        recurringTransactions: JSON.parse(localStorage.getItem('recurringTransactions')),
         itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
         walletAccounts:    JSON.parse(localStorage.getItem('walletAccounts')),
         incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
