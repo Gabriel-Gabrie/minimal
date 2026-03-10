@@ -3,6 +3,7 @@ function showDataModal() {
     document.getElementById('data-modal').classList.remove('hidden');
     renderSettingsStats();
     renderCategoryEditorCount();
+    renderRecurringCount();
     loadNotifSettings();
     _updateThemePills();
     _updateHomeDot();
@@ -483,6 +484,71 @@ function _orderMoveAccount(id, dir) {
     [walletAccounts[idx], walletAccounts[swapIdx]] = [walletAccounts[swapIdx], walletAccounts[idx]];
     saveData();
     renderOrderList();
+}
+
+/* ── Recurring Transactions accordion ──────────────────── */
+function toggleRecurringAccordion() {
+    const body = document.getElementById('recurring-acc-body');
+    const chev = document.getElementById('recurring-acc-chev');
+    if (!body) return;
+    const open = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', open);
+    if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+    if (!open) renderRecurringTransactions();
+}
+
+function renderRecurringCount() {
+    const el = document.getElementById('recurring-acc-count');
+    if (!el) return;
+    const active = recurringTransactions.filter(r => r.active !== false);
+    const n = active.length;
+    el.textContent = n === 0
+        ? 'No active recurring transactions'
+        : `${n} active recurring transaction${n !== 1 ? 's' : ''}`;
+}
+
+function renderRecurringTransactions() {
+    const el = document.getElementById('recurring-list');
+    if (!el) return;
+
+    const active = recurringTransactions.filter(r => r.active !== false);
+
+    if (active.length === 0) {
+        el.innerHTML = `<div class="px-5 py-6 text-center text-sm text-zinc-600">
+            No recurring transactions yet.<br>
+            <span class="text-xs">Add one when creating a transaction!</span>
+        </div>`;
+        return;
+    }
+
+    const frequencyLabels = {
+        weekly: 'Weekly',
+        'bi-weekly': 'Bi-Weekly',
+        monthly: 'Monthly',
+        yearly: 'Yearly'
+    };
+
+    el.innerHTML = active.map((rec, idx) => {
+        const icon = itemIcons[`${rec.mainCategory}:${rec.subCategory}`] || mainEmojis[rec.mainCategory] || '💸';
+        const freqLabel = frequencyLabels[rec.frequency] || rec.frequency;
+        const nextDateFormatted = rec.nextDate ? new Date(rec.nextDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+        const amount = Math.abs(rec.amount || 0).toFixed(2);
+        const typeColor = rec.type === 'income' ? 'text-emerald-400' : 'text-zinc-100';
+
+        return `
+            <div class="flex items-center gap-3 px-5 py-3.5 ${idx > 0 ? 'border-t border-zinc-800/60' : ''}">
+                <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-lg shrink-0">${icon}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm text-zinc-100 truncate">${rec.desc || rec.subCategory || 'Untitled'}</div>
+                    <div class="text-[11px] text-zinc-500 mt-0.5">
+                        ${freqLabel} · Next: ${nextDateFormatted}
+                    </div>
+                </div>
+                <div class="${typeColor} text-sm font-semibold shrink-0">
+                    ${rec.type === 'income' ? '+' : '−'}$${amount}
+                </div>
+            </div>`;
+    }).join('');
 }
 
 /* ── In-app notification checks (called after data changes) ── */
