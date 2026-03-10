@@ -18,6 +18,12 @@
  */
 
 let transactions = [];
+
+/**
+ * @typedef {Object.<string, string[]>} ExpenseCategories
+ * Object mapping category names to arrays of subcategories.
+ * Each key is a category name (e.g., "Food", "Income") and each value is an array of subcategory names.
+ */
 let expenseCategories = {};
 let monthlyBudgets = {};
 
