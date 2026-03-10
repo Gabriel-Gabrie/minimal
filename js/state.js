@@ -129,7 +129,12 @@ const defaultItemIcons = {
 
 /* ── Persistence helpers ─────────────────────── */
 
-// Write to localStorage (always) + Firestore (debounced, when signed in)
+/**
+ * Write to localStorage (always) + Firestore (debounced, when signed in).
+ * Does nothing in demo mode. Immediately writes to localStorage and debounces
+ * Firestore write by 1.5 seconds to avoid excessive cloud writes.
+ * @returns {void}
+ */
 let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
@@ -152,7 +157,19 @@ function saveData() {
     }, 1500);
 }
 
-// Populate app state from a plain object
+/**
+ * Populate app state from a plain object.
+ * Applies data migrations, restores category order, and initializes derived state.
+ * @param {Object} d - Data snapshot object
+ * @param {ExpenseCategories} [d.expenseCategories] - Category definitions
+ * @param {MonthlyBudgets} [d.monthlyBudgets] - Budget data by month
+ * @param {Transaction[]} [d.transactions] - Transaction history
+ * @param {Object.<string, string>} [d.itemIcons] - Icon mappings ("Main:Sub" → emoji)
+ * @param {WalletAccount[]} [d.walletAccounts] - Wallet accounts
+ * @param {string[]} [d.incomeCats] - Legacy income categories (now derived)
+ * @param {string[]} [d.categoryOrder] - Category key order for restoration
+ * @returns {void}
+ */
 function _applyData(d) {
     expenseCategories = d.expenseCategories || {...defaultCategories};
     // Restore category order (Firestore doesn't preserve object key order)
@@ -202,6 +219,11 @@ function _applyData(d) {
     incomeCats = expenseCategories['Income'] || [];
 }
 
+/**
+ * Load app data from localStorage.
+ * Used as offline fallback and pre-Firebase initialization.
+ * @returns {void}
+ */
 function loadData() {
     // Read from localStorage (used as offline fallback and pre-Firebase init)
     _applyData({
@@ -216,7 +238,13 @@ function loadData() {
     });
 }
 
-// Load from Firestore for current user; falls back to localStorage
+/**
+ * Load from Firestore for current user; falls back to localStorage.
+ * Mirrors Firestore data to localStorage for offline access. If Firestore
+ * is unavailable or read fails, falls back to loadData().
+ * @param {string} uid - Firebase user ID
+ * @returns {Promise<void>}
+ */
 async function loadFromFirestore(uid) {
     if (!_fbDb) { loadData(); return; }
     try {
