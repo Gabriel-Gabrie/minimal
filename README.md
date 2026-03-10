@@ -394,3 +394,206 @@ Minimal is a fully installable Progressive Web App that works 100% offline:
 - **Service worker caching** — Assets cached for instant loading without network access
 - **No internet required** — Track expenses, manage budgets, and view reports anywhere
 - **Optional cloud sync** — Sign in with email, Google, or Apple to sync across devices
+
+## Architecture
+
+Minimal is built with a straightforward, framework-free architecture that prioritizes simplicity and transparency.
+
+### Global State (`js/state.js`)
+
+All application state lives in global JavaScript variables — no state management library required:
+
+- **`transactions`** — Array of transaction objects (income, expenses, transfers)
+- **`expenseCategories`** — Object mapping category names to arrays of subcategories
+- **`monthlyBudgets`** — Object keyed by `YYYY-MM` with budget amounts per category/item
+- **`walletAccounts`** — Array of wallet account objects
+- **`itemIcons`** — Emoji icons keyed by `"Main:Sub"` format (e.g., `"Food:Groceries"` → `"🛒"`)
+
+### Data Persistence
+
+A hybrid local-first, cloud-optional persistence model:
+
+- **`saveData()`** — Writes to localStorage immediately, then debounces a Firestore write (1.5s delay)
+- **`loadData()`** — Reads from localStorage (offline fallback)
+- **`loadFromFirestore(uid)`** — Fetches from Firestore and mirrors to localStorage
+- **Demo mode** — Never persists data when `_demoMode` is true
+
+**Data flow:**
+```
+User action → Mutate global state → saveData() → localStorage (instant) → Firestore (debounced 1.5s)
+```
+
+### Rendering Pattern
+
+Each screen module exposes a `render*()` function (e.g., `renderOverview()`, `renderBudgets()`) that rebuilds its DOM section via `getElementById()` and `innerHTML`:
+
+- **No virtual DOM** — Direct DOM manipulation throughout
+- **No diffing** — Full re-render of each screen on state changes
+- **Event delegation** — Event listeners attached to parent containers
+
+**Example:**
+```javascript
+function renderOverview() {
+    const container = document.getElementById('overview-content');
+    container.innerHTML = `<!-- full HTML rebuild -->`;
+}
+```
+
+### Authentication (`js/auth.js`)
+
+Firebase `onAuthStateChanged` listener drives the auth flow:
+
+- **Email/Password sign-in** — Standard Firebase email authentication
+- **Google sign-in** — OAuth via Firebase Auth
+- **Apple sign-in** — OAuth via Firebase Auth (optional)
+- **Graceful fallback** — App works in offline/demo mode if Firebase is not configured
+
+### Service Worker (`sw.js`)
+
+Offline-first caching strategy:
+
+- **Cache name:** `minimal-v1` (increment when updating assets)
+- **Install event:** Precaches all local assets on first load
+- **Fetch strategy:**
+  - **HTML documents:** Network-first (always fetch latest, fallback to cache)
+  - **Other assets:** Cache-first (instant load from cache)
+- **Cross-origin requests:** Skipped (CDNs and Firebase not cached)
+
+**Important:** When adding new JS/CSS files, update the `ASSETS` array in `sw.js` to ensure offline availability.
+
+### Key Design Patterns
+
+- **Month keys:** All month references use `YYYY-MM` string format (e.g., `"2025-03"`)
+- **Transaction types:** `'income'`, `'expense'`, `'transfer'`
+- **Private conventions:** Functions/variables prefixed with `_` (e.g., `_fbAuth`, `_applyData()`)
+- **Naming conventions:**
+  - Render functions: `render*()`
+  - Show/hide modals: `show*()`, `hide*()`
+  - Event handlers: `on*()` or inline
+
+For a complete architecture deep-dive, see **[CLAUDE.md](./CLAUDE.md)** — the developer onboarding guide with detailed conventions, patterns, and pitfalls.
+
+## Contributing
+
+Contributions are welcome! Whether you're fixing bugs, adding features, or improving documentation, your help is appreciated.
+
+### Getting Started
+
+1. **Read [CLAUDE.md](./CLAUDE.md)** — This is the comprehensive developer guide covering:
+   - Code style and conventions
+   - Architecture patterns
+   - Common pitfalls
+   - Development workflows
+
+2. **Fork and clone** the repository:
+   ```bash
+   git clone https://github.com/yourusername/minimal.git
+   cd minimal
+   ```
+
+3. **Serve locally** — No build step required:
+   ```bash
+   python3 -m http.server 8000
+   ```
+
+4. **Make your changes** following the patterns in CLAUDE.md
+
+5. **Test thoroughly:**
+   - Test in Chrome, Firefox, Safari (mobile and desktop)
+   - Test offline mode (DevTools → Application → Service Workers → Offline)
+   - Test with demo data and real Firebase auth (if applicable)
+
+6. **Submit a pull request:**
+   - **Branch naming:** `feature/<description>` or `fix/<description>`
+   - **Commit messages:** Use imperative mood (e.g., "Add transaction filtering" not "Added transaction filtering")
+   - **PR description:** Explain what changed and why
+
+### Code Conventions
+
+- **4-space indentation** (no tabs)
+- **camelCase** for variables and functions
+- **Private functions/variables** prefixed with `_`
+- **No console.log** in production code
+- **Update service worker** (`sw.js` ASSETS array) when adding new files
+
+### Development Workflow
+
+```bash
+# Create a feature branch
+git checkout -b feature/new-feature
+
+# Make changes, test locally
+python3 -m http.server 8000
+
+# Commit with descriptive message
+git commit -m "Add new feature for X"
+
+# Push and create PR
+git push origin feature/new-feature
+```
+
+### What We're Looking For
+
+- **Bug fixes** — Especially edge cases in transaction parsing, budget calculations, or chart rendering
+- **New features** — Additional chart types, export formats, bank import presets, etc.
+- **Accessibility improvements** — ARIA labels, keyboard navigation, screen reader support
+- **Documentation** — Clearer setup instructions, additional screenshots, use case examples
+- **Performance optimizations** — Faster rendering, reduced memory usage, better caching
+- **Mobile improvements** — Better touch interactions, responsive design tweaks
+
+### What to Avoid
+
+- **Framework rewrites** — This project is intentionally vanilla JS. No React/Vue/Angular/Svelte conversions please.
+- **Build systems** — No webpack, Vite, Rollup, Parcel, etc. The "no build step" philosophy is core to this project.
+- **TypeScript** — Would require a compilation step, breaking the no-build requirement.
+- **Large dependencies** — All dependencies must be CDN-loadable. No npm packages that require bundling.
+
+### Questions?
+
+- **Open an issue** for bugs, feature requests, or general questions
+- **Check CLAUDE.md** for detailed architecture and development guidelines
+- **Review closed PRs** to see examples of accepted contributions
+
+## License
+
+This project is licensed under the **MIT License** — you are free to use, modify, and distribute this software for any purpose, including commercial use.
+
+See the full license text below:
+
+```
+MIT License
+
+Copyright (c) 2026 Minimal Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### Third-Party Licenses
+
+This project uses the following open-source libraries via CDN:
+
+- **Tailwind CSS** — [MIT License](https://github.com/tailwindlabs/tailwindcss/blob/master/LICENSE)
+- **Chart.js** — [MIT License](https://github.com/chartjs/Chart.js/blob/master/LICENSE.md)
+- **Firebase** — [Apache 2.0 License](https://github.com/firebase/firebase-js-sdk/blob/master/LICENSE)
+
+---
+
+**Built with ❤️ by the open-source community. No frameworks, no build steps, just vanilla JavaScript.**
+
+For detailed developer documentation, see **[CLAUDE.md](./CLAUDE.md)**.
