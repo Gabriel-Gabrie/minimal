@@ -409,32 +409,11 @@ function openWalletDetail(id) {
     if (linked.length) {
         txEmpty.classList.add('hidden');
         txList.innerHTML = linked.map(t => {
-            let emoji, amtCls, sign, title, dateLbl;
-            dateLbl = _walletDateLabel(t.date);
-            if (t.type === 'transfer') {
-                const isOutgoing = t.fromAccountId === id;
-                const otherAcc = _getAccById(isOutgoing ? t.toAccountId : t.fromAccountId);
-                const otherName = otherAcc ? otherAcc.name : '?';
-                emoji  = '🔄';
-                amtCls = isOutgoing ? 'text-rose-400' : 'text-emerald-400';
-                sign   = isOutgoing ? '\u2212' : '+';
-                title  = t.desc || (isOutgoing ? '→ ' + otherName : '← ' + otherName);
-            } else {
-                const isInc = t.type === 'income';
-                const iconKey = t.mainCategory + ':' + (t.subCategory || '');
-                emoji  = itemIcons[iconKey] || mainEmojis[t.mainCategory] || (isInc ? '💰' : '💸');
-                amtCls = isInc ? 'text-emerald-400' : 'text-zinc-200';
-                sign   = isInc ? '+' : '\u2212';
-                title  = t.desc || (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : ''));
-            }
-            return `<div class="flex items-center gap-3 py-2">
-                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">${emoji}</div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium leading-snug truncate">${title}</p>
-                    <p class="text-[11px] text-zinc-600 mt-0.5">${dateLbl}</p>
-                </div>
-                <span class="${amtCls} font-semibold text-sm tabular-nums">${sign}$${parseFloat(t.amount).toFixed(2)}</span>
-            </div>`;
+            return buildTransactionRowHTML(t, {
+                variant: 'compact',
+                customSubtitle: _walletDateLabel(t.date),
+                walletAccountId: id
+            });
         }).join('');
     } else {
         txList.innerHTML = '';
