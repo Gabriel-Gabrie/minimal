@@ -220,6 +220,42 @@ function formatMonthName(key) {
     return new Date(y, m-1).toLocaleString('default', { month: 'long', year: 'numeric' });
 }
 
+/* ── Recurring transaction date helpers ─────────────────────── */
+
+function addWeeks(dateStr, weeks) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() + (weeks * 7));
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function addBiWeekly(dateStr) {
+    return addWeeks(dateStr, 2);
+}
+
+function addMonths(dateStr, months) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setMonth(date.getMonth() + months);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function addYears(dateStr, years) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setFullYear(date.getFullYear() + years);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
 /* ── Shared month selector (syncs Overview, Transactions, Budgets) ── */
 
 function _initSharedMonth() {
