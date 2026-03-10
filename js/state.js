@@ -268,6 +268,99 @@ function _updateMasterMonthUI() {
     }
 }
 
+/* ── Recurring transaction generation ─────────────────────── */
+
+function generateRecurringTransactions() {
+    if (!recurringTransactions || !Array.isArray(recurringTransactions)) return;
+
+    const today = getCurrentDateEST();
+    let generated = 0;
+
+    recurringTransactions.forEach(template => {
+        if (!template.active) return;
+
+        // Generate all due transactions up to today
+        while (template.nextDate && template.nextDate <= today) {
+            // Stop if end date is reached
+            if (template.endDate && template.nextDate > template.endDate) {
+                template.active = false;
+                break;
+            }
+
+            // Skip if this date is in skippedDates array
+            if (template.skippedDates && template.skippedDates.includes(template.nextDate)) {
+                template.nextDate = _calculateNextRecurrenceDate(template.nextDate, template.frequency);
+                continue;
+            }
+
+            // Check if transaction already exists for this date and recurringId
+            const alreadyExists = transactions.some(t =>
+                t.recurringId === template.id && t.date === template.nextDate
+            );
+
+            if (!alreadyExists) {
+                // Generate new transaction from template
+                const newTx = {
+                    id: Date.now() + Math.random(),
+                    type: template.type,
+                    amount: template.amount,
+                    date: template.nextDate,
+                    mainCategory: template.mainCategory,
+                    subCategory: template.subCategory,
+                    note: template.note || '',
+                    excluded: template.excluded || false,
+                    recurringId: template.id,
+                };
+
+                // Add transfer-specific fields if applicable
+                if (template.type === 'transfer') {
+                    newTx.fromAccountId = template.fromAccountId;
+                    newTx.toAccountId = template.toAccountId;
+                }
+
+                transactions.push(newTx);
+                generated++;
+            }
+
+            // Advance to next occurrence
+            template.nextDate = _calculateNextRecurrenceDate(template.nextDate, template.frequency);
+        }
+    });
+
+    if (generated > 0) {
+        saveData();
+    }
+}
+
+function _calculateNextRecurrenceDate(dateStr, frequency) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+
+    switch (frequency) {
+        case 'weekly':
+            date.setDate(date.getDate() + 7);
+            break;
+        case 'bi-weekly':
+            date.setDate(date.getDate() + 14);
+            break;
+        case 'monthly':
+            date.setMonth(date.getMonth() + 1);
+            break;
+        case 'yearly':
+            date.setFullYear(date.getFullYear() + 1);
+            break;
+        default:
+            return dateStr;
+    }
+
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+/* ── Balance & budget calculations ─────────────────────── */
+
 function calculateTotals() {
     let balance = 0, income = 0, expense = 0;
     transactions.forEach(t => {
