@@ -515,6 +515,7 @@ function showAddModal(type) {
     if (recurringFreq) recurringFreq.value = 'monthly';
     const recurringEndDate = document.getElementById('recurring-end-date');
     if (recurringEndDate) recurringEndDate.value = '';
+    _editingRecurringId = null;
     setType(type || 'expense');
     updateExcludeUI();
     updateRecurringUI();
@@ -552,6 +553,7 @@ function updateRecurringUI() {
 function hideModal() {
     document.getElementById('add-modal').classList.add('hidden');
     _editingTxIdx = null;
+    _editingRecurringId = null;
 }
 
 function setType(type) {

@@ -547,8 +547,88 @@ function renderRecurringTransactions() {
                 <div class="${typeColor} text-sm font-semibold shrink-0">
                     ${rec.type === 'income' ? '+' : '−'}$${amount}
                 </div>
+                <button onclick="editRecurringTransaction('${rec.id}')" class="w-7 h-7 flex items-center justify-center text-zinc-600 hover:text-emerald-400 transition-colors shrink-0" title="Edit">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </button>
             </div>`;
     }).join('');
+}
+
+/* ── Edit recurring transaction ──────────────────── */
+function editRecurringTransaction(id) {
+    const rec = recurringTransactions.find(r => r.id === id);
+    if (!rec) return;
+
+    _editingRecurringId = id;
+    _editingTxIdx = null;
+
+    // Open transaction modal
+    document.getElementById('add-modal').classList.remove('hidden');
+
+    // Populate basic fields
+    document.getElementById('date').value = rec.startDate || getCurrentDateEST();
+    document.getElementById('amount').value = parseFloat(rec.amount).toFixed(2);
+    document.getElementById('desc').value = rec.desc || '';
+
+    // Set exclude toggle
+    const exclCb = document.getElementById('tx-exclude');
+    if (exclCb) exclCb.checked = !!rec.excluded;
+
+    // Set transaction type
+    setType(rec.type === 'transfer' ? 'transfer' : (rec.type === 'expense' || rec.excluded ? 'expense' : rec.type));
+    updateExcludeUI();
+
+    // Populate recurring fields
+    const recurringToggle = document.getElementById('tx-recurring');
+    if (recurringToggle) recurringToggle.checked = true;
+    updateRecurringUI();
+
+    const freqSel = document.getElementById('recurring-frequency');
+    if (freqSel) freqSel.value = rec.frequency || 'monthly';
+
+    const endDateInput = document.getElementById('recurring-end-date');
+    if (endDateInput) endDateInput.value = rec.endDate || '';
+
+    // After setType populates selects, set values
+    setTimeout(() => {
+        if (rec.type === 'transfer') {
+            const fromSel = document.getElementById('transfer-from');
+            const toSel   = document.getElementById('transfer-to');
+            if (fromSel) fromSel.value = rec.fromAccountId || '';
+            _populateTransferAccounts();
+            if (fromSel) fromSel.value = rec.fromAccountId || '';
+            if (toSel) {
+                const fromId = fromSel.value;
+                toSel.innerHTML = walletAccounts
+                    .filter(a => a.id !== fromId)
+                    .map(a => `<option value="${a.id}">${a.icon || '🏦'} ${a.name}</option>`)
+                    .join('');
+                toSel.value = rec.toAccountId || '';
+            }
+            _updateTransferBudgetInfo();
+            const saveBtn = document.getElementById('save-transaction-btn');
+            if (saveBtn) saveBtn.textContent = 'Update Recurring';
+        } else if (rec.type === 'expense' && !rec.excluded) {
+            document.getElementById('main-cat').value = rec.mainCategory || '';
+            updateSubOptions();
+            setTimeout(() => {
+                document.getElementById('sub-cat').value = rec.subCategory || '';
+            }, 0);
+            const expAccSel = document.getElementById('expense-account');
+            if (expAccSel && rec.walletAccountId) expAccSel.value = rec.walletAccountId;
+            const saveBtn = document.getElementById('save-transaction-btn');
+            if (saveBtn) saveBtn.textContent = 'Update Recurring';
+        } else if (rec.type === 'income') {
+            document.getElementById('income-cat').value = rec.mainCategory || '';
+            const incAccSel = document.getElementById('income-account');
+            if (incAccSel && rec.walletAccountId) incAccSel.value = rec.walletAccountId;
+            const saveBtn = document.getElementById('save-transaction-btn');
+            if (saveBtn) saveBtn.textContent = 'Update Recurring';
+        }
+    }, 0);
 }
 
 /* ── In-app notification checks (called after data changes) ── */

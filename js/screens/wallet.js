@@ -599,7 +599,46 @@ function addTransaction() {
     // Check if recurring toggle is ON
     const isRecurring = !!(document.getElementById('tx-recurring')?.checked);
 
-    if (isRecurring && _editingTxIdx === null) {
+    // Handle editing recurring template
+    if (_editingRecurringId !== null) {
+        const recIdx = recurringTransactions.findIndex(r => r.id === _editingRecurringId);
+        if (recIdx >= 0) {
+            const existing = recurringTransactions[recIdx];
+            const frequency = document.getElementById('recurring-frequency')?.value || 'monthly';
+            const endDate = document.getElementById('recurring-end-date')?.value || null;
+
+            // Update template (preserve id, active, startDate, nextDate, skippedDates)
+            recurringTransactions[recIdx] = {
+                ...existing,
+                frequency: frequency,
+                endDate: endDate,
+                // Transaction template fields
+                type: trans.type,
+                amount: trans.amount,
+                desc: trans.desc,
+                mainCategory: trans.mainCategory || '',
+                subCategory: trans.subCategory || '',
+                excluded: trans.excluded || false,
+            };
+
+            // Add transfer-specific fields
+            if (trans.type === 'transfer') {
+                recurringTransactions[recIdx].fromAccountId = trans.fromAccountId;
+                recurringTransactions[recIdx].toAccountId = trans.toAccountId;
+            } else {
+                delete recurringTransactions[recIdx].fromAccountId;
+                delete recurringTransactions[recIdx].toAccountId;
+            }
+
+            // Add wallet account ID for expense/income
+            if (trans.walletAccountId) {
+                recurringTransactions[recIdx].walletAccountId = trans.walletAccountId;
+            } else {
+                delete recurringTransactions[recIdx].walletAccountId;
+            }
+        }
+        _editingRecurringId = null;
+    } else if (isRecurring && _editingTxIdx === null) {
         // Create recurring transaction template
         const frequency = document.getElementById('recurring-frequency')?.value || 'monthly';
         const endDate = document.getElementById('recurring-end-date')?.value || null;

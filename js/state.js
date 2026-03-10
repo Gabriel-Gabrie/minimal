@@ -27,6 +27,7 @@ let selectedTxMonth = '';   // alias — kept for backward compat, synced via se
 let txSort = 'date-desc';     // 'date-desc'|'date-asc'|'amount-desc'|'amount-asc'
 let _undoData = null, _undoTimer = null;
 let _editingTxIdx = null;
+let _editingRecurringId = null;
 
 
 let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Banking":"🏛️","Saving":"🐷","Debt":"💳" };
