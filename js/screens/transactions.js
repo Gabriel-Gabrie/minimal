@@ -120,47 +120,12 @@ function renderTransactions() {
 
 function _txRowHTML(t) {
     const realIdx = transactions.indexOf(t);
-    const isInc   = t.type === 'income';
-    const isTrf   = t.type === 'transfer';
-    const isExcl  = !!t.excluded;
-
-    let amtCls, sign, emoji, title, subtitle;
-    if (isTrf) {
-        const fromAcc = _getAccById(t.fromAccountId);
-        const toAcc   = _getAccById(t.toAccountId);
-        amtCls  = _isTransferExcluded(t) ? 'text-zinc-600' : 'text-sky-400';
-        sign    = '⇄';
-        emoji   = '🔄';
-        title   = t.desc || ((fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?'));
-        subtitle = (fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?');
-    } else {
-        const iconKey = t.mainCategory + ':' + (t.subCategory || '');
-        amtCls  = isExcl ? 'text-zinc-600 line-through' : isInc ? 'text-emerald-400' : 'text-zinc-200';
-        sign    = isInc ? '+' : '\u2212';
-        emoji   = isExcl ? '🚫' : (itemIcons[iconKey] || mainEmojis[t.mainCategory] || (isInc ? '💰' : '💸'));
-        title   = t.desc || (t.mainCategory + (t.subCategory ? ' \u00B7 ' + t.subCategory : ''));
-        const linkedAcc = t.walletAccountId ? _getAccById(t.walletAccountId) : null;
-        subtitle = linkedAcc ? linkedAcc.name : (t.mainCategory || '');
-    }
-
-    return `<div class="tx-item mb-1" data-index="${realIdx}">
-        <div class="tx-content flex items-center gap-3 px-3 py-2.5" onclick="showTxSummary(${realIdx})" style="cursor:pointer">
-            <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">${emoji}</div>
-            <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium leading-snug truncate">${title}</p>
-                <p class="text-[11px] text-zinc-600 mt-0.5 truncate">${subtitle}</p>
-            </div>
-            <span class="${amtCls} font-semibold text-sm tabular-nums shrink-0">${sign}$${parseFloat(t.amount).toFixed(2)}</span>
-        </div>
-        <div class="tx-delete">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
-            </svg>
-            DELETE
-        </div>
-    </div>`;
+    return buildTransactionRowHTML(t, {
+        variant: 'full',
+        onClick: `showTxSummary(${realIdx})`,
+        showDelete: true,
+        index: realIdx
+    });
 }
 
 function prevTxMonth() { prevSharedMonth(); }
