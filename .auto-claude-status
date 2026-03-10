@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "010-consolidate-transaction-rendering-into-a-shared-ro",
+  "state": "building",
+  "subtasks": {
+    "completed": 4,
+    "total": 9,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Migrate Files to Use Shared Builder",
+    "id": null,
+    "total": 4
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 6,
+    "started_at": "2026-03-10T14:43:47.587736"
+  },
+  "last_update": "2026-03-10T14:57:31.606102"
+}

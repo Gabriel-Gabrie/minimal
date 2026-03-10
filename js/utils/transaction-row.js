@@ -17,6 +17,7 @@
  * @param {string} options.customSubtitle - Override default subtitle text
  * @param {string} options.extraClasses - Additional CSS classes for the row container
  * @param {boolean} options.isEditing - If true, skip rendering (for import edit mode)
+ * @param {string} options.walletAccountId - For wallet detail view: renders transfers from this account's perspective (outgoing/incoming)
  *
  * @returns {string} HTML string for the transaction row
  *
@@ -52,7 +53,8 @@ function buildTransactionRowHTML(transaction, options = {}) {
         index = null,
         customSubtitle = null,
         extraClasses = '',
-        isEditing = false
+        isEditing = false,
+        walletAccountId = null
     } = options;
 
     // Skip rendering if in edit mode (for import preview)
@@ -64,7 +66,7 @@ function buildTransactionRowHTML(transaction, options = {}) {
     const isExcl = !!t.excluded || !!t._excluded;
 
     // Build display values based on transaction type
-    const displayData = _buildDisplayData(t, isInc, isTrf, isExcl, customSubtitle);
+    const displayData = _buildDisplayData(t, isInc, isTrf, isExcl, customSubtitle, walletAccountId);
 
     // Build row HTML based on variant
     if (variant === 'full') {
@@ -82,7 +84,7 @@ function buildTransactionRowHTML(transaction, options = {}) {
  * Builds display data (emoji, title, subtitle, amount classes, sign) for a transaction
  * @private
  */
-function _buildDisplayData(t, isInc, isTrf, isExcl, customSubtitle) {
+function _buildDisplayData(t, isInc, isTrf, isExcl, customSubtitle, walletAccountId) {
     let emoji, title, subtitle, amtCls, sign;
 
     if (isTrf) {
@@ -92,11 +94,24 @@ function _buildDisplayData(t, isInc, isTrf, isExcl, customSubtitle) {
         const fromName = fromAcc ? fromAcc.name : '?';
         const toName   = toAcc ? toAcc.name : '?';
 
-        emoji    = '🔄';
-        sign     = '⇄';
-        amtCls   = _isTransferExcluded(t) ? 'text-zinc-600' : 'text-sky-400';
-        title    = t.desc || (fromName + ' → ' + toName);
-        subtitle = customSubtitle || (fromName + ' → ' + toName);
+        // Wallet-specific transfer rendering (from account's perspective)
+        if (walletAccountId) {
+            const isOutgoing = t.fromAccountId === walletAccountId;
+            const otherAcc = _getAccById(isOutgoing ? t.toAccountId : t.fromAccountId);
+            const otherName = otherAcc ? otherAcc.name : '?';
+            emoji    = '🔄';
+            sign     = isOutgoing ? '\u2212' : '+';
+            amtCls   = isOutgoing ? 'text-rose-400' : 'text-emerald-400';
+            title    = t.desc || (isOutgoing ? '→ ' + otherName : '← ' + otherName);
+            subtitle = customSubtitle || (isOutgoing ? '→ ' + otherName : '← ' + otherName);
+        } else {
+            // Generic transfer rendering (for overview/transactions)
+            emoji    = '🔄';
+            sign     = '⇄';
+            amtCls   = _isTransferExcluded(t) ? 'text-zinc-600' : 'text-sky-400';
+            title    = t.desc || (fromName + ' → ' + toName);
+            subtitle = customSubtitle || (fromName + ' → ' + toName);
+        }
     } else {
         // Income or Expense transaction
         const iconKey = t.mainCategory + ':' + (t.subCategory || '');
