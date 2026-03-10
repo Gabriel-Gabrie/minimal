@@ -263,15 +263,28 @@ async function loadFromFirestore(uid) {
     }
 }
 
+/**
+ * Get current date in EST/EDT timezone.
+ * @returns {string} Date string in YYYY-MM-DD format
+ */
 function getCurrentDateEST() {
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
 }
 
+/**
+ * Get current month key in EST/EDT timezone.
+ * @returns {string} Month key in YYYY-MM format (e.g., "2025-03")
+ */
 function getCurrentMonthKey() {
     return getCurrentDateEST().slice(0,7);
 }
 
 
+/**
+ * Get the next month key.
+ * @param {string} key - Current month key in YYYY-MM format
+ * @returns {string} Next month key in YYYY-MM format
+ */
 function getNextMonth(key) {
     let [year, month] = key.split('-').map(Number);
     month++;
@@ -279,6 +292,11 @@ function getNextMonth(key) {
     return `${year}-${month.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Get the previous month key.
+ * @param {string} key - Current month key in YYYY-MM format
+ * @returns {string} Previous month key in YYYY-MM format
+ */
 function getPrevMonth(key) {
     let [year, month] = key.split('-').map(Number);
     month--;
@@ -286,6 +304,11 @@ function getPrevMonth(key) {
     return `${year}-${month.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Format month key as short display string.
+ * @param {string} key - Month key in YYYY-MM format
+ * @returns {string} Formatted month string (e.g., "Mar-25") or original key if invalid
+ */
 function formatMonthShort(key) {
     if (!key || !key.match(/^\d{4}-\d{2}$/)) return key;
     const [y, m] = key.split('-').map(Number);
@@ -293,6 +316,11 @@ function formatMonthShort(key) {
     return names[m - 1] + '-' + String(y).slice(2);
 }
 
+/**
+ * Format month key as full month name and year.
+ * @param {string} key - Month key in YYYY-MM format
+ * @returns {string} Formatted month name (e.g., "March 2025") or "Invalid Date" if key is invalid
+ */
 function formatMonthName(key) {
     if (!key || !key.match(/^\d{4}-\d{2}$/)) return "Invalid Date";
     const [y, m] = key.split('-').map(Number);
@@ -347,6 +375,11 @@ function _updateMasterMonthUI() {
     }
 }
 
+/**
+ * Calculate all-time totals across all transactions.
+ * Excludes transactions marked as excluded. Transfers do not affect totals.
+ * @returns {{balance: number, income: number, expense: number}} Total balance, income, and expense
+ */
 function calculateTotals() {
     let balance = 0, income = 0, expense = 0;
     transactions.forEach(t => {
@@ -358,11 +391,26 @@ function calculateTotals() {
     return {balance, income, expense};
 }
 
+/**
+ * Calculate total expenses in a specific month, optionally filtered by category/subcategory.
+ * Excludes transactions marked as excluded.
+ * @param {string} monthKey - Month key in YYYY-MM format (e.g., "2025-03")
+ * @param {string} main - Main category name to filter by (or null/undefined for all)
+ * @param {string|null} [sub=null] - Sub-category name to filter by (optional)
+ * @returns {number} Total amount spent
+ */
 function calculateSpentInMonth(monthKey, main, sub = null) {
     return transactions.filter(t => t.type === 'expense' && !t.excluded && t.date.startsWith(monthKey) && (!main || t.mainCategory === main) && (!sub || t.subCategory === sub))
         .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 }
 
+/**
+ * Calculate total income in a specific month, optionally filtered by income item.
+ * Excludes transactions marked as excluded.
+ * @param {string} monthKey - Month key in YYYY-MM format (e.g., "2025-03")
+ * @param {string|null} [item=null] - Income item name to filter by (optional, stored in mainCategory)
+ * @returns {number} Total income amount
+ */
 function calculateIncomeInMonth(monthKey, item = null) {
     return transactions
         .filter(t => t.type === 'income' && !t.excluded && t.date.startsWith(monthKey)
@@ -372,18 +420,33 @@ function calculateIncomeInMonth(monthKey, item = null) {
 
 /* ── Transfer budget helpers ──────────────────────────────── */
 
-// Get account type from wallet by id
+/**
+ * Get account type from wallet by ID.
+ * @param {string} id - Wallet account ID
+ * @returns {string|null} Account type ('spending', 'saving', or 'debt') or null if not found
+ */
 function _getAccType(id) {
     const a = walletAccounts.find(x => x.id === id);
     return a ? a.type : null;
 }
+
+/**
+ * Get wallet account by ID.
+ * @param {string} id - Wallet account ID
+ * @returns {WalletAccount|null} Wallet account object or null if not found
+ */
 function _getAccById(id) {
     return walletAccounts.find(x => x.id === id) || null;
 }
 
-// Calculate net amount transferred TO a saving/debt account in a given month
-// Positive = money going into saving/debt (expense-like)
-// Negative = money pulled back from saving/debt (negative expense)
+/**
+ * Calculate net amount transferred TO a saving/debt account in a given month.
+ * Positive = money going into saving/debt (expense-like).
+ * Negative = money pulled back from saving/debt (negative expense).
+ * @param {string} monthKey - Month key in YYYY-MM format (e.g., "2025-03")
+ * @param {string} accountId - Wallet account ID
+ * @returns {number} Net transfer amount (positive = into account, negative = out of account)
+ */
 function _calculateTransferToAccount(monthKey, accountId) {
     return transactions
         .filter(t => t.type === 'transfer' && t.date.startsWith(monthKey))
@@ -403,7 +466,13 @@ function _calculateTransferToAccount(monthKey, accountId) {
         }, 0);
 }
 
-// Total savings/debt payments in a month (for overview: expenses + savings)
+/**
+ * Calculate total savings/debt payments in a month (for overview: expenses + savings).
+ * Positive = money moved from spending to saving/debt (outflow from budget).
+ * Negative = money moved from saving/debt back to spending (inflow to budget).
+ * @param {string} monthKey - Month key in YYYY-MM format (e.g., "2025-03")
+ * @returns {number} Net savings/debt payment amount
+ */
 function _calculateTotalSavingsInMonth(monthKey) {
     return transactions
         .filter(t => t.type === 'transfer' && t.date.startsWith(monthKey))
@@ -423,7 +492,12 @@ function _calculateTotalSavingsInMonth(monthKey) {
         }, 0);
 }
 
-// All-time total savings (no month filter)
+/**
+ * Calculate all-time total savings/debt payments (no month filter).
+ * Positive = net money moved from spending to saving/debt.
+ * Negative = net money moved from saving/debt back to spending.
+ * @returns {number} Net all-time savings/debt payment amount
+ */
 function _calculateTotalSavingsAllTime() {
     return transactions
         .filter(t => t.type === 'transfer')
@@ -439,7 +513,12 @@ function _calculateTotalSavingsAllTime() {
         }, 0);
 }
 
-// Check if a transfer is excluded from budget (same-type transfer)
+/**
+ * Check if a transfer is excluded from budget (same-type transfer).
+ * Transfers between accounts of the same type (e.g., spending → spending) don't affect budgets.
+ * @param {Transaction} t - Transaction object to check
+ * @returns {boolean} True if transfer should be excluded from budget calculations
+ */
 function _isTransferExcluded(t) {
     if (t.type !== 'transfer') return false;
     const fromType = _getAccType(t.fromAccountId);
