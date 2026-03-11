@@ -18,6 +18,9 @@ function tutSkip() {
 }
 
 function tutFinish() {
+    // Apply selected template before finishing tutorial
+    applyBudgetTemplate(_selectedTemplate);
+
     document.getElementById('tut-modal').classList.add('hidden');
     localStorage.setItem('tutDone', '1');
 }
