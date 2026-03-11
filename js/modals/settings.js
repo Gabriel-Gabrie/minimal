@@ -389,6 +389,31 @@ function toggleNotifAccordion() {
     if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
 }
 
+/* ── Budget Templates accordion ─────────────────────────────── */
+function toggleTemplatesAccordion() {
+    const body = document.getElementById('templates-acc-body');
+    const chev = document.getElementById('templates-acc-chev');
+    if (!body) return;
+    const open = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', open);
+    if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function applyTemplate(templateName) {
+    // Call applyBudgetTemplate from state.js (handles confirmation dialog)
+    applyBudgetTemplate(templateName);
+
+    // Refresh settings UI to reflect changes
+    renderSettingsStats();
+    renderCategoryEditorCount();
+
+    // If category editor is open, re-render it
+    const catEditorBody = document.getElementById('cat-editor-body');
+    if (catEditorBody && catEditorBody.classList.contains('open')) {
+        renderCategoryEditor();
+    }
+}
+
 function getNotifPrefs() {
     return JSON.parse(localStorage.getItem('notifPrefs') || '{}');
 }
