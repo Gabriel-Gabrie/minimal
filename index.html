@@ -88,6 +88,37 @@
                 <button id="header-home-btn" onclick="switchTab(0)" class="hidden w-9 h-9 flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors" aria-label="Home">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/></svg>
                 </button>
+                <!-- Sync status indicator -->
+                <div class="relative">
+                    <button id="sync-status-btn" onclick="toggleSyncStatusDropdown()" class="hidden w-9 h-9 flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 rounded-full transition-colors" aria-label="Sync status">
+                        <svg id="sync-status-icon" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M3 12h4l3 9 4-18 3 9h4"/>
+                        </svg>
+                    </button>
+                    <!-- Sync status dropdown -->
+                    <div id="sync-status-dropdown" class="hidden absolute top-full right-0 mt-2 w-64 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-50">
+                        <div class="px-4 py-3 border-b border-zinc-800">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold text-white">Sync Status</span>
+                                <span id="sync-status-badge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">Synced</span>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 space-y-2 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Connection</span>
+                                <span id="sync-connection-status" class="text-white font-medium">Online</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Last synced</span>
+                                <span id="sync-last-time" class="text-white font-medium">Just now</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Pending changes</span>
+                                <span id="sync-pending-count" class="text-white font-medium">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <button id="user-avatar-btn" onclick="showProfileMenu()" class="w-9 h-9 rounded-full bg-zinc-800 overflow-hidden flex items-center justify-center shrink-0 ring-2 ring-zinc-700 hover:ring-emerald-500/50 transition-all">
                     <span id="user-avatar-initials" class="text-xs font-bold text-zinc-300"></span>
                     <img id="user-avatar-img" class="w-full h-full object-cover hidden" alt=""/>
