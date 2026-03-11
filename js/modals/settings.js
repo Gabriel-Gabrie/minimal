@@ -399,8 +399,18 @@ function toggleTemplatesAccordion() {
 }
 
 function applyTemplate(templateName) {
-    // TODO: Implement template application logic in later subtask
-    alert(`Template "${templateName}" will be implemented in a future update.`);
+    // Call applyBudgetTemplate from state.js (handles confirmation dialog)
+    applyBudgetTemplate(templateName);
+
+    // Refresh settings UI to reflect changes
+    renderSettingsStats();
+    renderCategoryEditorCount();
+
+    // If category editor is open, re-render it
+    const catEditorBody = document.getElementById('cat-editor-body');
+    if (catEditorBody && catEditorBody.classList.contains('open')) {
+        renderCategoryEditor();
+    }
 }
 
 function getNotifPrefs() {
