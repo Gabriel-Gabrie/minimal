@@ -120,6 +120,11 @@ html.light .tut-template-card.selected { background: rgba(16,185,129,.05); borde
     0%,100% { opacity:1; }
     50%      { opacity:.55; } }
 .budget-bar-over { animation:_budgetOver 1.6s ease-in-out infinite; }
+/* Sync status pulse */
+@keyframes _syncPulse {
+    0%,100% { opacity:1; }
+    50%      { opacity:.4; } }
+.sync-pulse { animation:_syncPulse 1.2s ease-in-out infinite; }
 /* ── Transactions ── */
 .tx-item { position:relative; overflow:hidden; background:transparent; border-radius:14px; user-select:none; }
 .tx-content { position:relative; z-index:1; background:transparent; will-change:transform; transition:transform .3s cubic-bezier(.25,.46,.45,.94); }

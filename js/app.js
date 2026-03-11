@@ -80,6 +80,9 @@ window.onload = () => {
     // ── Init PWA install prompt ──────────────────────
     initPWAInstall();
 
+    // ── Init sync status indicator ───────────────────
+    initSyncStatus();
+
     // ── Tabs scroll fade ─────────────────────────────
     const scroller = document.getElementById('tabs-scroller');
     const wrap     = document.getElementById('tabs-fade-wrap');
