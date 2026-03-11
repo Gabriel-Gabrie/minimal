@@ -98,6 +98,8 @@ function _showApp() {
     if (dm) dm.classList.add('hidden');
     const pm = document.getElementById('profile-menu');
     if (pm) pm.classList.add('hidden');
+    // Generate any pending recurring transactions
+    generateRecurringTransactions();
     // Offset content when demo banner is visible
     _updateDemoBannerPadding();
     switchTab(getLaunchTab());

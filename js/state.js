@@ -18,6 +18,7 @@
  */
 
 let transactions = [];
+let recurringTransactions = [];
 
 /**
  * @typedef {Object.<string, string[]>} ExpenseCategories
@@ -99,6 +100,7 @@ let _undoData = null;
 let _undoTimer = null;
 /** @type {number|null} Index of transaction currently being edited */
 let _editingTxIdx = null;
+let _editingRecurringId = null;
 
 /** @type {Object.<string, string>} Main category emoji icons keyed by category name */
 let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Banking":"🏛️","Saving":"🐷","Debt":"💳" };
@@ -168,7 +170,7 @@ let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
     const snap = {
-        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts,
+        transactions, recurringTransactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts,
         categoryOrder: Object.keys(expenseCategories)
         // incomeCats is now derived from expenseCategories['Income'] — not saved separately
     };
@@ -211,6 +213,7 @@ function _applyData(d) {
     monthlyBudgets    = d.monthlyBudgets    || {};
 
     transactions      = d.transactions      || [];
+    recurringTransactions = d.recurringTransactions || [];
     itemIcons         = d.itemIcons         || {};
     walletAccounts    = d.walletAccounts    || [];
     incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
@@ -260,6 +263,7 @@ function loadData() {
         monthlyBudgets:    JSON.parse(localStorage.getItem('monthlyBudgets')),
 
         transactions:      JSON.parse(localStorage.getItem('transactions')),
+        recurringTransactions: JSON.parse(localStorage.getItem('recurringTransactions')),
         itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
         walletAccounts:    JSON.parse(localStorage.getItem('walletAccounts')),
         incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
@@ -356,6 +360,42 @@ function formatMonthName(key) {
     return new Date(y, m-1).toLocaleString('default', { month: 'long', year: 'numeric' });
 }
 
+/* ── Recurring transaction date helpers ─────────────────────── */
+
+function addWeeks(dateStr, weeks) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() + (weeks * 7));
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function addBiWeekly(dateStr) {
+    return addWeeks(dateStr, 2);
+}
+
+function addMonths(dateStr, months) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setMonth(date.getMonth() + months);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function addYears(dateStr, years) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setFullYear(date.getFullYear() + years);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
 /* ── Shared month selector (syncs Overview, Transactions, Budgets) ── */
 
 function _initSharedMonth() {
@@ -403,6 +443,104 @@ function _updateMasterMonthUI() {
         thisBtn.classList.toggle('hidden', isCurrent);
     }
 }
+
+/* ── Recurring transaction generation ─────────────────────── */
+
+function generateRecurringTransactions() {
+    if (!recurringTransactions || !Array.isArray(recurringTransactions)) return;
+
+    const today = getCurrentDateEST();
+    let generated = 0;
+
+    recurringTransactions.forEach(template => {
+        if (!template.active) return;
+
+        // Generate all due transactions up to today
+        while (template.nextDate && template.nextDate <= today) {
+            // Stop if end date is reached
+            if (template.endDate && template.nextDate > template.endDate) {
+                template.active = false;
+                break;
+            }
+
+            // Skip if this date is in skippedDates array
+            if (template.skippedDates && template.skippedDates.includes(template.nextDate)) {
+                template.nextDate = _calculateNextRecurrenceDate(template.nextDate, template.frequency);
+                continue;
+            }
+
+            // Check if transaction already exists for this date and recurringId
+            const alreadyExists = transactions.some(t =>
+                t.recurringId === template.id && t.date === template.nextDate
+            );
+
+            if (!alreadyExists) {
+                // Generate new transaction from template
+                const newTx = {
+                    id: Date.now() + Math.random(),
+                    type: template.type,
+                    amount: template.amount,
+                    date: template.nextDate,
+                    mainCategory: template.mainCategory,
+                    subCategory: template.subCategory,
+                    desc: template.desc || '',
+                    excluded: template.excluded || false,
+                    recurringId: template.id,
+                };
+
+                // Add wallet account ID if present (FOR ALL TRANSACTION TYPES)
+                if (template.walletAccountId) {
+                    newTx.walletAccountId = template.walletAccountId;
+                }
+
+                // Add transfer-specific fields if applicable
+                if (template.type === 'transfer') {
+                    newTx.fromAccountId = template.fromAccountId;
+                    newTx.toAccountId = template.toAccountId;
+                }
+
+                transactions.push(newTx);
+                generated++;
+            }
+
+            // Advance to next occurrence
+            template.nextDate = _calculateNextRecurrenceDate(template.nextDate, template.frequency);
+        }
+    });
+
+    if (generated > 0) {
+        saveData();
+    }
+}
+
+function _calculateNextRecurrenceDate(dateStr, frequency) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+
+    switch (frequency) {
+        case 'weekly':
+            date.setDate(date.getDate() + 7);
+            break;
+        case 'bi-weekly':
+            date.setDate(date.getDate() + 14);
+            break;
+        case 'monthly':
+            date.setMonth(date.getMonth() + 1);
+            break;
+        case 'yearly':
+            date.setFullYear(date.getFullYear() + 1);
+            break;
+        default:
+            return dateStr;
+    }
+
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+/* ── Balance & budget calculations ─────────────────────── */
 
 /**
  * Calculate all-time totals across all transactions.

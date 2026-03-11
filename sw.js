@@ -2,7 +2,7 @@
    SERVICE WORKER — Offline caching for Minimal
 ══════════════════════════════════════════════ */
 
-const CACHE_NAME = 'minimal-v4';
+const CACHE_NAME = 'minimal-v5';
 const ASSETS = [
     '/',
     '/index.html',
