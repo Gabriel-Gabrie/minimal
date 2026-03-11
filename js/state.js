@@ -344,10 +344,15 @@ function generateRecurringTransactions() {
                     date: template.nextDate,
                     mainCategory: template.mainCategory,
                     subCategory: template.subCategory,
-                    note: template.note || '',
+                    desc: template.desc || '',
                     excluded: template.excluded || false,
                     recurringId: template.id,
                 };
+
+                // Add wallet account ID if present (FOR ALL TRANSACTION TYPES)
+                if (template.walletAccountId) {
+                    newTx.walletAccountId = template.walletAccountId;
+                }
 
                 // Add transfer-specific fields if applicable
                 if (template.type === 'transfer') {
