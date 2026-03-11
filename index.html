@@ -938,115 +938,6 @@
                 </div>
             </div>
 
-            <!-- ── BUDGET TEMPLATES ──────────────────────────── -->
-            <div class="px-5 mb-5">
-                <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Budget Templates</div>
-                <div class="bg-zinc-900 rounded-3xl overflow-hidden">
-
-                    <!-- Budget Templates accordion -->
-                    <button onclick="toggleTemplatesAccordion()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
-                        <div class="w-9 h-9 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
-                            <svg width="16" height="16" fill="none" stroke="#34d399" stroke-width="2" viewBox="0 0 24 24">
-                                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1 min-w-0 text-left">
-                            <div class="font-semibold text-sm">Quick Start Presets</div>
-                            <div class="text-[11px] text-zinc-500 mt-0.5">Apply a pre-built budget for common situations</div>
-                        </div>
-                        <svg id="templates-acc-chev" class="w-4 h-4 text-zinc-600 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <div id="templates-acc-body" class="hidden border-t border-zinc-800">
-                        <div class="px-5 py-4">
-                            <div class="flex flex-col gap-3">
-
-                                <!-- Student Template -->
-                                <div class="bg-zinc-800/50 rounded-2xl p-4 hover:bg-zinc-800 transition-colors">
-                                    <div class="flex items-start gap-3 mb-3">
-                                        <div class="w-12 h-12 rounded-xl bg-emerald-500/12 flex items-center justify-center text-2xl shrink-0">
-                                            🎓
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-semibold text-zinc-100 mb-1">Student</h3>
-                                            <p class="text-[11px] text-zinc-500 leading-snug">Budget designed for student life with educational expenses and limited income</p>
-                                        </div>
-                                    </div>
-                                    <button onclick="applyTemplate('student')" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-2.5 rounded-xl text-xs transition-all">
-                                        Apply Template
-                                    </button>
-                                </div>
-
-                                <!-- Young Professional Template -->
-                                <div class="bg-zinc-800/50 rounded-2xl p-4 hover:bg-zinc-800 transition-colors">
-                                    <div class="flex items-start gap-3 mb-3">
-                                        <div class="w-12 h-12 rounded-xl bg-emerald-500/12 flex items-center justify-center text-2xl shrink-0">
-                                            💼
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-semibold text-zinc-100 mb-1">Young Professional</h3>
-                                            <p class="text-[11px] text-zinc-500 leading-snug">Budget for early career professionals building financial independence</p>
-                                        </div>
-                                    </div>
-                                    <button onclick="applyTemplate('youngProfessional')" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-2.5 rounded-xl text-xs transition-all">
-                                        Apply Template
-                                    </button>
-                                </div>
-
-                                <!-- Family Template -->
-                                <div class="bg-zinc-800/50 rounded-2xl p-4 hover:bg-zinc-800 transition-colors">
-                                    <div class="flex items-start gap-3 mb-3">
-                                        <div class="w-12 h-12 rounded-xl bg-emerald-500/12 flex items-center justify-center text-2xl shrink-0">
-                                            👨‍👩‍👧‍👦
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-semibold text-zinc-100 mb-1">Family</h3>
-                                            <p class="text-[11px] text-zinc-500 leading-snug">Comprehensive family budget with children, household, and education expenses</p>
-                                        </div>
-                                    </div>
-                                    <button onclick="applyTemplate('family')" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-2.5 rounded-xl text-xs transition-all">
-                                        Apply Template
-                                    </button>
-                                </div>
-
-                                <!-- Freelancer Template -->
-                                <div class="bg-zinc-800/50 rounded-2xl p-4 hover:bg-zinc-800 transition-colors">
-                                    <div class="flex items-start gap-3 mb-3">
-                                        <div class="w-12 h-12 rounded-xl bg-emerald-500/12 flex items-center justify-center text-2xl shrink-0">
-                                            💻
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-semibold text-zinc-100 mb-1">Freelancer</h3>
-                                            <p class="text-[11px] text-zinc-500 leading-snug">Budget for self-employed with irregular income and business expenses</p>
-                                        </div>
-                                    </div>
-                                    <button onclick="applyTemplate('freelancer')" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-2.5 rounded-xl text-xs transition-all">
-                                        Apply Template
-                                    </button>
-                                </div>
-
-                                <!-- Retiree Template -->
-                                <div class="bg-zinc-800/50 rounded-2xl p-4 hover:bg-zinc-800 transition-colors">
-                                    <div class="flex items-start gap-3 mb-3">
-                                        <div class="w-12 h-12 rounded-xl bg-emerald-500/12 flex items-center justify-center text-2xl shrink-0">
-                                            🏖️
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <h3 class="text-sm font-semibold text-zinc-100 mb-1">Retiree</h3>
-                                            <p class="text-[11px] text-zinc-500 leading-snug">Budget for retirement with fixed income and healthcare focus</p>
-                                        </div>
-                                    </div>
-                                    <button onclick="applyTemplate('retiree')" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-2.5 rounded-xl text-xs transition-all">
-                                        Apply Template
-                                    </button>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
             <div class="px-5 mb-5">
                 <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Data</div>
                 <div class="bg-zinc-900 rounded-3xl overflow-hidden">
@@ -1207,6 +1098,7 @@
     <script src="js/modals/budget-item.js"></script>
     <script src="js/modals/settings.js"></script>
     <script src="js/modals/bank-import.js"></script>
+    <script src="js/modals/template-management.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/utils/tutorial.js"></script>
     <script src="js/app.js"></script>
@@ -1822,13 +1714,12 @@
                     </div>
                     <span class="font-semibold text-sm text-zinc-200">Wallet</span>
                 </button>
-                <button onclick="hideProfileMenu();switchTab(3)" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors border-b border-zinc-800/50">
-                    <div class="w-9 h-9 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
-                        <svg width="16" height="16" fill="none" stroke="#38bdf8" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-5 4 3 5-6"/></svg>
+                <button onclick="hideProfileMenu();showTemplateManagement()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors border-b border-zinc-800/50">
+                    <div class="w-9 h-9 rounded-xl bg-purple-500/15 flex items-center justify-center shrink-0 text-lg">
+                        📋
                     </div>
-                    <span class="font-semibold text-sm text-zinc-200">Reports</span>
-                </button>
-                <button onclick="hideProfileMenu();showDataModal()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
+                    <span class="font-semibold text-sm text-zinc-200">Budget Templates</span>
+                </button>                <button onclick="hideProfileMenu();showDataModal()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
                     <div class="w-9 h-9 rounded-xl bg-zinc-700/50 flex items-center justify-center shrink-0">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     </div>
@@ -2043,7 +1934,22 @@
             </div>
         </div>
     </div>
-
+    <!-- TEMPLATE MANAGEMENT MODAL -->
+    <div id="template-management-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[160]" onclick="if(event.target===this)hideTemplateManagement()">
+        <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
+            <!-- Drag handle + close button -->
+            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10 relative">
+                <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
+                <button onclick="hideTemplateManagement()" class="absolute right-3 top-2 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors" title="Close">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <!-- Content area (dynamically populated by template-management.js) -->
+            <div id="template-content" class="px-5 pb-8">
+                <!-- Will be populated by _renderTemplateList(), _showTemplateDetail(), or _showTemplateForm() -->
+            </div>
+        </div>
+    </div>
     <!-- ── Service Worker ── -->
     <script>
         if ('serviceWorker' in navigator) {
