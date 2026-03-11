@@ -34,6 +34,7 @@ function renderBudgets() {
             + '<button onclick="' + btnAction + '" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all">'
             + btnLabel + '</button>'
             + (closest ? '<button onclick="_createBlankBudget(\'' + selectedBudgetMonth + '\')" class="mt-3 w-full py-2.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors">Start with a blank budget instead</button>' : '')
+            + (localStorage.getItem('tutDone') ? '<button onclick="_showTemplateSelector(\'' + selectedBudgetMonth + '\')" class="mt-3 w-full border border-zinc-700 hover:border-zinc-500 active:scale-95 text-zinc-300 hover:text-zinc-100 font-medium py-3 rounded-2xl text-sm transition-all">📋 Use a Template</button>' : '')
             + '</div>';
         attachBudgetSwipe();
         const footerEl2 = document.getElementById('budget-actions-footer');
@@ -533,6 +534,78 @@ function _toggleBalLegend() {
     const chev  = document.getElementById('bal-leg-chev');
     if (panel) panel.style.display = _balLegendOpen ? 'flex' : 'none';
     if (chev)  chev.style.transform = _balLegendOpen ? '' : 'rotate(-90deg)';
+}
+
+/* ── Template Selector ─────────────────────────────── */
+function _showTemplateSelector(monthKey) {
+    // Gather all templates: built-in + custom
+    const templates = [];
+    Object.keys(budgetTemplates).forEach(key => {
+        const t = budgetTemplates[key];
+        const cats = Object.keys(t.categories || {}).filter(c => c !== 'Income');
+        const emojis = cats.slice(0, 5).map(c => {
+            const firstItem = (t.categories[c] || [])[0];
+            return firstItem ? (t.itemIcons[c + ':' + firstItem] || '📁') : '📁';
+        }).join(' ');
+        templates.push({ id: key, name: t.name, description: t.description || '', emojis: emojis, data: { id: key, ...t } });
+    });
+    customTemplates.forEach(t => {
+        const cats = Object.keys(t.categories || {}).filter(c => c !== 'Income');
+        const emojis = cats.slice(0, 5).map(c => {
+            const firstItem = (t.categories[c] || [])[0];
+            return firstItem ? ((t.itemIcons || {})[c + ':' + firstItem] || '📁') : '📁';
+        }).join(' ');
+        templates.push({ id: t.id, name: t.name, description: t.description || '', emojis: emojis, data: t });
+    });
+
+    let cards = '';
+    templates.forEach(t => {
+        cards += '<div class="bg-zinc-800 rounded-2xl p-4 flex flex-col gap-2">'
+            + '<div class="text-lg">' + t.emojis + '</div>'
+            + '<div class="text-sm font-semibold text-zinc-100">' + t.name + '</div>'
+            + (t.description ? '<p class="text-xs text-zinc-500 leading-relaxed">' + t.description + '</p>' : '')
+            + '<button onclick="_applyTemplateToMonth(\'' + t.id + '\',\'' + monthKey + '\')" class="mt-auto bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-2.5 rounded-xl text-xs transition-all">Apply</button>'
+            + '</div>';
+    });
+
+    if (!templates.length) {
+        cards = '<p class="text-sm text-zinc-500 text-center py-4">No templates available.</p>';
+    }
+
+    document.getElementById('budgets-list').innerHTML =
+        '<div class="mx-0 mt-2 bg-zinc-900 rounded-3xl p-5">'
+        + '<div class="text-center mb-4">'
+        + '<div class="text-2xl mb-2">📋</div>'
+        + '<p class="text-sm font-semibold text-zinc-200">Choose a Template</p>'
+        + '<p class="text-xs text-zinc-500 mt-1">Pick a template to set up your budget for ' + formatMonthName(monthKey) + '</p>'
+        + '</div>'
+        + '<div class="grid grid-cols-2 gap-3">' + cards + '</div>'
+        + '<button onclick="renderBudgets()" class="mt-4 w-full py-2.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors">Cancel</button>'
+        + '</div>';
+
+    const footerEl = document.getElementById('budget-actions-footer');
+    if (footerEl) footerEl.classList.add('hidden');
+    const toggleEl = document.getElementById('budget-view-toggle');
+    if (toggleEl) toggleEl.classList.add('hidden');
+}
+
+function _applyTemplateToMonth(templateId, monthKey) {
+    const templateData = getTemplateById(templateId);
+    if (!templateData) return;
+
+    const success = applyBudgetTemplate(templateData, monthKey);
+    if (!success) {
+        // Month already has a budget — show inline error
+        const listEl = document.getElementById('budgets-list');
+        const errDiv = listEl.querySelector('.template-error');
+        if (errDiv) errDiv.remove();
+        const el = document.createElement('div');
+        el.className = 'template-error bg-rose-500/20 text-rose-400 text-xs text-center rounded-xl px-4 py-2.5 mt-3 mx-5';
+        el.textContent = formatMonthName(monthKey) + ' already has a budget. Templates can only be applied to empty months.';
+        listEl.querySelector('.bg-zinc-900').appendChild(el);
+        return;
+    }
+    renderBudgets();
 }
 
 function attachBudgetSwipe() {

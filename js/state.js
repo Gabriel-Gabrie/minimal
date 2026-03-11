@@ -61,6 +61,7 @@ let monthlyBudgets = {};
  * @property {string} createdAt - Creation timestamp in ISO 8601 format
  */
 let walletAccounts = [];
+let customTemplates = [];
 
 /* ── Firebase & demo state (shared across modules) ── */
 /** @type {Object|null} Firebase Auth instance */
@@ -206,9 +207,9 @@ const budgetTemplates = {
         },
         suggestedBudgets: {
             "Income:Part-time Job":         800,
-            "Income:Student Loans":         0,
-            "Income:Family Support":        0,
-            "Income:Scholarships":          0,
+            "Income:Student Loans":         500,
+            "Income:Family Support":        300,
+            "Income:Scholarships":          265,
             "Food:Groceries":               200,
             "Food:Meal Plan":               400,
             "Food:Restaurants/Coffee":      80,
@@ -289,9 +290,9 @@ const budgetTemplates = {
         },
         suggestedBudgets: {
             "Income:Salary":                3500,
-            "Income:Bonuses":               0,
-            "Income:Side Hustle":           0,
-            "Income:Investments":           0,
+            "Income:Bonuses":               500,
+            "Income:Side Hustle":           500,
+            "Income:Investments":           265,
             "Food:Groceries":               350,
             "Food:Restaurants/Coffee":      200,
             "Food:Meal Delivery":           80,
@@ -386,10 +387,10 @@ const budgetTemplates = {
             "Debt:Credit Cards":            "💳",
         },
         suggestedBudgets: {
-            "Income:Primary Salary":        4500,
-            "Income:Secondary Salary":      3000,
-            "Income:Child Benefits":        500,
-            "Income:Investments":           0,
+            "Income:Primary Salary":        5000,
+            "Income:Secondary Salary":      3500,
+            "Income:Child Benefits":        800,
+            "Income:Investments":           850,
             "Food:Groceries":               800,
             "Food:Restaurants/Takeout":     250,
             "Food:School Lunches":          100,
@@ -487,10 +488,10 @@ const budgetTemplates = {
             "Debt:Business Loan":           "🏢",
         },
         suggestedBudgets: {
-            "Income:Client Payments":       4000,
-            "Income:Recurring Contracts":   1500,
-            "Income:Passive Income":        0,
-            "Income:Investments":           0,
+            "Income:Client Payments":       4500,
+            "Income:Recurring Contracts":   2000,
+            "Income:Passive Income":        300,
+            "Income:Investments":           285,
             "Food:Groceries":               400,
             "Food:Restaurants/Coffee":      150,
             "Food:Client Meals":            100,
@@ -528,93 +529,6 @@ const budgetTemplates = {
             "Debt:Business Loan":           200,
         }
     },
-    retiree: {
-        name: "Retiree",
-        description: "Budget for retirees living on pension and retirement savings",
-        categories: {
-            "Income":         ["Pension", "Social Security", "Retirement Withdrawals", "Investments"],
-            "Food":           ["Groceries", "Restaurants/Dining"],
-            "Personal":       ["Phone Plan", "Subscriptions", "Entertainment", "Hobbies", "Grooming"],
-            "Household":      ["Rent/Mortgage", "Property Tax", "Utilities", "Internet", "Maintenance", "Supplies"],
-            "Transportation": ["Car Payment", "Auto Insurance", "Gas/Charging", "Maintenance"],
-            "Health":         ["Health Insurance", "Dental Insurance", "Prescriptions", "Medical", "Vision", "Supplements"],
-            "Travel":         ["Vacations", "Visits to Family", "Tours/Excursions"],
-            "Banking":        ["Bank Fees", "Transfers"],
-            "Saving":         ["Emergency Fund", "Legacy/Gifts"],
-        },
-        itemIcons: {
-            "Income:Pension":               "💰",
-            "Income:Social Security":       "🏛️",
-            "Income:Retirement Withdrawals": "🏖️",
-            "Income:Investments":           "📈",
-            "Food:Groceries":               "🛒",
-            "Food:Restaurants/Dining":      "🍽️",
-            "Personal:Phone Plan":          "📱",
-            "Personal:Subscriptions":       "📺",
-            "Personal:Entertainment":       "🎬",
-            "Personal:Hobbies":             "🎨",
-            "Personal:Grooming":            "✂️",
-            "Household:Rent/Mortgage":      "🏠",
-            "Household:Property Tax":       "🏘️",
-            "Household:Utilities":          "💡",
-            "Household:Internet":           "🌐",
-            "Household:Maintenance":        "🔨",
-            "Household:Supplies":           "🧹",
-            "Transportation:Car Payment":   "🚗",
-            "Transportation:Auto Insurance": "🛡️",
-            "Transportation:Gas/Charging":  "⛽",
-            "Transportation:Maintenance":   "🔧",
-            "Health:Health Insurance":      "🛡️",
-            "Health:Dental Insurance":      "🦷",
-            "Health:Prescriptions":         "💊",
-            "Health:Medical":               "🏥",
-            "Health:Vision":                "👓",
-            "Health:Supplements":           "🌿",
-            "Travel:Vacations":             "✈️",
-            "Travel:Visits to Family":      "👨‍👩‍👧‍👦",
-            "Travel:Tours/Excursions":      "🗺️",
-            "Banking:Bank Fees":            "🏦",
-            "Banking:Transfers":            "💸",
-            "Saving:Emergency Fund":        "🐷",
-            "Saving:Legacy/Gifts":          "🎁",
-        },
-        suggestedBudgets: {
-            "Income:Pension":               2500,
-            "Income:Social Security":       1800,
-            "Income:Retirement Withdrawals": 1000,
-            "Income:Investments":           0,
-            "Food:Groceries":               400,
-            "Food:Restaurants/Dining":      200,
-            "Personal:Phone Plan":          70,
-            "Personal:Subscriptions":       40,
-            "Personal:Entertainment":       100,
-            "Personal:Hobbies":             150,
-            "Personal:Grooming":            60,
-            "Household:Rent/Mortgage":      1200,
-            "Household:Property Tax":       300,
-            "Household:Utilities":          180,
-            "Household:Internet":           70,
-            "Household:Maintenance":        200,
-            "Household:Supplies":           60,
-            "Transportation:Car Payment":   0,
-            "Transportation:Auto Insurance": 120,
-            "Transportation:Gas/Charging":  100,
-            "Transportation:Maintenance":   80,
-            "Health:Health Insurance":      400,
-            "Health:Dental Insurance":      60,
-            "Health:Prescriptions":         200,
-            "Health:Medical":               150,
-            "Health:Vision":                50,
-            "Health:Supplements":           80,
-            "Travel:Vacations":             300,
-            "Travel:Visits to Family":      150,
-            "Travel:Tours/Excursions":      100,
-            "Banking:Bank Fees":            15,
-            "Banking:Transfers":            0,
-            "Saving:Emergency Fund":        200,
-            "Saving:Legacy/Gifts":          100,
-        }
-    }
 };
 
 /* ── Template Application ─────────────────────── */
@@ -674,7 +588,7 @@ let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
     const snap = {
-        transactions, recurringTransactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts,
+        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts, customTemplates,
         categoryOrder: Object.keys(expenseCategories)
         // incomeCats is now derived from expenseCategories['Income'] — not saved separately
     };
@@ -720,6 +634,7 @@ function _applyData(d) {
     recurringTransactions = d.recurringTransactions || [];
     itemIcons         = d.itemIcons         || {};
     walletAccounts    = d.walletAccounts    || [];
+    customTemplates   = d.customTemplates   || [];
     incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
     selectedMonth = getCurrentMonthKey();
     selectedBudgetMonth = selectedMonth;
@@ -770,6 +685,7 @@ function loadData() {
         recurringTransactions: JSON.parse(localStorage.getItem('recurringTransactions')),
         itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
         walletAccounts:    JSON.parse(localStorage.getItem('walletAccounts')),
+        customTemplates:   JSON.parse(localStorage.getItem('customTemplates')),
         incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
         categoryOrder:     JSON.parse(localStorage.getItem('categoryOrder')),
     });
@@ -1196,4 +1112,71 @@ function _isTransferExcluded(t) {
     const toType   = _getAccType(t.toAccountId);
     if (!fromType || !toType) return true;
     return fromType === toType;
+}
+
+/* ── Template CRUD & Apply ────────────────────────────── */
+
+function saveCustomTemplate(template) {
+    if (!template.id) {
+        template.id = 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        template.createdAt = new Date().toISOString();
+    }
+    template.updatedAt = new Date().toISOString();
+    const idx = customTemplates.findIndex(t => t.id === template.id);
+    if (idx >= 0) {
+        customTemplates[idx] = template;
+    } else {
+        customTemplates.push(template);
+    }
+    saveData();
+    return template;
+}
+
+function deleteCustomTemplate(id) {
+    customTemplates = customTemplates.filter(t => t.id !== id);
+    saveData();
+}
+
+function getTemplateById(id) {
+    // Search built-in templates by key
+    if (budgetTemplates[id]) return { id, ...budgetTemplates[id] };
+    // Search custom templates by id
+    return customTemplates.find(t => t.id === id) || null;
+}
+
+function applyBudgetTemplate(templateData, targetMonth) {
+    // Guard against overwriting existing budget
+    if (monthlyBudgets[targetMonth]) return false;
+
+    // Set categories and icons from template
+    expenseCategories = JSON.parse(JSON.stringify(templateData.categories));
+    itemIcons = JSON.parse(JSON.stringify(templateData.itemIcons || {}));
+
+    // Build budget structure: { main: { sub: amount } }
+    monthlyBudgets[targetMonth] = {};
+    Object.keys(expenseCategories).forEach(cat => {
+        monthlyBudgets[targetMonth][cat] = {};
+        expenseCategories[cat].forEach(item => {
+            const key = cat + ':' + item;
+            monthlyBudgets[targetMonth][cat][item] = templateData.suggestedBudgets[key] || 0;
+        });
+    });
+
+    // Include dynamic Saving/Debt sections from walletAccounts
+    ['Saving', 'Debt'].forEach(secType => {
+        const accs = walletAccounts.filter(a => a.type === secType.toLowerCase());
+        if (accs.length) {
+            if (!monthlyBudgets[targetMonth][secType]) {
+                monthlyBudgets[targetMonth][secType] = {};
+            }
+            accs.forEach(acc => {
+                if (!(acc.name in monthlyBudgets[targetMonth][secType])) {
+                    monthlyBudgets[targetMonth][secType][acc.name] = 0;
+                }
+            });
+        }
+    });
+
+    saveData();
+    return true;
 }
