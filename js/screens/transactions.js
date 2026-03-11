@@ -120,6 +120,56 @@ function renderTransactions() {
 
 function _txRowHTML(t) {
     const realIdx = transactions.indexOf(t);
+    const isInc   = t.type === 'income';
+    const isTrf   = t.type === 'transfer';
+    const isExcl  = !!t.excluded;
+    const isRecurring = !!t.recurringId;
+
+    let amtCls, sign, emoji, title, subtitle;
+    if (isTrf) {
+        const fromAcc = _getAccById(t.fromAccountId);
+        const toAcc   = _getAccById(t.toAccountId);
+        amtCls  = _isTransferExcluded(t) ? 'text-zinc-600' : 'text-sky-400';
+        sign    = '⇄';
+        emoji   = '🔄';
+        title   = t.desc || ((fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?'));
+        subtitle = (fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?');
+    } else {
+        const iconKey = t.mainCategory + ':' + (t.subCategory || '');
+        amtCls  = isExcl ? 'text-zinc-600 line-through' : isInc ? 'text-emerald-400' : 'text-zinc-200';
+        sign    = isInc ? '+' : '\u2212';
+        emoji   = isExcl ? '🚫' : (itemIcons[iconKey] || mainEmojis[t.mainCategory] || (isInc ? '💰' : '💸'));
+        title   = t.desc || (t.mainCategory + (t.subCategory ? ' \u00B7 ' + t.subCategory : ''));
+        const linkedAcc = t.walletAccountId ? _getAccById(t.walletAccountId) : null;
+        subtitle = linkedAcc ? linkedAcc.name : (t.mainCategory || '');
+    }
+
+    // Recurring indicator badge
+    const recurringBadge = isRecurring
+        ? '<div class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-zinc-950 flex items-center justify-center text-[10px]">🔄</div>'
+        : '';
+
+    return `<div class="tx-item mb-1" data-index="${realIdx}">
+        <div class="tx-content flex items-center gap-3 px-3 py-2.5" onclick="showTxSummary(${realIdx})" style="cursor:pointer">
+            <div class="relative w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">
+                ${emoji}
+                ${recurringBadge}
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium leading-snug truncate">${title}</p>
+                <p class="text-[11px] text-zinc-600 mt-0.5 truncate">${subtitle}</p>
+            </div>
+            <span class="${amtCls} font-semibold text-sm tabular-nums shrink-0">${sign}$${parseFloat(t.amount).toFixed(2)}</span>
+        </div>
+        <div class="tx-delete">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+            </svg>
+            DELETE
+        </div>
+    </div>`;
     return buildTransactionRowHTML(t, {
         variant: 'full',
         onClick: `showTxSummary(${realIdx})`,
@@ -244,10 +294,26 @@ function showTxSummary(idx) {
         detailRows += _summaryRow('Status', 'Same-type transfer (excluded)');
     }
 
+    // Recurring indicator
+    const isRecurring = !!t.recurringId;
+    if (isRecurring) {
+        detailRows += _summaryRow('Recurring', '🔄 Part of recurring series');
+    }
+
     // Date added
     if (dateAdded) {
         detailRows += _summaryRow('Added', dateAdded);
     }
+
+    // Manage recurring button (if recurring transaction)
+    const manageRecurringBtn = isRecurring ? `
+        <button onclick="hideTxSummary();showDataModal();_openRecurringSection()"
+            class="w-full bg-zinc-800 hover:bg-zinc-700 py-3.5 rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            Manage Recurring Series
+        </button>` : '';
 
     const content = document.getElementById('tx-summary-content');
     content.innerHTML = `
@@ -266,6 +332,7 @@ function showTxSummary(idx) {
 
         <!-- Actions -->
         <div class="space-y-2 px-1">
+            ${manageRecurringBtn}
             <button onclick="hideTxSummary();openEditTx(${idx})"
                 class="w-full bg-zinc-800 hover:bg-zinc-700 py-3.5 rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
@@ -290,6 +357,17 @@ function _summaryRow(label, value) {
 function hideTxSummary() {
     const modal = document.getElementById('tx-summary-modal');
     if (modal) modal.classList.add('hidden');
+}
+
+function _openRecurringSection() {
+    // Ensure the recurring accordion is expanded
+    const body = document.getElementById('recurring-acc-body');
+    const chev = document.getElementById('recurring-acc-chev');
+    if (body && body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        if (chev) chev.style.transform = 'rotate(180deg)';
+        renderRecurringTransactions();
+    }
 }
 
 /* ── Direction-locked swipe-to-delete ────────────── */

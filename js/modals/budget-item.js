@@ -500,8 +500,16 @@ function showAddModal(type) {
     document.getElementById('desc').value = '';
     const excl = document.getElementById('tx-exclude');
     if (excl) excl.checked = false;
+    const recurring = document.getElementById('tx-recurring');
+    if (recurring) recurring.checked = false;
+    const recurringFreq = document.getElementById('recurring-frequency');
+    if (recurringFreq) recurringFreq.value = 'monthly';
+    const recurringEndDate = document.getElementById('recurring-end-date');
+    if (recurringEndDate) recurringEndDate.value = '';
+    _editingRecurringId = null;
     setType(type || 'expense');
     updateExcludeUI();
+    updateRecurringUI();
 }
 
 function updateExcludeUI() {
@@ -521,9 +529,22 @@ function updateExcludeUI() {
     }
 }
 
+function updateRecurringUI() {
+    const recurring = !!document.getElementById('tx-recurring')?.checked;
+    const recurringFields = document.getElementById('recurring-fields');
+    if (recurringFields) {
+        if (recurring) {
+            recurringFields.classList.remove('hidden');
+        } else {
+            recurringFields.classList.add('hidden');
+        }
+    }
+}
+
 function hideModal() {
     document.getElementById('add-modal').classList.add('hidden');
     _editingTxIdx = null;
+    _editingRecurringId = null;
 }
 
 function setType(type) {
