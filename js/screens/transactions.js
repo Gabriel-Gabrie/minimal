@@ -170,6 +170,12 @@ function _txRowHTML(t) {
             DELETE
         </div>
     </div>`;
+    return buildTransactionRowHTML(t, {
+        variant: 'full',
+        onClick: `showTxSummary(${realIdx})`,
+        showDelete: true,
+        index: realIdx
+    });
 }
 
 function prevTxMonth() { prevSharedMonth(); }

@@ -2,40 +2,122 @@
    STATE — Data model, defaults, persistence
 ══════════════════════════════════════════════ */
 
+/**
+ * @typedef {Object} Transaction
+ * @property {number} id - Unique transaction identifier (timestamp-based)
+ * @property {string} type - Transaction type: 'income', 'expense', or 'transfer'
+ * @property {number} amount - Transaction amount
+ * @property {string} date - Transaction date in YYYY-MM-DD format
+ * @property {string} desc - Transaction description
+ * @property {string} mainCategory - Main category name
+ * @property {string} subCategory - Sub-category name
+ * @property {boolean} excluded - Whether transaction is excluded from budgets
+ * @property {string} [walletAccountId] - Wallet account ID (optional, for income/expense)
+ * @property {string} [fromAccountId] - Source account ID (optional, for transfers)
+ * @property {string} [toAccountId] - Destination account ID (optional, for transfers)
+ */
+
 let transactions = [];
 let recurringTransactions = [];
+
+/**
+ * @typedef {Object.<string, string[]>} ExpenseCategories
+ * Object mapping category names to arrays of subcategories.
+ * Each key is a category name (e.g., "Food", "Income") and each value is an array of subcategory names.
+ */
 let expenseCategories = {};
+
+/**
+ * @typedef {Object.<string, Object.<string, Object.<string, number>>>} MonthlyBudgets
+ * Three-level nested structure mapping month keys to categories to budget items.
+ * First level: Month key in YYYY-MM format (e.g., "2025-03")
+ * Second level: Category name (e.g., "Food", "Income")
+ * Third level: Item name (e.g., "Groceries", "Salary") mapped to budget amount
+ * @example
+ * {
+ *   "2025-03": {
+ *     "Food": {
+ *       "Groceries": 500,
+ *       "Restaurants/Coffee": 200
+ *     },
+ *     "Income": {
+ *       "Salary": 5000
+ *     }
+ *   }
+ * }
+ */
 let monthlyBudgets = {};
+
+/**
+ * @typedef {Object} WalletAccount
+ * @property {string} id - Unique account identifier
+ * @property {string} name - Account name
+ * @property {string} type - Account type: 'spending', 'saving', or 'debt'
+ * @property {string} icon - Account icon (emoji)
+ * @property {string} colour - Account color (hex format, e.g., '#10b981')
+ * @property {number} balance - Current account balance
+ * @property {number} goal - Goal amount (for saving accounts) or starting debt (for debt accounts)
+ * @property {boolean} isDefault - Whether this is the default account for transactions
+ * @property {string} createdAt - Creation timestamp in ISO 8601 format
+ */
 let walletAccounts = [];
 
 /* ── Firebase & demo state (shared across modules) ── */
+/** @type {Object|null} Firebase Auth instance */
 let _fbAuth = null;
+/** @type {Object|null} Firebase Firestore instance */
 let _fbDb   = null;
+/** @type {boolean} Demo mode flag (when true, data is not persisted) */
 let _demoMode = false;
 
+/** @type {'income'|'expense'|'transfer'} Current transaction type being entered/displayed */
 let currentType = 'expense';
-let selectedMonth = '';       // single shared month across Overview, Transactions, Budgets
-let selectedBudgetMonth = ""; // alias — kept for backward compat, synced via selectedMonth
-let _rCharts = {};  // report chart instances keyed by card id
+/** @type {string} Single shared month key (YYYY-MM format) across Overview, Transactions, Budgets */
+let selectedMonth = '';
+/** @type {string} Alias for selectedMonth — kept for backward compat, synced via selectedMonth */
+let selectedBudgetMonth = "";
+/** @type {Object.<string, Object>} Report chart instances keyed by card id */
+let _rCharts = {};
+/** @type {{expenses: boolean, income: boolean, surplus: boolean, spendBreak: boolean, incBreak: boolean}} Report card visibility states */
 let _rCardOpen = { expenses: true, income: false, surplus: false, spendBreak: true, incBreak: false };
+/** @type {{trends: boolean, breakdowns: boolean}} Report section visibility states */
 let _rSectOpen = { trends: true, breakdowns: true };
-let _trendMonthCount = 6;     // Trends section (default 6M)
-let _breakMonthCount = 1;     // Breakdowns section (1 = ring chart, default)
-let _breakdownMode = 'category'; // 'category' | 'item'
+/** @type {number} Number of months to show in trends section (default 6) */
+let _trendMonthCount = 6;
+/** @type {number} Number of months to show in breakdowns section (1 = ring chart, default) */
+let _breakMonthCount = 1;
+/** @type {'category'|'item'} Breakdown display mode */
+let _breakdownMode = 'category';
+/** @type {string} Transaction filter mode ('all' or other filter values) */
 let txFilter = 'all';
-let selectedTxMonth = '';   // alias — kept for backward compat, synced via selectedMonth
-let txSort = 'date-desc';     // 'date-desc'|'date-asc'|'amount-desc'|'amount-asc'
-let _undoData = null, _undoTimer = null;
+/** @type {string} Alias for selectedMonth — kept for backward compat, synced via selectedMonth */
+let selectedTxMonth = '';
+/** @type {'date-desc'|'date-asc'|'amount-desc'|'amount-asc'} Transaction list sort order */
+let txSort = 'date-desc';
+/** @type {Object|null} Undo data snapshot for transaction deletion */
+let _undoData = null;
+/** @type {number|null} Undo toast timeout timer ID */
+let _undoTimer = null;
+/** @type {number|null} Index of transaction currently being edited */
 let _editingTxIdx = null;
 let _editingRecurringId = null;
 
-
+/** @type {Object.<string, string>} Main category emoji icons keyed by category name */
 let mainEmojis = { "Income":"💰","Food":"🍽️","Household":"🏠","Personal":"👤","Health":"💊","Transportation":"🚗","Banking":"🏛️","Saving":"🐷","Debt":"💳" };
-let itemIcons = {}; // keyed "main:sub", e.g. "Food:Groceries" → "🛒"
-let _bimMain = null, _bimSub = null, _bimSelectedIcon = null;
+/** @type {Object.<string, string>} Item emoji icons keyed by "Main:Sub" format (e.g., "Food:Groceries" → "🛒") */
+let itemIcons = {};
+/** @type {string|null} Currently selected main category in budget item modal */
+let _bimMain = null;
+/** @type {string|null} Currently selected sub-category in budget item modal */
+let _bimSub = null;
+/** @type {string|null} Currently selected emoji icon in budget item modal */
+let _bimSelectedIcon = null;
+/** @type {boolean} Wallet balance legend visibility state */
 let _balLegendOpen = false;
-let _budgetViewMode = 'plan'; // 'plan' | 'remaining'
-let incomeCats = ["Salary","Freelance","Investments","Gifts","Other"]; // legacy — now derived from expenseCategories['Income']
+/** @type {'plan'|'remaining'} Budget view mode (plan = budgeted amounts, remaining = remaining amounts) */
+let _budgetViewMode = 'plan';
+/** @type {string[]} Income category items — legacy, now derived from expenseCategories['Income'] */
+let incomeCats = ["Salary","Freelance","Investments","Gifts","Other"];
 
 const defaultCategories = {
     "Income":         ["Salary", "Freelance", "Investments"],
@@ -77,7 +159,13 @@ const defaultItemIcons = {
 
 /* ── Persistence helpers ─────────────────────── */
 
-// Write to localStorage (always) + Firestore (debounced, when signed in)
+/**
+ * Write to localStorage (always) + Firestore (debounced, when signed in).
+ * Does nothing in demo mode. Immediately writes to localStorage and debounces
+ * Firestore write by 1.5 seconds to avoid excessive cloud writes.
+ * @returns {void}
+ */
+/** @type {number|null} Debounce timer ID for Firestore save operations */
 let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
@@ -100,7 +188,19 @@ function saveData() {
     }, 1500);
 }
 
-// Populate app state from a plain object
+/**
+ * Populate app state from a plain object.
+ * Applies data migrations, restores category order, and initializes derived state.
+ * @param {Object} d - Data snapshot object
+ * @param {ExpenseCategories} [d.expenseCategories] - Category definitions
+ * @param {MonthlyBudgets} [d.monthlyBudgets] - Budget data by month
+ * @param {Transaction[]} [d.transactions] - Transaction history
+ * @param {Object.<string, string>} [d.itemIcons] - Icon mappings ("Main:Sub" → emoji)
+ * @param {WalletAccount[]} [d.walletAccounts] - Wallet accounts
+ * @param {string[]} [d.incomeCats] - Legacy income categories (now derived)
+ * @param {string[]} [d.categoryOrder] - Category key order for restoration
+ * @returns {void}
+ */
 function _applyData(d) {
     expenseCategories = d.expenseCategories || {...defaultCategories};
     // Restore category order (Firestore doesn't preserve object key order)
@@ -151,6 +251,11 @@ function _applyData(d) {
     incomeCats = expenseCategories['Income'] || [];
 }
 
+/**
+ * Load app data from localStorage.
+ * Used as offline fallback and pre-Firebase initialization.
+ * @returns {void}
+ */
 function loadData() {
     // Read from localStorage (used as offline fallback and pre-Firebase init)
     _applyData({
@@ -166,7 +271,13 @@ function loadData() {
     });
 }
 
-// Load from Firestore for current user; falls back to localStorage
+/**
+ * Load from Firestore for current user; falls back to localStorage.
+ * Mirrors Firestore data to localStorage for offline access. If Firestore
+ * is unavailable or read fails, falls back to loadData().
+ * @param {string} uid - Firebase user ID
+ * @returns {Promise<void>}
+ */
 async function loadFromFirestore(uid) {
     if (!_fbDb) { loadData(); return; }
     try {
@@ -185,15 +296,28 @@ async function loadFromFirestore(uid) {
     }
 }
 
+/**
+ * Get current date in EST/EDT timezone.
+ * @returns {string} Date string in YYYY-MM-DD format
+ */
 function getCurrentDateEST() {
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
 }
 
+/**
+ * Get current month key in EST/EDT timezone.
+ * @returns {string} Month key in YYYY-MM format (e.g., "2025-03")
+ */
 function getCurrentMonthKey() {
     return getCurrentDateEST().slice(0,7);
 }
 
 
+/**
+ * Get the next month key.
+ * @param {string} key - Current month key in YYYY-MM format
+ * @returns {string} Next month key in YYYY-MM format
+ */
 function getNextMonth(key) {
     let [year, month] = key.split('-').map(Number);
     month++;
@@ -201,6 +325,11 @@ function getNextMonth(key) {
     return `${year}-${month.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Get the previous month key.
+ * @param {string} key - Current month key in YYYY-MM format
+ * @returns {string} Previous month key in YYYY-MM format
+ */
 function getPrevMonth(key) {
     let [year, month] = key.split('-').map(Number);
     month--;
@@ -208,6 +337,11 @@ function getPrevMonth(key) {
     return `${year}-${month.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Format month key as short display string.
+ * @param {string} key - Month key in YYYY-MM format
+ * @returns {string} Formatted month string (e.g., "Mar-25") or original key if invalid
+ */
 function formatMonthShort(key) {
     if (!key || !key.match(/^\d{4}-\d{2}$/)) return key;
     const [y, m] = key.split('-').map(Number);
@@ -215,6 +349,11 @@ function formatMonthShort(key) {
     return names[m - 1] + '-' + String(y).slice(2);
 }
 
+/**
+ * Format month key as full month name and year.
+ * @param {string} key - Month key in YYYY-MM format
+ * @returns {string} Formatted month name (e.g., "March 2025") or "Invalid Date" if key is invalid
+ */
 function formatMonthName(key) {
     if (!key || !key.match(/^\d{4}-\d{2}$/)) return "Invalid Date";
     const [y, m] = key.split('-').map(Number);
@@ -403,6 +542,11 @@ function _calculateNextRecurrenceDate(dateStr, frequency) {
 
 /* ── Balance & budget calculations ─────────────────────── */
 
+/**
+ * Calculate all-time totals across all transactions.
+ * Excludes transactions marked as excluded. Transfers do not affect totals.
+ * @returns {{balance: number, income: number, expense: number}} Total balance, income, and expense
+ */
 function calculateTotals() {
     let balance = 0, income = 0, expense = 0;
     transactions.forEach(t => {
@@ -414,11 +558,26 @@ function calculateTotals() {
     return {balance, income, expense};
 }
 
+/**
+ * Calculate total expenses in a specific month, optionally filtered by category/subcategory.
+ * Excludes transactions marked as excluded.
+ * @param {string} monthKey - Month key in YYYY-MM format (e.g., "2025-03")
+ * @param {string} main - Main category name to filter by (or null/undefined for all)
+ * @param {string|null} [sub=null] - Sub-category name to filter by (optional)
+ * @returns {number} Total amount spent
+ */
 function calculateSpentInMonth(monthKey, main, sub = null) {
     return transactions.filter(t => t.type === 'expense' && !t.excluded && t.date.startsWith(monthKey) && (!main || t.mainCategory === main) && (!sub || t.subCategory === sub))
         .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 }
 
+/**
+ * Calculate total income in a specific month, optionally filtered by income item.
+ * Excludes transactions marked as excluded.
+ * @param {string} monthKey - Month key in YYYY-MM format (e.g., "2025-03")
+ * @param {string|null} [item=null] - Income item name to filter by (optional, stored in mainCategory)
+ * @returns {number} Total income amount
+ */
 function calculateIncomeInMonth(monthKey, item = null) {
     return transactions
         .filter(t => t.type === 'income' && !t.excluded && t.date.startsWith(monthKey)
@@ -428,18 +587,33 @@ function calculateIncomeInMonth(monthKey, item = null) {
 
 /* ── Transfer budget helpers ──────────────────────────────── */
 
-// Get account type from wallet by id
+/**
+ * Get account type from wallet by ID.
+ * @param {string} id - Wallet account ID
+ * @returns {string|null} Account type ('spending', 'saving', or 'debt') or null if not found
+ */
 function _getAccType(id) {
     const a = walletAccounts.find(x => x.id === id);
     return a ? a.type : null;
 }
+
+/**
+ * Get wallet account by ID.
+ * @param {string} id - Wallet account ID
+ * @returns {WalletAccount|null} Wallet account object or null if not found
+ */
 function _getAccById(id) {
     return walletAccounts.find(x => x.id === id) || null;
 }
 
-// Calculate net amount transferred TO a saving/debt account in a given month
-// Positive = money going into saving/debt (expense-like)
-// Negative = money pulled back from saving/debt (negative expense)
+/**
+ * Calculate net amount transferred TO a saving/debt account in a given month.
+ * Positive = money going into saving/debt (expense-like).
+ * Negative = money pulled back from saving/debt (negative expense).
+ * @param {string} monthKey - Month key in YYYY-MM format (e.g., "2025-03")
+ * @param {string} accountId - Wallet account ID
+ * @returns {number} Net transfer amount (positive = into account, negative = out of account)
+ */
 function _calculateTransferToAccount(monthKey, accountId) {
     return transactions
         .filter(t => t.type === 'transfer' && t.date.startsWith(monthKey))
@@ -459,7 +633,13 @@ function _calculateTransferToAccount(monthKey, accountId) {
         }, 0);
 }
 
-// Total savings/debt payments in a month (for overview: expenses + savings)
+/**
+ * Calculate total savings/debt payments in a month (for overview: expenses + savings).
+ * Positive = money moved from spending to saving/debt (outflow from budget).
+ * Negative = money moved from saving/debt back to spending (inflow to budget).
+ * @param {string} monthKey - Month key in YYYY-MM format (e.g., "2025-03")
+ * @returns {number} Net savings/debt payment amount
+ */
 function _calculateTotalSavingsInMonth(monthKey) {
     return transactions
         .filter(t => t.type === 'transfer' && t.date.startsWith(monthKey))
@@ -479,7 +659,12 @@ function _calculateTotalSavingsInMonth(monthKey) {
         }, 0);
 }
 
-// All-time total savings (no month filter)
+/**
+ * Calculate all-time total savings/debt payments (no month filter).
+ * Positive = net money moved from spending to saving/debt.
+ * Negative = net money moved from saving/debt back to spending.
+ * @returns {number} Net all-time savings/debt payment amount
+ */
 function _calculateTotalSavingsAllTime() {
     return transactions
         .filter(t => t.type === 'transfer')
@@ -495,7 +680,12 @@ function _calculateTotalSavingsAllTime() {
         }, 0);
 }
 
-// Check if a transfer is excluded from budget (same-type transfer)
+/**
+ * Check if a transfer is excluded from budget (same-type transfer).
+ * Transfers between accounts of the same type (e.g., spending → spending) don't affect budgets.
+ * @param {Transaction} t - Transaction object to check
+ * @returns {boolean} True if transfer should be excluded from budget calculations
+ */
 function _isTransferExcluded(t) {
     if (t.type !== 'transfer') return false;
     const fromType = _getAccType(t.fromAccountId);

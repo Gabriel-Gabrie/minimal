@@ -21,6 +21,7 @@ const ASSETS = [
     '/js/modals/settings.js',
     '/js/modals/bank-import.js',
     '/js/utils/tutorial.js',
+    '/js/utils/transaction-row.js',
     '/manifest.json',
 ];
 
