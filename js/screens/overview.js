@@ -240,32 +240,10 @@ function _renderOvRecent(monthKey) {
 
     let html = '';
     recent.forEach(t => {
-        const isInc  = t.type === 'income';
-        const isTrf  = t.type === 'transfer';
-        let emoji, amtCls, sign, title;
-
-        if (isTrf) {
-            const fA = _getAccById(t.fromAccountId), tA = _getAccById(t.toAccountId);
-            emoji  = '🔄';
-            amtCls = 'text-sky-400';
-            sign   = '⇄';
-            title  = t.desc || ((fA ? fA.name : '?') + ' → ' + (tA ? tA.name : '?'));
-        } else {
-            const iconKey = t.mainCategory + ':' + (t.subCategory || '');
-            emoji  = itemIcons[iconKey] || mainEmojis[t.mainCategory] || (isInc ? '💰' : '💸');
-            amtCls = isInc ? 'text-emerald-400' : 'text-zinc-200';
-            sign   = isInc ? '+' : '\u2212';
-            title  = t.desc || (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : ''));
-        }
-
-        html += `<div class="flex items-center gap-3 py-2">
-            <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">${emoji}</div>
-            <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium leading-snug truncate">${title}</p>
-                <p class="text-[11px] text-zinc-600 mt-0.5">${_dateLabel(t.date)}</p>
-            </div>
-            <span class="${amtCls} font-semibold text-sm tabular-nums">${sign}$${parseFloat(t.amount).toFixed(2)}</span>
-        </div>`;
+        html += buildTransactionRowHTML(t, {
+            variant: 'compact',
+            customSubtitle: _dateLabel(t.date)
+        });
     });
 
     document.getElementById('recent-list').innerHTML = html ||
