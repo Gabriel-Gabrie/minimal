@@ -1,0 +1,25 @@
+{
+  "active": true,
+  "spec": "019-budget-templates-quick-start-presets",
+  "state": "building",
+  "subtasks": {
+    "completed": 2,
+    "total": 8,
+    "in_progress": 1,
+    "failed": 0
+  },
+  "phase": {
+    "current": "Tutorial Integration",
+    "id": null,
+    "total": 2
+  },
+  "workers": {
+    "active": 0,
+    "max": 1
+  },
+  "session": {
+    "number": 4,
+    "started_at": "2026-03-10T20:44:27.181814"
+  },
+  "last_update": "2026-03-10T20:54:06.237859"
+}
