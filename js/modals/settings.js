@@ -388,6 +388,21 @@ function toggleNotifAccordion() {
     if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
 }
 
+/* ── Budget Templates accordion ─────────────────────────────── */
+function toggleTemplatesAccordion() {
+    const body = document.getElementById('templates-acc-body');
+    const chev = document.getElementById('templates-acc-chev');
+    if (!body) return;
+    const open = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', open);
+    if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function applyTemplate(templateName) {
+    // TODO: Implement template application logic in later subtask
+    alert(`Template "${templateName}" will be implemented in a future update.`);
+}
+
 function getNotifPrefs() {
     return JSON.parse(localStorage.getItem('notifPrefs') || '{}');
 }
