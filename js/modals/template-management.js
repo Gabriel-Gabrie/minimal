@@ -78,7 +78,6 @@ function _renderTemplateList() {
                 + '</div>'
                 + '<div class="flex gap-2">'
                 + '<button onclick="_showTemplateForm(\'' + t.id + '\')" class="flex-1 bg-amber-500/20 hover:bg-amber-500/30 active:scale-95 text-amber-400 font-semibold py-2 rounded-xl text-xs transition-all">Edit</button>'
-                + '<button onclick="_duplicateTemplate(\'' + t.id + '\')" class="flex-1 bg-blue-500/20 hover:bg-blue-500/30 active:scale-95 text-blue-400 font-semibold py-2 rounded-xl text-xs transition-all">Duplicate</button>'
                 + '<button onclick="_deleteTemplate(\'' + t.id + '\')" class="flex-1 bg-rose-500/20 hover:bg-rose-500/30 active:scale-95 text-rose-400 font-semibold py-2 rounded-xl text-xs transition-all">Delete</button>'
                 + '</div>'
                 + '</div>';
@@ -329,21 +328,6 @@ function _deleteTemplate(id) {
     if (!confirmed) return;
     deleteCustomTemplate(id);
     _renderTemplateList();
-}
-function _duplicateTemplate(id) {
-    const original = getTemplateById(id);
-    if (!original) return;
-    // Create copy
-    const copy = {
-        name: original.name + ' (Copy)',
-        description: original.description,
-        categories: JSON.parse(JSON.stringify(original.categories)),
-        itemIcons: JSON.parse(JSON.stringify(original.itemIcons)),
-        suggestedBudgets: JSON.parse(JSON.stringify(original.suggestedBudgets))
-    };
-    // Save and open in edit mode
-    const saved = saveCustomTemplate(copy);
-    _showTemplateForm(saved.id);
 }
 // ── APPLY TEMPLATE FROM MANAGEMENT ──────────────────
 function _applyTemplateFromManagement(templateId) {
