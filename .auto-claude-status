@@ -3,13 +3,13 @@
   "spec": "019-budget-templates-quick-start-presets",
   "state": "building",
   "subtasks": {
-    "completed": 2,
+    "completed": 7,
     "total": 8,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Tutorial Integration",
+    "current": "Polish & Verification",
     "id": null,
     "total": 2
   },
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 4,
+    "number": 9,
     "started_at": "2026-03-10T20:44:27.181814"
   },
-  "last_update": "2026-03-10T20:54:06.237859"
+  "last_update": "2026-03-10T21:10:01.901614"
 }
