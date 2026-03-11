@@ -6,6 +6,7 @@ let transactions = [];
 let expenseCategories = {};
 let monthlyBudgets = {};
 let walletAccounts = [];
+let customTemplates = [];
 
 /* ── Firebase & demo state (shared across modules) ── */
 let _fbAuth = null;
@@ -497,7 +498,7 @@ let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
     const snap = {
-        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts,
+        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts, customTemplates,
         categoryOrder: Object.keys(expenseCategories)
         // incomeCats is now derived from expenseCategories['Income'] — not saved separately
     };
@@ -530,6 +531,7 @@ function _applyData(d) {
     transactions      = d.transactions      || [];
     itemIcons         = d.itemIcons         || {};
     walletAccounts    = d.walletAccounts    || [];
+    customTemplates   = d.customTemplates   || [];
     incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
     selectedMonth = getCurrentMonthKey();
     selectedBudgetMonth = selectedMonth;
@@ -574,6 +576,7 @@ function loadData() {
         transactions:      JSON.parse(localStorage.getItem('transactions')),
         itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
         walletAccounts:    JSON.parse(localStorage.getItem('walletAccounts')),
+        customTemplates:   JSON.parse(localStorage.getItem('customTemplates')),
         incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
         categoryOrder:     JSON.parse(localStorage.getItem('categoryOrder')),
     });
