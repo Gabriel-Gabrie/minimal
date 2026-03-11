@@ -533,6 +533,50 @@ const budgetTemplates = {
     }
 };
 
+/* ── Template Application ─────────────────────── */
+
+function applyBudgetTemplate(template) {
+    if (!template || !budgetTemplates[template]) return;
+
+    const tmpl = budgetTemplates[template];
+
+    // Check if there's existing data
+    const hasData = transactions.length > 0 ||
+                    Object.keys(monthlyBudgets).length > 0 ||
+                    Object.keys(expenseCategories).length > 0;
+
+    // Show confirmation if data exists
+    if (hasData) {
+        const msg = `Apply "${tmpl.name}" template?\n\nThis will replace your current budget categories and clear existing budget amounts.\n\nTransactions and wallet accounts will be kept.`;
+        if (!confirm(msg)) return;
+    }
+
+    // Apply template data
+    expenseCategories = { ...tmpl.categories };
+    itemIcons = { ...tmpl.itemIcons };
+
+    // Apply suggested budgets to current month if template has them
+    if (tmpl.suggestedBudgets) {
+        const monthKey = getCurrentMonthKey();
+        monthlyBudgets[monthKey] = {};
+
+        // Convert flat "Main:Sub" → amount format to nested structure
+        Object.entries(tmpl.suggestedBudgets).forEach(([key, amount]) => {
+            const [main, sub] = key.split(':');
+            if (!monthlyBudgets[monthKey][main]) {
+                monthlyBudgets[monthKey][main] = {};
+            }
+            monthlyBudgets[monthKey][main][sub] = amount;
+        });
+    }
+
+    // Sync Income categories
+    incomeCats = expenseCategories['Income'] || [];
+
+    // Persist changes
+    saveData();
+}
+
 /* ── Persistence helpers ─────────────────────── */
 
 // Write to localStorage (always) + Firestore (debounced, when signed in)
