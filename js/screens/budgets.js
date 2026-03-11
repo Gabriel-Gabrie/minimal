@@ -34,6 +34,7 @@ function renderBudgets() {
             + '<button onclick="' + btnAction + '" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all">'
             + btnLabel + '</button>'
             + (closest ? '<button onclick="_createBlankBudget(\'' + selectedBudgetMonth + '\')" class="mt-3 w-full py-2.5 text-xs text-zinc-600 hover:text-zinc-400 transition-colors">Start with a blank budget instead</button>' : '')
+            + (localStorage.getItem('tutDone') ? '<button onclick="_showTemplateSelector(\'' + selectedBudgetMonth + '\')" class="mt-3 w-full border border-zinc-700 hover:border-zinc-500 active:scale-95 text-zinc-300 hover:text-zinc-100 font-medium py-3 rounded-2xl text-sm transition-all">📋 Use a Template</button>' : '')
             + '</div>';
         attachBudgetSwipe();
         const footerEl2 = document.getElementById('budget-actions-footer');
