@@ -785,3 +785,70 @@ function _isTransferExcluded(t) {
     if (!fromType || !toType) return true;
     return fromType === toType;
 }
+
+/* ── Template CRUD & Apply ────────────────────────────── */
+
+function saveCustomTemplate(template) {
+    if (!template.id) {
+        template.id = 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        template.createdAt = new Date().toISOString();
+    }
+    template.updatedAt = new Date().toISOString();
+    const idx = customTemplates.findIndex(t => t.id === template.id);
+    if (idx >= 0) {
+        customTemplates[idx] = template;
+    } else {
+        customTemplates.push(template);
+    }
+    saveData();
+    return template;
+}
+
+function deleteCustomTemplate(id) {
+    customTemplates = customTemplates.filter(t => t.id !== id);
+    saveData();
+}
+
+function getTemplateById(id) {
+    // Search built-in templates by key
+    if (budgetTemplates[id]) return { id, ...budgetTemplates[id] };
+    // Search custom templates by id
+    return customTemplates.find(t => t.id === id) || null;
+}
+
+function applyBudgetTemplate(templateData, targetMonth) {
+    // Guard against overwriting existing budget
+    if (monthlyBudgets[targetMonth]) return false;
+
+    // Set categories and icons from template
+    expenseCategories = JSON.parse(JSON.stringify(templateData.categories));
+    itemIcons = JSON.parse(JSON.stringify(templateData.itemIcons || {}));
+
+    // Build budget structure: { main: { sub: amount } }
+    monthlyBudgets[targetMonth] = {};
+    Object.keys(expenseCategories).forEach(cat => {
+        monthlyBudgets[targetMonth][cat] = {};
+        expenseCategories[cat].forEach(item => {
+            const key = cat + ':' + item;
+            monthlyBudgets[targetMonth][cat][item] = templateData.suggestedBudgets[key] || 0;
+        });
+    });
+
+    // Include dynamic Saving/Debt sections from walletAccounts
+    ['Saving', 'Debt'].forEach(secType => {
+        const accs = walletAccounts.filter(a => a.type === secType.toLowerCase());
+        if (accs.length) {
+            if (!monthlyBudgets[targetMonth][secType]) {
+                monthlyBudgets[targetMonth][secType] = {};
+            }
+            accs.forEach(acc => {
+                if (!(acc.name in monthlyBudgets[targetMonth][secType])) {
+                    monthlyBudgets[targetMonth][secType][acc.name] = 0;
+                }
+            });
+        }
+    });
+
+    saveData();
+    return true;
+}
