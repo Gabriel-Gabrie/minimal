@@ -77,7 +77,7 @@ function _renderTemplateList() {
                 + '<button onclick="_applyTemplateFromManagement(\'' + t.id + '\')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-2 rounded-xl text-xs transition-all">Apply</button>'
                 + '</div>'
                 + '<div class="flex gap-2">'
-                + '<button onclick="_showTemplateForm(\'' + t.id + '\')" class="flex-1 bg-indigo-500/20 hover:bg-indigo-500/30 active:scale-95 text-indigo-400 font-semibold py-2 rounded-xl text-xs transition-all">Edit</button>'
+                + '<button onclick="_showTemplateForm(\'' + t.id + '\')" class="flex-1 bg-blue-500/20 hover:bg-blue-500/30 active:scale-95 text-blue-400 font-semibold py-2 rounded-xl text-xs transition-all">Edit</button>'
                 + '<button onclick="_deleteTemplate(\'' + t.id + '\')" class="flex-1 bg-rose-500/20 hover:bg-rose-500/30 active:scale-95 text-rose-400 font-semibold py-2 rounded-xl text-xs transition-all">Delete</button>'
                 + '</div>'
                 + '</div>';
@@ -112,7 +112,7 @@ function _showTemplateDetail(templateId) {
     html += '<div class="flex gap-2 mb-6">'
         + '<button onclick="_applyTemplateFromManagement(\'' + templateId + '\')" class="flex-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-semibold py-3 rounded-xl text-sm transition-all">Apply to Month</button>';
     if (isCustom) {
-        html += '<button onclick="_showTemplateForm(\'' + templateId + '\')" class="flex-1 bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white font-semibold py-3 rounded-xl text-sm transition-all">Edit Template</button>';
+        html += '<button onclick="_showTemplateForm(\'' + templateId + '\')" class="flex-1 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white font-semibold py-3 rounded-xl text-sm transition-all">Edit Template</button>';
     }
     html += '</div>';
     // Category breakdown
