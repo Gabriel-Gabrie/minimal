@@ -210,6 +210,36 @@ function toggleTxSort() {
 }
 
 /* ══════════════════════════════════════════════
+   ADVANCED FILTER MODAL
+══════════════════════════════════════════════ */
+
+function showAdvancedFilters() {
+    document.getElementById('advanced-filter-modal').classList.remove('hidden');
+    _populateFilterModal();
+}
+
+function _populateFilterModal() {
+    // Populate date range inputs
+    const startInput = document.getElementById('filter-date-start');
+    const endInput = document.getElementById('filter-date-end');
+    if (startInput) startInput.value = advancedFilters.dateRange.start || '';
+    if (endInput) endInput.value = advancedFilters.dateRange.end || '';
+
+    // Populate amount range inputs
+    const minInput = document.getElementById('filter-amount-min');
+    const maxInput = document.getElementById('filter-amount-max');
+    if (minInput) minInput.value = advancedFilters.amountRange.min !== null ? advancedFilters.amountRange.min : '';
+    if (maxInput) maxInput.value = advancedFilters.amountRange.max !== null ? advancedFilters.amountRange.max : '';
+
+    // TODO: Populate category checkboxes (will be implemented in subtask-3-3)
+}
+
+function hideAdvancedFilters() {
+    document.getElementById('advanced-filter-modal').classList.add('hidden');
+    renderTransactions();
+}
+
+/* ══════════════════════════════════════════════
    TRANSACTION SUMMARY MODAL
 ══════════════════════════════════════════════ */
 

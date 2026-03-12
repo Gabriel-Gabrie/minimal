@@ -1,15 +1,15 @@
 {
   "active": true,
-  "spec": "002-pwa-install-experience-offline-status-indicator",
+  "spec": "001-advanced-transaction-filtering-saved-filters",
   "state": "building",
   "subtasks": {
     "completed": 6,
-    "total": 8,
+    "total": 12,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Sync Status Indicator",
+    "current": "Advanced Filter Modal UI",
     "id": null,
     "total": 3
   },
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 2,
-    "started_at": "2026-03-11T20:48:20.852278"
+    "number": 8,
+    "started_at": "2026-03-11T21:11:47.913224"
   },
-  "last_update": "2026-03-11T20:50:11.472120"
+  "last_update": "2026-03-11T21:26:44.130987"
 }
