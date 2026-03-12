@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E2E Verification - Budget Templates</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        h1 { color: #4ade80; }
+        h2 { color: #60a5fa; margin-top: 30px; border-bottom: 2px solid #374151; padding-bottom: 10px; }
+        h3 { color: #a78bfa; margin-top: 20px; }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #4ade80;
+        }
+        .test-step {
+            background: #1f2937;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 3px solid #60a5fa;
+        }
+        .step-number {
+            display: inline-block;
+            background: #60a5fa;
+            color: #000;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .expected {
+            background: #064e3b;
+            border-left: 3px solid #10b981;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+        }
+        .expected::before {
+            content: "✅ Expected: ";
+            font-weight: 600;
+            color: #10b981;
+        }
+        .warning {
+            background: #422006;
+            border-left: 4px solid #fb923c;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #064e3b;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4ade80;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            font-size: 14px;
+        }
+        button:hover { background: #22c55e; }
+        button:active { transform: scale(0.98); }
+        .danger { background: #ef4444; color: white; }
+        .danger:hover { background: #dc2626; }
+        .secondary { background: #6366f1; color: white; }
+        .secondary:hover { background: #4f46e5; }
+        .output {
+            margin-top: 15px;
+            padding: 15px;
+            background: #0f172a;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            border: 1px solid #334155;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .checklist li::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            font-size: 20px;
+            color: #60a5fa;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        code {
+            background: #374151;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #fbbf24;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status-pending { background: #422006; color: #fb923c; }
+        .status-pass { background: #064e3b; color: #10b981; }
+        .status-fail { background: #450a0a; color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>🧪 End-to-End Verification: Budget Templates & Quick-Start Presets</h1>
+
+    <div class="warning">
+        <strong>⚠️ Important:</strong> This is a comprehensive manual testing checklist for verifying the Budget Templates feature.
+        Follow each test section in order. Use the helper buttons to inspect data between tests.
+    </div>
+
+    <div class="button-group">
+        <button onclick="window.open('./index.html', '_blank')">🚀 Open App in New Tab</button>
+        <button class="secondary" onclick="showCurrentData()">📊 Inspect Current Data</button>
+        <button class="danger" onclick="clearAllData()">🗑️ Reset All Data</button>
+    </div>
+
+    <div id="dataOutput" class="output" style="display:none;"></div>
+
+    <!-- ===== TEST 1: Tutorial Flow ===== -->
+    <h2>Test 1: Tutorial Flow with Template Selection <span class="status status-pending">MANUAL</span></h2>
+
+    <div class="test-section">
+        <h3>Setup</h3>
+        <div class="test-step">
+            <span class="step-number">1</span>
+            <strong>Clear all localStorage data</strong>
+            <br>
+            <button class="danger" onclick="clearAllData()">Clear localStorage & Reload</button>
+        </div>
+
+        <h3>Test Steps</h3>
+
+        <div class="test-step">
+            <span class="step-number">2</span>
+            <strong>Reload app - Tutorial should open automatically</strong>
+            <div class="expected">Tutorial modal appears with slide 0 (Welcome slide)</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">3</span>
+            <strong>Click "Next" to advance to template picker slide</strong>
+            <div class="expected">Slide 1 displays with heading "Choose Your Budget Template" and 4-5 template cards (Student, Young Professional, Family, Freelancer, Retiree)</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">4</span>
+            <strong>Click on "Freelancer" template card</strong>
+            <div class="expected">Card highlights with selected state (visual feedback with border/background change)</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">5</span>
+            <strong>Click "Next" through remaining slides (Wallet, Budgets, Transactions, Overview, Ready)</strong>
+            <div class="expected">Tutorial progresses through slides 2-6, counter shows current position (2/7, 3/7, etc.)</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">6</span>
+            <strong>Click "Get Started" on final slide</strong>
+            <div class="expected">Tutorial closes, app displays Overview tab with empty state</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">7</span>
+            <strong>Verify Freelancer template was applied</strong>
+            <br>
+            <button onclick="verifyFreelancerTemplate()">🔍 Verify Freelancer Template</button>
+            <div id="freelancerVerification" class="output" style="display:none;"></div>
+        </div>
+
+        <h3>Acceptance Criteria</h3>
+        <ul class="checklist">
+            <li>Tutorial opens on first visit (tutDone not set)</li>
+            <li>Template picker slide (slide 1) appears after welcome</li>
+            <li>All 4+ templates visible with emoji icons, names, descriptions</li>
+            <li>Selecting template provides visual feedback</li>
+            <li>Tutorial completes without errors</li>
+            <li>Freelancer template categories applied (Income with "Client Projects", "Retainer", Business category, etc.)</li>
+            <li>Item icons populated (~25-30 icons for Freelancer)</li>
+            <li>Monthly budgets created for current month with suggested amounts</li>
+            <li>No confirmation dialog (first-run, no existing data)</li>
+        </ul>
+    </div>
+
+    <!-- ===== TEST 2: Add Data ===== -->
+    <h2>Test 2: Add Sample Data <span class="status status-pending">MANUAL</span></h2>
+
+    <div class="test-section">
+        <h3>Setup</h3>
+        <p>Using the Freelancer template from Test 1, add some sample data to test data preservation.</p>
+
+        <h3>Test Steps</h3>
+
+        <div class="test-step">
+            <span class="step-number">1</span>
+            <strong>Go to Transactions tab → Click "Add Transaction"</strong>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">2</span>
+            <strong>Add 2-3 expense transactions</strong>
+            <div class="expected">Transactions appear in list, main category should include "Business" and other Freelancer categories</div>
+            <ul style="margin-top: 10px; margin-left: 20px;">
+                <li>Expense: Business → Software → $50</li>
+                <li>Expense: Food → Groceries → $120</li>
+                <li>Income: Income → Client Projects → $2500</li>
+            </ul>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">3</span>
+            <strong>Go to Budgets tab → Add budget amounts</strong>
+            <div class="expected">Budget planning view shows Freelancer categories, can set amounts</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">4</span>
+            <strong>Verify data was saved</strong>
+            <br>
+            <button onclick="showCurrentData()">📊 Inspect Current Data</button>
+        </div>
+
+        <h3>Acceptance Criteria</h3>
+        <ul class="checklist">
+            <li>Can add transactions using Freelancer categories</li>
+            <li>Can set budget amounts for Freelancer categories</li>
+            <li>Data persists (check localStorage)</li>
+        </ul>
+    </div>
+
+    <!-- ===== TEST 3: Settings Template Change ===== -->
+    <h2>Test 3: Apply Template from Settings (with Data Protection) <span class="status status-pending">MANUAL</span></h2>
+
+    <div class="test-section">
+        <h3>Setup</h3>
+        <p>App should have Freelancer template with some transactions and budgets from Test 2.</p>
+
+        <h3>Test Steps</h3>
+
+        <div class="test-step">
+            <span class="step-number">1</span>
+            <strong>Open Settings modal (gear icon in top-right)</strong>
+            <div class="expected">Settings modal opens</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">2</span>
+            <strong>Locate "Budget Templates" section</strong>
+            <div class="expected">Accordion section exists between "Preferences" and "Data Management"</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">3</span>
+            <strong>Click "Budget Templates" header to expand</strong>
+            <div class="expected">Section expands to show 4-5 template cards with Apply buttons</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">4</span>
+            <strong>Click "Apply" button on "Student" template</strong>
+            <div class="expected">Confirmation dialog appears with message: "Apply 'Student' template? This will replace your current budget categories and clear existing budget amounts. Transactions and wallet accounts will be kept."</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">5</span>
+            <strong>Click "Cancel" in confirmation dialog</strong>
+            <div class="expected">Dialog closes, data unchanged (still Freelancer template)</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">6</span>
+            <strong>Click "Apply" on Student template again, then click "OK"</strong>
+            <div class="expected">Template applies, modal may close or stay open with updated UI</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">7</span>
+            <strong>Verify Student template was applied</strong>
+            <br>
+            <button onclick="verifyStudentTemplate()">🔍 Verify Student Template</button>
+            <div id="studentVerification" class="output" style="display:none;"></div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">8</span>
+            <strong>Go to Transactions tab</strong>
+            <div class="expected">Previous transactions are still present (preserved across template change)</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">9</span>
+            <strong>Check Budget tab</strong>
+            <div class="expected">Categories changed to Student template, amounts reset to Student suggested budgets</div>
+        </div>
+
+        <h3>Acceptance Criteria</h3>
+        <ul class="checklist">
+            <li>Settings modal has Budget Templates accordion</li>
+            <li>All templates visible with descriptions and Apply buttons</li>
+            <li>Apply button shows confirmation dialog when data exists</li>
+            <li>Cancel preserves existing data</li>
+            <li>Confirm applies new template successfully</li>
+            <li>Categories changed to Student template (Education category, Part-time Job income, etc.)</li>
+            <li>Icons updated to Student template (~22 icons)</li>
+            <li>Monthly budgets reset to Student suggested amounts</li>
+            <li>Existing transactions preserved (not deleted)</li>
+            <li>Category editor updates immediately if open</li>
+            <li>Settings stats update (category count changes)</li>
+        </ul>
+    </div>
+
+    <!-- ===== TEST 4: Offline Functionality ===== -->
+    <h2>Test 4: Offline Functionality <span class="status status-pending">MANUAL</span></h2>
+
+    <div class="test-section">
+        <h3>Test Steps</h3>
+
+        <div class="test-step">
+            <span class="step-number">1</span>
+            <strong>Open browser DevTools (F12) → Go to Network tab</strong>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">2</span>
+            <strong>Enable "Offline" mode in DevTools</strong>
+            <div class="expected">Network throttling dropdown shows "Offline"</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">3</span>
+            <strong>Reload the app (F5 or Ctrl+R)</strong>
+            <div class="expected">App loads successfully from service worker cache, no network errors</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">4</span>
+            <strong>Navigate to Settings → Budget Templates</strong>
+            <div class="expected">Templates section opens, all templates visible</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">5</span>
+            <strong>Apply "Family" template (confirm dialog)</strong>
+            <div class="expected">Template applies successfully, no network errors, categories update to Family template</div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">6</span>
+            <strong>Verify Family template applied offline</strong>
+            <br>
+            <button onclick="verifyFamilyTemplate()">🔍 Verify Family Template</button>
+            <div id="familyVerification" class="output" style="display:none;"></div>
+        </div>
+
+        <div class="test-step">
+            <span class="step-number">7</span>
+            <strong>Re-enable network, reload app</strong>
+            <div class="expected">App loads normally, Family template still applied (persisted to localStorage)</div>
+        </div>
+
+        <h3>Acceptance Criteria</h3>
+        <ul class="checklist">
+            <li>App loads offline via service worker</li>
+            <li>All JS files cached (state.js, tutorial.js, settings.js, etc.)</li>
+            <li>Templates work offline (no network fetch required)</li>
+            <li>Can apply templates offline</li>
+            <li>Data persists to localStorage offline</li>
+            <li>No console errors about missing resources</li>
+        </ul>
+    </div>
+
+    <!-- ===== TEST 5: All Templates ===== -->
+    <h2>Test 5: Verify All Template Definitions <span class="status status-pending">MANUAL</span></h2>
+
+    <div class="test-section">
+        <h3>Test Steps</h3>
+
+        <div class="test-step">
+            <span class="step-number">1</span>
+            <strong>Verify template structure and content</strong>
+            <br>
+            <button onclick="verifyAllTemplates()">🔍 Verify All Templates</button>
+            <div id="allTemplatesVerification" class="output" style="display:none;"></div>
+        </div>
+
+        <h3>Acceptance Criteria</h3>
+        <ul class="checklist">
+            <li>At least 4 templates defined (Student, Young Professional, Family, Freelancer)</li>
+            <li>Each template has: name, description, categories, itemIcons, suggestedBudgets</li>
+            <li>Student template: Education category, Part-time Job income, student-relevant items</li>
+            <li>Young Professional: Career-focused, apartment living, savings goals</li>
+            <li>Family: Children-related categories, family expenses, larger household</li>
+            <li>Freelancer: Business expenses, irregular income categories, tax savings</li>
+            <li>All templates include Income category as first category</li>
+            <li>Icons are appropriate emojis for each subcategory</li>
+            <li>Suggested budgets are reasonable amounts (not 0, not excessively high)</li>
+        </ul>
+    </div>
+
+    <!-- ===== SUMMARY ===== -->
+    <h2>Verification Summary</h2>
+
+    <div class="success">
+        <h3>✅ Feature Complete Checklist</h3>
+        <ul class="checklist">
+            <li>At least 4 budget templates exist</li>
+            <li>Each template includes categories, subcategories, emoji icons, and suggested amounts</li>
+            <li>Templates are selectable during first-run tutorial</li>
+            <li>Templates are accessible from Settings modal</li>
+            <li>Applying template populates expenseCategories, itemIcons, and monthlyBudgets</li>
+            <li>Users are prompted to customize after applying template (via suggested amounts)</li>
+            <li>Existing data is not overwritten without explicit user confirmation</li>
+            <li>Templates work fully offline (stored in code, not fetched from server)</li>
+        </ul>
+    </div>
+
+    <script>
+        function clearAllData() {
+            if (confirm('⚠️ This will clear ALL localStorage data and reload the page.\n\nYou will lose any test data and need to redo the tutorial.\n\nContinue?')) {
+                localStorage.clear();
+                alert('✅ Data cleared. Page will reload...');
+                window.location.href = './index.html';
+            }
+        }
+
+        function showCurrentData() {
+            const data = {
+                expenseCategories: JSON.parse(localStorage.getItem('expenseCategories') || '{}'),
+                itemIcons: JSON.parse(localStorage.getItem('itemIcons') || '{}'),
+                monthlyBudgets: JSON.parse(localStorage.getItem('monthlyBudgets') || '{}'),
+                transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
+                tutDone: localStorage.getItem('tutDone')
+            };
+
+            const output = document.getElementById('dataOutput');
+            output.style.display = 'block';
+
+            let text = '📊 CURRENT DATA STATE\n\n';
+            text += '═══════════════════════════════════════\n\n';
+            text += `Tutorial Completed: ${data.tutDone === '1' ? '✅ YES' : '❌ NO'}\n\n`;
+            text += `Transactions: ${data.transactions.length} transaction(s)\n`;
+            text += `Categories: ${Object.keys(data.expenseCategories).length} categories\n`;
+            text += `Item Icons: ${Object.keys(data.itemIcons).length} icons\n`;
+            text += `Monthly Budgets: ${Object.keys(data.monthlyBudgets).length} month(s)\n\n`;
+
+            text += '─── CATEGORIES ───\n';
+            Object.keys(data.expenseCategories).forEach(cat => {
+                const subs = data.expenseCategories[cat];
+                text += `\n${cat} (${subs.length} items):\n`;
+                subs.forEach(sub => text += `  • ${sub}\n`);
+            });
+
+            text += '\n─── TRANSACTIONS ───\n';
+            if (data.transactions.length === 0) {
+                text += '(none)\n';
+            } else {
+                data.transactions.slice(0, 5).forEach((tx, i) => {
+                    text += `\n${i + 1}. ${tx.type}: ${tx.main} → ${tx.sub || '(none)'} → $${tx.amount}\n`;
+                });
+                if (data.transactions.length > 5) {
+                    text += `\n... and ${data.transactions.length - 5} more\n`;
+                }
+            }
+
+            text += '\n─── MONTHLY BUDGETS ───\n';
+            if (Object.keys(data.monthlyBudgets).length === 0) {
+                text += '(none)\n';
+            } else {
+                Object.keys(data.monthlyBudgets).forEach(monthKey => {
+                    const budgets = data.monthlyBudgets[monthKey];
+                    const catCount = Object.keys(budgets).length;
+                    text += `\n${monthKey}: ${catCount} categories with budgets\n`;
+                });
+            }
+
+            output.textContent = text;
+            output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function verifyFreelancerTemplate() {
+            const data = {
+                expenseCategories: JSON.parse(localStorage.getItem('expenseCategories') || '{}'),
+                itemIcons: JSON.parse(localStorage.getItem('itemIcons') || '{}'),
+                monthlyBudgets: JSON.parse(localStorage.getItem('monthlyBudgets') || '{}')
+            };
+
+            const expectedCategories = ["Income", "Food", "Personal", "Household", "Transportation", "Health", "Business", "Banking", "Saving", "Taxes"];
+            const actualCategories = Object.keys(data.expenseCategories);
+
+            let text = '🔍 FREELANCER TEMPLATE VERIFICATION\n\n';
+            text += '═══════════════════════════════════════\n\n';
+
+            // Categories check
+            const hasAllCats = expectedCategories.every(cat => actualCategories.includes(cat));
+            text += `Categories Match: ${hasAllCats ? '✅ PASS' : '❌ FAIL'}\n`;
+            text += `Expected: ${expectedCategories.join(', ')}\n`;
+            text += `Actual: ${actualCategories.join(', ')}\n\n`;
+
+            // Specific freelancer items
+            const hasClientProjects = data.expenseCategories.Income?.includes('Client Projects');
+            const hasBusiness = actualCategories.includes('Business');
+            const hasTaxes = actualCategories.includes('Taxes');
+
+            text += `Client Projects income: ${hasClientProjects ? '✅ PASS' : '❌ FAIL'}\n`;
+            text += `Business category exists: ${hasBusiness ? '✅ PASS' : '❌ FAIL'}\n`;
+            text += `Taxes category exists: ${hasTaxes ? '✅ PASS' : '❌ FAIL'}\n\n`;
+
+            // Icons check
+            const iconCount = Object.keys(data.itemIcons).length;
+            text += `Item Icons: ${iconCount} (expected ~28-32)\n`;
+            text += iconCount >= 25 ? '✅ PASS\n\n' : '❌ FAIL (too few icons)\n\n';
+
+            // Budgets check
+            const hasMonthlyBudgets = Object.keys(data.monthlyBudgets).length > 0;
+            text += `Monthly Budgets Created: ${hasMonthlyBudgets ? '✅ PASS' : '❌ FAIL'}\n`;
+
+            const output = document.getElementById('freelancerVerification');
+            output.style.display = 'block';
+            output.textContent = text;
+        }
+
+        function verifyStudentTemplate() {
+            const data = {
+                expenseCategories: JSON.parse(localStorage.getItem('expenseCategories') || '{}'),
+                itemIcons: JSON.parse(localStorage.getItem('itemIcons') || '{}'),
+                monthlyBudgets: JSON.parse(localStorage.getItem('monthlyBudgets') || '{}')
+            };
+
+            const expectedCategories = ["Income", "Food", "Personal", "Household", "Transportation", "Health", "Education", "Banking", "Saving"];
+            const actualCategories = Object.keys(data.expenseCategories);
+
+            let text = '🔍 STUDENT TEMPLATE VERIFICATION\n\n';
+            text += '═══════════════════════════════════════\n\n';
+
+            // Categories check
+            const hasAllCats = expectedCategories.every(cat => actualCategories.includes(cat));
+            text += `Categories Match: ${hasAllCats ? '✅ PASS' : '❌ FAIL'}\n`;
+            text += `Expected: ${expectedCategories.join(', ')}\n`;
+            text += `Actual: ${actualCategories.join(', ')}\n\n`;
+
+            // Specific student items
+            const hasPartTimeJob = data.expenseCategories.Income?.includes('Part-time Job');
+            const hasEducation = actualCategories.includes('Education');
+            const hasTuition = data.expenseCategories.Education?.includes('Tuition');
+
+            text += `Part-time Job income: ${hasPartTimeJob ? '✅ PASS' : '❌ FAIL'}\n`;
+            text += `Education category exists: ${hasEducation ? '✅ PASS' : '❌ FAIL'}\n`;
+            text += `Tuition in Education: ${hasTuition ? '✅ PASS' : '❌ FAIL'}\n\n`;
+
+            // Icons check
+            const iconCount = Object.keys(data.itemIcons).length;
+            text += `Item Icons: ${iconCount} (expected ~22-26)\n`;
+            text += iconCount >= 20 ? '✅ PASS\n\n' : '❌ FAIL (too few icons)\n\n';
+
+            // Budgets check
+            const hasMonthlyBudgets = Object.keys(data.monthlyBudgets).length > 0;
+            text += `Monthly Budgets Created: ${hasMonthlyBudgets ? '✅ PASS' : '❌ FAIL'}\n`;
+
+            const output = document.getElementById('studentVerification');
+            output.style.display = 'block';
+            output.textContent = text;
+        }
+
+        function verifyFamilyTemplate() {
+            const data = {
+                expenseCategories: JSON.parse(localStorage.getItem('expenseCategories') || '{}'),
+                itemIcons: JSON.parse(localStorage.getItem('itemIcons') || '{}'),
+                monthlyBudgets: JSON.parse(localStorage.getItem('monthlyBudgets') || '{}')
+            };
+
+            const expectedCategories = ["Income", "Food", "Personal", "Household", "Transportation", "Health", "Children", "Banking", "Saving", "Debt"];
+            const actualCategories = Object.keys(data.expenseCategories);
+
+            let text = '🔍 FAMILY TEMPLATE VERIFICATION\n\n';
+            text += '═══════════════════════════════════════\n\n';
+
+            // Categories check
+            const hasAllCats = expectedCategories.every(cat => actualCategories.includes(cat));
+            text += `Categories Match: ${hasAllCats ? '✅ PASS' : '❌ FAIL'}\n`;
+            text += `Expected: ${expectedCategories.join(', ')}\n`;
+            text += `Actual: ${actualCategories.join(', ')}\n\n`;
+
+            // Specific family items
+            const hasChildren = actualCategories.includes('Children');
+            const hasChildcare = data.expenseCategories.Children?.includes('Childcare/Daycare');
+            const hasSchoolSupplies = data.expenseCategories.Children?.includes('School Supplies');
+
+            text += `Children category exists: ${hasChildren ? '✅ PASS' : '❌ FAIL'}\n`;
+            text += `Childcare in Children: ${hasChildcare ? '✅ PASS' : '❌ FAIL'}\n`;
+            text += `School Supplies in Children: ${hasSchoolSupplies ? '✅ PASS' : '❌ FAIL'}\n\n`;
+
+            // Icons check
+            const iconCount = Object.keys(data.itemIcons).length;
+            text += `Item Icons: ${iconCount} (expected ~30-35)\n`;
+            text += iconCount >= 28 ? '✅ PASS\n\n' : '❌ FAIL (too few icons)\n\n';
+
+            // Budgets check
+            const hasMonthlyBudgets = Object.keys(data.monthlyBudgets).length > 0;
+            text += `Monthly Budgets Created: ${hasMonthlyBudgets ? '✅ PASS' : '❌ FAIL'}\n`;
+
+            const output = document.getElementById('familyVerification');
+            output.style.display = 'block';
+            output.textContent = text;
+        }
+
+        function verifyAllTemplates() {
+            let text = '🔍 ALL TEMPLATES STRUCTURE VERIFICATION\n\n';
+            text += '═══════════════════════════════════════\n\n';
+            text += 'Note: This checks that templates exist in code.\n';
+            text += 'To verify they work, apply each one manually.\n\n';
+
+            text += 'Expected Templates:\n';
+            text += '  1. Student - Education-focused\n';
+            text += '  2. Young Professional - Career-focused\n';
+            text += '  3. Family - Children/household\n';
+            text += '  4. Freelancer - Business/irregular income\n';
+            text += '  5. Retiree (bonus) - Fixed income\n\n';
+
+            text += 'Required Structure for Each:\n';
+            text += '  ✓ name (string)\n';
+            text += '  ✓ description (string)\n';
+            text += '  ✓ categories (object with arrays)\n';
+            text += '  ✓ itemIcons (object mapping "Main:Sub" → emoji)\n';
+            text += '  ✓ suggestedBudgets (object mapping "Main:Sub" → amount)\n\n';
+
+            text += 'To verify structure, check js/state.js lines 75-400\n';
+            text += 'Look for: const budgetTemplates = { ... }\n\n';
+
+            text += 'Manual Checks:\n';
+            text += '  □ Open js/state.js in editor\n';
+            text += '  □ Find budgetTemplates object\n';
+            text += '  □ Verify 4+ templates present\n';
+            text += '  □ Each has name, description, categories, itemIcons, suggestedBudgets\n';
+            text += '  □ Income is first category in each\n';
+            text += '  □ Icons are appropriate emojis\n';
+            text += '  □ Suggested budgets have reasonable amounts\n';
+
+            const output = document.getElementById('allTemplatesVerification');
+            output.style.display = 'block';
+            output.textContent = text;
+        }
+
+        // Show initial instructions
+        console.log('%c🧪 E2E Verification Loaded', 'color: #4ade80; font-size: 16px; font-weight: bold;');
+        console.log('Follow the test sections in order. Use helper buttons to inspect data.');
+    </script>
+</body>
+</html>

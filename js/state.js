@@ -61,6 +61,7 @@ let monthlyBudgets = {};
  * @property {string} createdAt - Creation timestamp in ISO 8601 format
  */
 let walletAccounts = [];
+let customTemplates = [];
 
 /* ── Firebase & demo state (shared across modules) ── */
 /** @type {Object|null} Firebase Auth instance */
@@ -157,6 +158,423 @@ const defaultItemIcons = {
     "Banking:Cash Withdrawal":    "💵",
 };
 
+/* ── Budget Templates ─────────────────────── */
+
+const budgetTemplates = {
+    student: {
+        name: "Student",
+        description: "Budget designed for student life with educational expenses and limited income",
+        categories: {
+            "Income":         ["Part-time Job", "Student Loans", "Family Support", "Scholarships"],
+            "Food":           ["Groceries", "Meal Plan", "Restaurants/Coffee"],
+            "Personal":       ["Phone Plan", "Subscriptions", "Entertainment", "Grooming/Haircut", "Laundry"],
+            "Household":      ["Rent/Dorm", "Utilities", "Internet"],
+            "Transportation": ["Public Transit", "Bike Maintenance", "Ride Share"],
+            "Health":         ["Health Insurance", "Medical", "Gym Membership"],
+            "Education":      ["Tuition", "Books/Supplies", "Course Materials"],
+            "Banking":        ["Bank Fees", "Transfers"],
+            "Saving":         ["Emergency Fund", "Future Goals"],
+        },
+        itemIcons: {
+            "Income:Part-time Job":         "💼",
+            "Income:Student Loans":         "🎓",
+            "Income:Family Support":        "👨‍👩‍👧",
+            "Income:Scholarships":          "🏆",
+            "Food:Groceries":               "🛒",
+            "Food:Meal Plan":               "🍱",
+            "Food:Restaurants/Coffee":      "☕",
+            "Personal:Phone Plan":          "📱",
+            "Personal:Subscriptions":       "📺",
+            "Personal:Entertainment":       "🎬",
+            "Personal:Grooming/Haircut":    "✂️",
+            "Personal:Laundry":             "🧺",
+            "Household:Rent/Dorm":          "🏠",
+            "Household:Utilities":          "💡",
+            "Household:Internet":           "🌐",
+            "Transportation:Public Transit": "🚌",
+            "Transportation:Bike Maintenance": "🚴",
+            "Transportation:Ride Share":    "🚕",
+            "Health:Health Insurance":      "🛡️",
+            "Health:Medical":               "🏥",
+            "Health:Gym Membership":        "🏋️",
+            "Education:Tuition":            "🎓",
+            "Education:Books/Supplies":     "📚",
+            "Education:Course Materials":   "📝",
+            "Banking:Bank Fees":            "🏦",
+            "Banking:Transfers":            "💸",
+            "Saving:Emergency Fund":        "🐷",
+            "Saving:Future Goals":          "🎯",
+        },
+        suggestedBudgets: {
+            "Income:Part-time Job":         800,
+            "Income:Student Loans":         500,
+            "Income:Family Support":        300,
+            "Income:Scholarships":          265,
+            "Food:Groceries":               200,
+            "Food:Meal Plan":               400,
+            "Food:Restaurants/Coffee":      80,
+            "Personal:Phone Plan":          50,
+            "Personal:Subscriptions":       15,
+            "Personal:Entertainment":       60,
+            "Personal:Grooming/Haircut":    25,
+            "Personal:Laundry":             20,
+            "Household:Rent/Dorm":          600,
+            "Household:Utilities":          40,
+            "Household:Internet":           0,
+            "Transportation:Public Transit": 80,
+            "Transportation:Bike Maintenance": 15,
+            "Transportation:Ride Share":    30,
+            "Health:Health Insurance":      0,
+            "Health:Medical":               30,
+            "Health:Gym Membership":        0,
+            "Education:Tuition":            0,
+            "Education:Books/Supplies":     100,
+            "Education:Course Materials":   30,
+            "Banking:Bank Fees":            10,
+            "Banking:Transfers":            0,
+            "Saving:Emergency Fund":        50,
+            "Saving:Future Goals":          30,
+        }
+    },
+    youngProfessional: {
+        name: "Young Professional",
+        description: "Budget for early career professionals building financial independence",
+        categories: {
+            "Income":         ["Salary", "Bonuses", "Side Hustle", "Investments"],
+            "Food":           ["Groceries", "Restaurants/Coffee", "Meal Delivery"],
+            "Personal":       ["Phone Plan", "Subscriptions", "Entertainment", "Grooming/Haircut", "Shopping", "Hobbies"],
+            "Household":      ["Rent/Mortgage", "Utilities", "Internet", "Furniture", "Supplies"],
+            "Transportation": ["Car Payment", "Auto Insurance", "Gas/Charging", "Maintenance", "Parking/Tolls", "Public Transit"],
+            "Health":         ["Health Insurance", "Dental Insurance", "Medical", "Gym Membership", "Supplements"],
+            "Banking":        ["Bank Fees", "Transfers"],
+            "Saving":         ["Emergency Fund", "Retirement", "Down Payment"],
+            "Debt":           ["Student Loans", "Credit Cards"],
+        },
+        itemIcons: {
+            "Income:Salary":                "💼",
+            "Income:Bonuses":               "💰",
+            "Income:Side Hustle":           "💻",
+            "Income:Investments":           "📈",
+            "Food:Groceries":               "🛒",
+            "Food:Restaurants/Coffee":      "☕",
+            "Food:Meal Delivery":           "🍕",
+            "Personal:Phone Plan":          "📱",
+            "Personal:Subscriptions":       "📺",
+            "Personal:Entertainment":       "🎬",
+            "Personal:Grooming/Haircut":    "✂️",
+            "Personal:Shopping":            "🛍️",
+            "Personal:Hobbies":             "🎨",
+            "Household:Rent/Mortgage":      "🏠",
+            "Household:Utilities":          "💡",
+            "Household:Internet":           "🌐",
+            "Household:Furniture":          "🛋️",
+            "Household:Supplies":           "🧹",
+            "Transportation:Car Payment":   "🚗",
+            "Transportation:Auto Insurance": "🛡️",
+            "Transportation:Gas/Charging":  "⛽",
+            "Transportation:Maintenance":   "🔧",
+            "Transportation:Parking/Tolls": "🅿️",
+            "Transportation:Public Transit": "🚌",
+            "Health:Health Insurance":      "🛡️",
+            "Health:Dental Insurance":      "🦷",
+            "Health:Medical":               "🏥",
+            "Health:Gym Membership":        "🏋️",
+            "Health:Supplements":           "💊",
+            "Banking:Bank Fees":            "🏦",
+            "Banking:Transfers":            "💸",
+            "Saving:Emergency Fund":        "🐷",
+            "Saving:Retirement":            "🏖️",
+            "Saving:Down Payment":          "🏡",
+            "Debt:Student Loans":           "🎓",
+            "Debt:Credit Cards":            "💳",
+        },
+        suggestedBudgets: {
+            "Income:Salary":                3500,
+            "Income:Bonuses":               500,
+            "Income:Side Hustle":           500,
+            "Income:Investments":           265,
+            "Food:Groceries":               350,
+            "Food:Restaurants/Coffee":      200,
+            "Food:Meal Delivery":           80,
+            "Personal:Phone Plan":          75,
+            "Personal:Subscriptions":       45,
+            "Personal:Entertainment":       120,
+            "Personal:Grooming/Haircut":    60,
+            "Personal:Shopping":            150,
+            "Personal:Hobbies":             80,
+            "Household:Rent/Mortgage":      1200,
+            "Household:Utilities":          120,
+            "Household:Internet":           60,
+            "Household:Furniture":          50,
+            "Household:Supplies":           40,
+            "Transportation:Car Payment":   350,
+            "Transportation:Auto Insurance": 150,
+            "Transportation:Gas/Charging":  120,
+            "Transportation:Maintenance":   80,
+            "Transportation:Parking/Tolls": 40,
+            "Transportation:Public Transit": 0,
+            "Health:Health Insurance":      200,
+            "Health:Dental Insurance":      30,
+            "Health:Medical":               60,
+            "Health:Gym Membership":        50,
+            "Health:Supplements":           40,
+            "Banking:Bank Fees":            15,
+            "Banking:Transfers":            0,
+            "Saving:Emergency Fund":        200,
+            "Saving:Retirement":            300,
+            "Saving:Down Payment":          150,
+            "Debt:Student Loans":           250,
+            "Debt:Credit Cards":            100,
+        }
+    },
+    family: {
+        name: "Family",
+        description: "Comprehensive family budget with children, household, and education expenses",
+        categories: {
+            "Income":         ["Primary Salary", "Secondary Salary", "Child Benefits", "Investments"],
+            "Food":           ["Groceries", "Restaurants/Takeout", "School Lunches"],
+            "Personal":       ["Phone Plans", "Subscriptions", "Entertainment", "Grooming", "Clothing"],
+            "Household":      ["Rent/Mortgage", "Property Tax", "Utilities", "Internet", "Maintenance", "Supplies", "Furniture"],
+            "Transportation": ["Car Payment", "Auto Insurance", "Gas/Charging", "Maintenance", "Parking/Tolls"],
+            "Health":         ["Health Insurance", "Dental Insurance", "Medical", "Prescriptions", "Vision"],
+            "Children":       ["Childcare", "Activities", "School Supplies", "Allowance", "Education Savings"],
+            "Banking":        ["Bank Fees", "Transfers"],
+            "Saving":         ["Emergency Fund", "Retirement", "Vacation Fund"],
+            "Debt":           ["Mortgage Payment", "Student Loans", "Credit Cards"],
+        },
+        itemIcons: {
+            "Income:Primary Salary":        "💼",
+            "Income:Secondary Salary":      "👔",
+            "Income:Child Benefits":        "👶",
+            "Income:Investments":           "📈",
+            "Food:Groceries":               "🛒",
+            "Food:Restaurants/Takeout":     "🍔",
+            "Food:School Lunches":          "🍱",
+            "Personal:Phone Plans":         "📱",
+            "Personal:Subscriptions":       "📺",
+            "Personal:Entertainment":       "🎬",
+            "Personal:Grooming":            "✂️",
+            "Personal:Clothing":            "👕",
+            "Household:Rent/Mortgage":      "🏠",
+            "Household:Property Tax":       "🏘️",
+            "Household:Utilities":          "💡",
+            "Household:Internet":           "🌐",
+            "Household:Maintenance":        "🔨",
+            "Household:Supplies":           "🧹",
+            "Household:Furniture":          "🛋️",
+            "Transportation:Car Payment":   "🚗",
+            "Transportation:Auto Insurance": "🛡️",
+            "Transportation:Gas/Charging":  "⛽",
+            "Transportation:Maintenance":   "🔧",
+            "Transportation:Parking/Tolls": "🅿️",
+            "Health:Health Insurance":      "🛡️",
+            "Health:Dental Insurance":      "🦷",
+            "Health:Medical":               "🏥",
+            "Health:Prescriptions":         "💊",
+            "Health:Vision":                "👓",
+            "Children:Childcare":           "👶",
+            "Children:Activities":          "⚽",
+            "Children:School Supplies":     "📚",
+            "Children:Allowance":           "💵",
+            "Children:Education Savings":   "🎓",
+            "Banking:Bank Fees":            "🏦",
+            "Banking:Transfers":            "💸",
+            "Saving:Emergency Fund":        "🐷",
+            "Saving:Retirement":            "🏖️",
+            "Saving:Vacation Fund":         "✈️",
+            "Debt:Mortgage Payment":        "🏡",
+            "Debt:Student Loans":           "🎓",
+            "Debt:Credit Cards":            "💳",
+        },
+        suggestedBudgets: {
+            "Income:Primary Salary":        5000,
+            "Income:Secondary Salary":      3500,
+            "Income:Child Benefits":        800,
+            "Income:Investments":           850,
+            "Food:Groceries":               800,
+            "Food:Restaurants/Takeout":     250,
+            "Food:School Lunches":          100,
+            "Personal:Phone Plans":         150,
+            "Personal:Subscriptions":       60,
+            "Personal:Entertainment":       150,
+            "Personal:Grooming":            100,
+            "Personal:Clothing":            200,
+            "Household:Rent/Mortgage":      2000,
+            "Household:Property Tax":       300,
+            "Household:Utilities":          200,
+            "Household:Internet":           80,
+            "Household:Maintenance":        150,
+            "Household:Supplies":           80,
+            "Household:Furniture":          100,
+            "Transportation:Car Payment":   450,
+            "Transportation:Auto Insurance": 250,
+            "Transportation:Gas/Charging":  200,
+            "Transportation:Maintenance":   100,
+            "Transportation:Parking/Tolls": 50,
+            "Health:Health Insurance":      600,
+            "Health:Dental Insurance":      80,
+            "Health:Medical":               150,
+            "Health:Prescriptions":         100,
+            "Health:Vision":                50,
+            "Children:Childcare":           1200,
+            "Children:Activities":          200,
+            "Children:School Supplies":     80,
+            "Children:Allowance":           50,
+            "Children:Education Savings":   300,
+            "Banking:Bank Fees":            20,
+            "Banking:Transfers":            0,
+            "Saving:Emergency Fund":        400,
+            "Saving:Retirement":            500,
+            "Saving:Vacation Fund":         200,
+            "Debt:Mortgage Payment":        0,
+            "Debt:Student Loans":           300,
+            "Debt:Credit Cards":            150,
+        }
+    },
+    freelancer: {
+        name: "Freelancer",
+        description: "Budget for self-employed individuals with irregular income and business expenses",
+        categories: {
+            "Income":         ["Client Payments", "Recurring Contracts", "Passive Income", "Investments"],
+            "Food":           ["Groceries", "Restaurants/Coffee", "Client Meals"],
+            "Personal":       ["Phone Plan", "Subscriptions", "Entertainment", "Grooming/Haircut", "Clothing"],
+            "Household":      ["Rent/Mortgage", "Utilities", "Internet", "Home Office"],
+            "Transportation": ["Car Payment", "Auto Insurance", "Gas/Charging", "Maintenance", "Parking/Tolls"],
+            "Health":         ["Health Insurance", "Dental Insurance", "Medical", "Vision"],
+            "Business":       ["Software/Tools", "Marketing", "Professional Development", "Equipment", "Office Supplies"],
+            "Banking":        ["Bank Fees", "Payment Processing", "Business Account"],
+            "Saving":         ["Emergency Fund", "Retirement", "Tax Reserve", "Business Reserve"],
+            "Debt":           ["Credit Cards", "Business Loan"],
+        },
+        itemIcons: {
+            "Income:Client Payments":       "💼",
+            "Income:Recurring Contracts":   "📋",
+            "Income:Passive Income":        "💰",
+            "Income:Investments":           "📈",
+            "Food:Groceries":               "🛒",
+            "Food:Restaurants/Coffee":      "☕",
+            "Food:Client Meals":            "🍽️",
+            "Personal:Phone Plan":          "📱",
+            "Personal:Subscriptions":       "📺",
+            "Personal:Entertainment":       "🎬",
+            "Personal:Grooming/Haircut":    "✂️",
+            "Personal:Clothing":            "👔",
+            "Household:Rent/Mortgage":      "🏠",
+            "Household:Utilities":          "💡",
+            "Household:Internet":           "🌐",
+            "Household:Home Office":        "🖥️",
+            "Transportation:Car Payment":   "🚗",
+            "Transportation:Auto Insurance": "🛡️",
+            "Transportation:Gas/Charging":  "⛽",
+            "Transportation:Maintenance":   "🔧",
+            "Transportation:Parking/Tolls": "🅿️",
+            "Health:Health Insurance":      "🛡️",
+            "Health:Dental Insurance":      "🦷",
+            "Health:Medical":               "🏥",
+            "Health:Vision":                "👓",
+            "Business:Software/Tools":      "💻",
+            "Business:Marketing":           "📢",
+            "Business:Professional Development": "📚",
+            "Business:Equipment":           "⚙️",
+            "Business:Office Supplies":     "📎",
+            "Banking:Bank Fees":            "🏦",
+            "Banking:Payment Processing":   "💳",
+            "Banking:Business Account":     "🏛️",
+            "Saving:Emergency Fund":        "🐷",
+            "Saving:Retirement":            "🏖️",
+            "Saving:Tax Reserve":           "📊",
+            "Saving:Business Reserve":      "💼",
+            "Debt:Credit Cards":            "💳",
+            "Debt:Business Loan":           "🏢",
+        },
+        suggestedBudgets: {
+            "Income:Client Payments":       4500,
+            "Income:Recurring Contracts":   2000,
+            "Income:Passive Income":        300,
+            "Income:Investments":           285,
+            "Food:Groceries":               400,
+            "Food:Restaurants/Coffee":      150,
+            "Food:Client Meals":            100,
+            "Personal:Phone Plan":          80,
+            "Personal:Subscriptions":       50,
+            "Personal:Entertainment":       100,
+            "Personal:Grooming/Haircut":    60,
+            "Personal:Clothing":            80,
+            "Household:Rent/Mortgage":      1400,
+            "Household:Utilities":          130,
+            "Household:Internet":           80,
+            "Household:Home Office":        100,
+            "Transportation:Car Payment":   300,
+            "Transportation:Auto Insurance": 150,
+            "Transportation:Gas/Charging":  100,
+            "Transportation:Maintenance":   80,
+            "Transportation:Parking/Tolls": 30,
+            "Health:Health Insurance":      450,
+            "Health:Dental Insurance":      60,
+            "Health:Medical":               100,
+            "Health:Vision":                40,
+            "Business:Software/Tools":      150,
+            "Business:Marketing":           200,
+            "Business:Professional Development": 100,
+            "Business:Equipment":           80,
+            "Business:Office Supplies":     50,
+            "Banking:Bank Fees":            20,
+            "Banking:Payment Processing":   80,
+            "Banking:Business Account":     15,
+            "Saving:Emergency Fund":        500,
+            "Saving:Retirement":            400,
+            "Saving:Tax Reserve":           800,
+            "Saving:Business Reserve":      300,
+            "Debt:Credit Cards":            150,
+            "Debt:Business Loan":           200,
+        }
+    },
+};
+
+/* ── Template Application ─────────────────────── */
+
+function applyBudgetTemplate(template) {
+    if (!template || !budgetTemplates[template]) return;
+
+    const tmpl = budgetTemplates[template];
+
+    // Check if there's existing data
+    const hasData = transactions.length > 0 ||
+                    Object.keys(monthlyBudgets).length > 0 ||
+                    Object.keys(expenseCategories).length > 0;
+
+    // Show confirmation if data exists
+    if (hasData) {
+        const msg = `Apply "${tmpl.name}" template?\n\nThis will replace your current budget categories and clear existing budget amounts.\n\nTransactions and wallet accounts will be kept.`;
+        if (!confirm(msg)) return;
+    }
+
+    // Apply template data
+    expenseCategories = { ...tmpl.categories };
+    itemIcons = { ...tmpl.itemIcons };
+
+    // Apply suggested budgets to current month if template has them
+    if (tmpl.suggestedBudgets) {
+        const monthKey = getCurrentMonthKey();
+        monthlyBudgets[monthKey] = {};
+
+        // Convert flat "Main:Sub" → amount format to nested structure
+        Object.entries(tmpl.suggestedBudgets).forEach(([key, amount]) => {
+            const [main, sub] = key.split(':');
+            if (!monthlyBudgets[monthKey][main]) {
+                monthlyBudgets[monthKey][main] = {};
+            }
+            monthlyBudgets[monthKey][main][sub] = amount;
+        });
+    }
+
+    // Sync Income categories
+    incomeCats = expenseCategories['Income'] || [];
+
+    // Persist changes
+    saveData();
+}
+
 /* ── Persistence helpers ─────────────────────── */
 
 /**
@@ -170,7 +588,7 @@ let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
     const snap = {
-        transactions, recurringTransactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts,
+        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts, customTemplates,
         categoryOrder: Object.keys(expenseCategories)
         // incomeCats is now derived from expenseCategories['Income'] — not saved separately
     };
@@ -182,9 +600,19 @@ function saveData() {
     _saveTimer = setTimeout(() => {
         const user = _fbAuth ? _fbAuth.currentUser : null;
         if (!user || !_fbDb) return;
+        // Set sync state to 'syncing' when Firestore write begins
+        if (typeof setSyncStateSyncing === 'function') setSyncStateSyncing();
         _fbDb.collection('users').doc(user.uid)
             .set({ data: snap, updatedAt: new Date().toISOString() }, { merge: true })
-            .catch(e => console.warn('Firestore write:', e.message));
+            .then(() => {
+                // Set sync state to 'synced' on success
+                if (typeof setSyncStateSynced === 'function') setSyncStateSynced();
+            })
+            .catch(e => {
+                console.warn('Firestore write:', e.message);
+                // Set sync state to 'failed' on error
+                if (typeof setSyncStateFailed === 'function') setSyncStateFailed();
+            });
     }, 1500);
 }
 
@@ -216,6 +644,7 @@ function _applyData(d) {
     recurringTransactions = d.recurringTransactions || [];
     itemIcons         = d.itemIcons         || {};
     walletAccounts    = d.walletAccounts    || [];
+    customTemplates   = d.customTemplates   || [];
     incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
     selectedMonth = getCurrentMonthKey();
     selectedBudgetMonth = selectedMonth;
@@ -266,6 +695,7 @@ function loadData() {
         recurringTransactions: JSON.parse(localStorage.getItem('recurringTransactions')),
         itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
         walletAccounts:    JSON.parse(localStorage.getItem('walletAccounts')),
+        customTemplates:   JSON.parse(localStorage.getItem('customTemplates')),
         incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
         categoryOrder:     JSON.parse(localStorage.getItem('categoryOrder')),
     });
@@ -692,4 +1122,71 @@ function _isTransferExcluded(t) {
     const toType   = _getAccType(t.toAccountId);
     if (!fromType || !toType) return true;
     return fromType === toType;
+}
+
+/* ── Template CRUD & Apply ────────────────────────────── */
+
+function saveCustomTemplate(template) {
+    if (!template.id) {
+        template.id = 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        template.createdAt = new Date().toISOString();
+    }
+    template.updatedAt = new Date().toISOString();
+    const idx = customTemplates.findIndex(t => t.id === template.id);
+    if (idx >= 0) {
+        customTemplates[idx] = template;
+    } else {
+        customTemplates.push(template);
+    }
+    saveData();
+    return template;
+}
+
+function deleteCustomTemplate(id) {
+    customTemplates = customTemplates.filter(t => t.id !== id);
+    saveData();
+}
+
+function getTemplateById(id) {
+    // Search built-in templates by key
+    if (budgetTemplates[id]) return { id, ...budgetTemplates[id] };
+    // Search custom templates by id
+    return customTemplates.find(t => t.id === id) || null;
+}
+
+function applyBudgetTemplate(templateData, targetMonth) {
+    // Guard against overwriting existing budget
+    if (monthlyBudgets[targetMonth]) return false;
+
+    // Set categories and icons from template
+    expenseCategories = JSON.parse(JSON.stringify(templateData.categories));
+    itemIcons = JSON.parse(JSON.stringify(templateData.itemIcons || {}));
+
+    // Build budget structure: { main: { sub: amount } }
+    monthlyBudgets[targetMonth] = {};
+    Object.keys(expenseCategories).forEach(cat => {
+        monthlyBudgets[targetMonth][cat] = {};
+        expenseCategories[cat].forEach(item => {
+            const key = cat + ':' + item;
+            monthlyBudgets[targetMonth][cat][item] = templateData.suggestedBudgets[key] || 0;
+        });
+    });
+
+    // Include dynamic Saving/Debt sections from walletAccounts
+    ['Saving', 'Debt'].forEach(secType => {
+        const accs = walletAccounts.filter(a => a.type === secType.toLowerCase());
+        if (accs.length) {
+            if (!monthlyBudgets[targetMonth][secType]) {
+                monthlyBudgets[targetMonth][secType] = {};
+            }
+            accs.forEach(acc => {
+                if (!(acc.name in monthlyBudgets[targetMonth][secType])) {
+                    monthlyBudgets[targetMonth][secType][acc.name] = 0;
+                }
+            });
+        }
+    });
+
+    saveData();
+    return true;
 }

@@ -62,6 +62,18 @@
             <button onclick="exitDemoMode()" class="text-xs font-bold text-black/70 hover:text-black transition-colors px-2">✕ Exit</button>
         </div>
 
+        <!-- PWA install banner -->
+        <div id="install-banner" class="hidden fixed top-0 left-0 right-0 z-[200] flex items-center justify-between px-4 py-2 bg-emerald-500/90 backdrop-blur-sm">
+            <div class="flex-1">
+                <span class="text-xs font-semibold text-black">📱 Add Minimal to your home screen</span>
+                <p class="text-[10px] text-black/70 mt-0.5">Works offline • No app store • Instant access</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="install-banner-install-btn" onclick="handleInstallClick()" class="text-xs font-bold text-black bg-white/20 hover:bg-white/30 transition-colors px-3 py-1 rounded-full">Install</button>
+                <button onclick="dismissInstallBanner()" class="text-xs font-bold text-black/70 hover:text-black transition-colors px-2">✕</button>
+            </div>
+        </div>
+
         <!-- ═══ Sidebar (on desktop) / Header+Tabs (on mobile) ═══ -->
         <nav id="app-sidebar">
 
@@ -76,6 +88,37 @@
                 <button id="header-home-btn" onclick="switchTab(0)" class="hidden w-9 h-9 flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors" aria-label="Home">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/></svg>
                 </button>
+                <!-- Sync status indicator -->
+                <div class="relative">
+                    <button id="sync-status-btn" onclick="toggleSyncStatusDropdown()" class="hidden w-9 h-9 flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 rounded-full transition-colors" aria-label="Sync status">
+                        <svg id="sync-status-icon" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M3 12h4l3 9 4-18 3 9h4"/>
+                        </svg>
+                    </button>
+                    <!-- Sync status dropdown -->
+                    <div id="sync-status-dropdown" class="hidden absolute top-full right-0 mt-2 w-64 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-50">
+                        <div class="px-4 py-3 border-b border-zinc-800">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold text-white">Sync Status</span>
+                                <span id="sync-status-badge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">Synced</span>
+                            </div>
+                        </div>
+                        <div class="px-4 py-3 space-y-2 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Connection</span>
+                                <span id="sync-connection-status" class="text-white font-medium">Online</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Last synced</span>
+                                <span id="sync-last-time" class="text-white font-medium">Just now</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-zinc-500">Pending changes</span>
+                                <span id="sync-pending-count" class="text-white font-medium">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <button id="user-avatar-btn" onclick="showProfileMenu()" class="w-9 h-9 rounded-full bg-zinc-800 overflow-hidden flex items-center justify-center shrink-0 ring-2 ring-zinc-700 hover:ring-emerald-500/50 transition-all">
                     <span id="user-avatar-initials" class="text-xs font-bold text-zinc-300"></span>
                     <img id="user-avatar-img" class="w-full h-full object-cover hidden" alt=""/>
@@ -937,6 +980,7 @@
 
                 </div>
             </div>
+
             <div class="px-5 mb-5">
                 <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Data</div>
                 <div class="bg-zinc-900 rounded-3xl overflow-hidden">
@@ -1097,8 +1141,11 @@
     <script src="js/modals/budget-item.js"></script>
     <script src="js/modals/settings.js"></script>
     <script src="js/modals/bank-import.js"></script>
+    <script src="js/modals/template-management.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/utils/tutorial.js"></script>
+    <script src="js/utils/pwa-install.js"></script>
+    <script src="js/utils/sync-status.js"></script>
     <script src="js/app.js"></script>
 
 
@@ -1141,8 +1188,74 @@
                 <p class="text-zinc-700 text-xs mt-8 tracking-widest uppercase">Swipe or tap &rarr;</p>
             </div>
 
-            <!-- ── SLIDE 1 · Wallet ──────────────────── -->
+            <!-- ── SLIDE 1 · Template Picker ──────────────────── -->
             <div class="tut-slide" id="tut-1">
+                <div class="mb-6">
+                    <p class="text-[10px] font-black tracking-[.22em] text-emerald-500 uppercase mb-2">Quick Start</p>
+                    <h2 class="text-3xl font-semibold tracking-tighter tut-heading mb-3">Choose a Template</h2>
+                    <p class="tut-text-muted text-[13px] leading-relaxed" style="max-width:18rem">
+                        Start with a pre-built budget designed for your situation. You can customize it later.
+                    </p>
+                </div>
+
+                <!-- Template cards -->
+                <div class="flex flex-col gap-3 px-2" style="max-width:20rem">
+                    <!-- Student -->
+                    <div class="tut-template-card selected" data-template="student" onclick="selectTemplate('student')">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0" style="background:rgba(16,185,129,.12)">
+                                🎓
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold tut-heading mb-1">Student</h3>
+                                <p class="text-[11px] tut-text-muted leading-snug">Budget designed for student life with educational expenses and limited income</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Young Professional -->
+                    <div class="tut-template-card" data-template="youngProfessional" onclick="selectTemplate('youngProfessional')">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0" style="background:rgba(16,185,129,.12)">
+                                💼
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold tut-heading mb-1">Young Professional</h3>
+                                <p class="text-[11px] tut-text-muted leading-snug">Budget for early career professionals building financial independence</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Family -->
+                    <div class="tut-template-card" data-template="family" onclick="selectTemplate('family')">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0" style="background:rgba(16,185,129,.12)">
+                                👨‍👩‍👧‍👦
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold tut-heading mb-1">Family</h3>
+                                <p class="text-[11px] tut-text-muted leading-snug">Comprehensive family budget with children, household, and education expenses</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Freelancer -->
+                    <div class="tut-template-card" data-template="freelancer" onclick="selectTemplate('freelancer')">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0" style="background:rgba(16,185,129,.12)">
+                                💻
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold tut-heading mb-1">Freelancer</h3>
+                                <p class="text-[11px] tut-text-muted leading-snug">Budget for self-employed with irregular income and business expenses</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── SLIDE 2 · Wallet ──────────────────── -->
+            <div class="tut-slide" id="tut-2">
                 <!-- Mini phone frame with real wallet UI -->
                 <div class="tut-phone mb-5">
                     <!-- Net worth header -->
@@ -1228,8 +1341,8 @@
                 </p>
             </div>
 
-            <!-- ── SLIDE 2 · Budgets ──────────────────── -->
-            <div class="tut-slide" id="tut-2">
+            <!-- ── SLIDE 3 · Budgets ──────────────────── -->
+            <div class="tut-slide" id="tut-3">
                 <div class="tut-phone mb-5">
                     <!-- Month selector -->
                     <div class="flex items-center justify-center gap-3 py-1.5 mb-2">
@@ -1312,8 +1425,8 @@
                 </p>
             </div>
 
-            <!-- ── SLIDE 3 · Transactions ─────────────── -->
-            <div class="tut-slide" id="tut-3">
+            <!-- ── SLIDE 4 · Transactions ─────────────── -->
+            <div class="tut-slide" id="tut-4">
                 <div class="tut-phone mb-5">
                     <!-- Search bar -->
                     <div class="flex items-center gap-1 px-1 mb-2">
@@ -1383,8 +1496,8 @@
                 </p>
             </div>
 
-            <!-- ── SLIDE 4 · Overview ─────────────────── -->
-            <div class="tut-slide" id="tut-4">
+            <!-- ── SLIDE 5 · Overview ─────────────────── -->
+            <div class="tut-slide" id="tut-5">
                 <div class="tut-phone mb-5">
                     <!-- Chart area -->
                     <div class="tut-card-mock rounded-2xl px-3 pt-3 pb-2 mb-2">
@@ -1454,8 +1567,8 @@
                 </p>
             </div>
 
-            <!-- ── SLIDE 5 · Ready ────────────────────── -->
-            <div class="tut-slide" id="tut-5">
+            <!-- ── SLIDE 6 · Ready ────────────────────── -->
+            <div class="tut-slide" id="tut-6">
                 <div class="mb-10">
                     <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
                         <circle cx="60" cy="60" r="54" stroke="rgba(16,185,129,.08)" stroke-width="1"/>
@@ -1646,13 +1759,12 @@
                     </div>
                     <span class="font-semibold text-sm text-zinc-200">Wallet</span>
                 </button>
-                <button onclick="hideProfileMenu();switchTab(3)" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors border-b border-zinc-800/50">
-                    <div class="w-9 h-9 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
-                        <svg width="16" height="16" fill="none" stroke="#38bdf8" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-5 4 3 5-6"/></svg>
+                <button onclick="hideProfileMenu();showTemplateManagement()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors border-b border-zinc-800/50">
+                    <div class="w-9 h-9 rounded-xl bg-purple-500/15 flex items-center justify-center shrink-0 text-lg">
+                        📋
                     </div>
-                    <span class="font-semibold text-sm text-zinc-200">Reports</span>
-                </button>
-                <button onclick="hideProfileMenu();showDataModal()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
+                    <span class="font-semibold text-sm text-zinc-200">Budget Templates</span>
+                </button>                <button onclick="hideProfileMenu();showDataModal()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
                     <div class="w-9 h-9 rounded-xl bg-zinc-700/50 flex items-center justify-center shrink-0">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     </div>
@@ -1867,7 +1979,22 @@
             </div>
         </div>
     </div>
-
+    <!-- TEMPLATE MANAGEMENT MODAL -->
+    <div id="template-management-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[160]" onclick="if(event.target===this)hideTemplateManagement()">
+        <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
+            <!-- Drag handle + close button -->
+            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10 relative">
+                <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
+                <button onclick="hideTemplateManagement()" class="absolute right-3 top-2 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors" title="Close">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <!-- Content area (dynamically populated by template-management.js) -->
+            <div id="template-content" class="px-5 pb-8">
+                <!-- Will be populated by _renderTemplateList(), _showTemplateDetail(), or _showTemplateForm() -->
+            </div>
+        </div>
+    </div>
     <!-- ── Service Worker ── -->
     <script>
         if ('serviceWorker' in navigator) {

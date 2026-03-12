@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "017-recurring-transactions",
+  "spec": "002-pwa-install-experience-offline-status-indicator",
   "state": "building",
   "subtasks": {
-    "completed": 18,
-    "total": 19,
+    "completed": 6,
+    "total": 8,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Integration & Testing",
+    "current": "Sync Status Indicator",
     "id": null,
-    "total": 1
+    "total": 3
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 19,
-    "started_at": "2026-03-10T19:10:21.765736"
+    "number": 2,
+    "started_at": "2026-03-11T20:48:20.852278"
   },
-  "last_update": "2026-03-10T19:57:30.984687"
+  "last_update": "2026-03-11T20:50:11.472120"
 }
