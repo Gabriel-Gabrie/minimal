@@ -91,13 +91,20 @@ function renderTransactions() {
     const sortLbl = document.getElementById('tx-sort-label');
     if (sortLbl) sortLbl.textContent = SORT_LABELS[txSort] || 'Date ↓';
 
-    // Filter by type + search query + categories
+    // Filter by type + search query + categories + amount range
     const filtered = sorted.filter(t => {
         if (txFilter !== 'all' && t.type !== txFilter) return false;
 
         // Multi-category filter
         if (advancedFilters.categories.length > 0) {
             if (!advancedFilters.categories.includes(t.mainCategory)) return false;
+        }
+
+        // Amount range filter
+        if (advancedFilters.amountRange.min !== null || advancedFilters.amountRange.max !== null) {
+            const amt = parseFloat(t.amount);
+            if (advancedFilters.amountRange.min !== null && amt < advancedFilters.amountRange.min) return false;
+            if (advancedFilters.amountRange.max !== null && amt > advancedFilters.amountRange.max) return false;
         }
 
         if (!q) return true;
