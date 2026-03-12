@@ -1,9 +1,8 @@
 /* ══════════════════════════════════════════════
    TUTORIAL
 ══════════════════════════════════════════════ */
-const TUT_TOTAL = 7;
+const TUT_TOTAL = 6;
 let _tutIdx = 0;
-let _selectedTemplate = 'student'; // Default template selection
 
 function tutOpen() {
     _tutIdx = 0;
@@ -18,24 +17,8 @@ function tutSkip() {
 }
 
 function tutFinish() {
-    // Apply selected template before finishing tutorial
-    applyBudgetTemplate(_selectedTemplate);
-
     document.getElementById('tut-modal').classList.add('hidden');
     localStorage.setItem('tutDone', '1');
-}
-
-function selectTemplate(templateKey) {
-    _selectedTemplate = templateKey;
-    // Update UI to show selected template
-    const cards = document.querySelectorAll('.tut-template-card');
-    cards.forEach(card => {
-        if (card.dataset.template === templateKey) {
-            card.classList.add('selected');
-        } else {
-            card.classList.remove('selected');
-        }
-    });
 }
 
 function tutNext() {
