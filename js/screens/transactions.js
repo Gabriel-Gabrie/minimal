@@ -36,14 +36,52 @@ function _dateLabel(ds) {
     return new Date(y, mo - 1, day).toLocaleDateString('default', { weekday:'short', month:'short', day:'numeric' });
 }
 
+function _countActiveFilters() {
+    let count = 0;
+    // Count date range filter (1 point if either start or end is set)
+    if (advancedFilters.dateRange.start || advancedFilters.dateRange.end) count++;
+    // Count selected categories
+    count += advancedFilters.categories.length;
+    // Count amount range filter (1 point if either min or max is set)
+    if (advancedFilters.amountRange.min !== null || advancedFilters.amountRange.max !== null) count++;
+    return count;
+}
+
+function _updateFilterBadge() {
+    const badge = document.getElementById('tx-filter-badge');
+    const clearBtn = document.getElementById('tx-clear-filters-btn');
+
+    const count = _countActiveFilters();
+    if (count > 0) {
+        if (badge) {
+            badge.textContent = count;
+            badge.classList.remove('hidden');
+        }
+        if (clearBtn) clearBtn.classList.remove('hidden');
+    } else {
+        if (badge) badge.classList.add('hidden');
+        if (clearBtn) clearBtn.classList.add('hidden');
+    }
+}
+
 /* ── Main render ─────────────────────────────────── */
 function renderTransactions() {
     // Sync from shared month
     _initSharedMonth();
     selectedTxMonth = selectedMonth;
 
-    // Transactions for this month only
-    const monthTx = transactions.filter(t => t.date.startsWith(selectedTxMonth));
+    // Transactions for this month (or date range if advanced filters active)
+    let monthTx;
+    if (advancedFilters.dateRange.start && advancedFilters.dateRange.end) {
+        // Filter by date range (can span multiple months)
+        monthTx = transactions.filter(t =>
+            t.date >= advancedFilters.dateRange.start &&
+            t.date <= advancedFilters.dateRange.end
+        );
+    } else {
+        // Filter by selected month only
+        monthTx = transactions.filter(t => t.date.startsWith(selectedTxMonth));
+    }
 
     const listEl     = document.getElementById('full-list');
     const emptyEl    = document.getElementById('tx-empty');
@@ -70,6 +108,9 @@ function renderTransactions() {
     monthTx.forEach(t => { nAll++; if (t.type === 'transfer') nTrf++; else if (t.type === 'expense') nExp++; else nInc++; });
     _updatePills(nAll, nExp, nInc, nTrf);
 
+    // Update filter badge
+    _updateFilterBadge();
+
     // Sort
     const sorted = monthTx.slice().sort((a, b) => {
         if (txSort === 'amount-desc') return parseFloat(b.amount) - parseFloat(a.amount);
@@ -81,9 +122,22 @@ function renderTransactions() {
     const sortLbl = document.getElementById('tx-sort-label');
     if (sortLbl) sortLbl.textContent = SORT_LABELS[txSort] || 'Date ↓';
 
-    // Filter by type + search query
+    // Filter by type + search query + categories + amount range
     const filtered = sorted.filter(t => {
         if (txFilter !== 'all' && t.type !== txFilter) return false;
+
+        // Multi-category filter
+        if (advancedFilters.categories.length > 0) {
+            if (!advancedFilters.categories.includes(t.mainCategory)) return false;
+        }
+
+        // Amount range filter
+        if (advancedFilters.amountRange.min !== null || advancedFilters.amountRange.max !== null) {
+            const amt = parseFloat(t.amount);
+            if (advancedFilters.amountRange.min !== null && amt < advancedFilters.amountRange.min) return false;
+            if (advancedFilters.amountRange.max !== null && amt > advancedFilters.amountRange.max) return false;
+        }
+
         if (!q) return true;
         return [t.desc||'', t.mainCategory||'', t.subCategory||'',
             parseFloat(t.amount).toFixed(2)].join(' ').toLowerCase().includes(q);
@@ -184,6 +238,232 @@ function toggleTxSort() {
     const order = ['date-desc','date-asc','amount-desc','amount-asc'];
     txSort = order[(order.indexOf(txSort) + 1) % order.length];
     renderTransactions();
+}
+
+/* ══════════════════════════════════════════════
+   ADVANCED FILTER MODAL
+══════════════════════════════════════════════ */
+
+function showAdvancedFilters() {
+    document.getElementById('advanced-filter-modal').classList.remove('hidden');
+    _populateFilterModal();
+}
+
+function _populateFilterModal() {
+    // Populate date range inputs and attach event listeners
+    const startInput = document.getElementById('filter-date-start');
+    const endInput = document.getElementById('filter-date-end');
+    if (startInput) {
+        startInput.value = advancedFilters.dateRange.start || '';
+        startInput.onchange = () => {
+            advancedFilters.dateRange.start = startInput.value || null;
+        };
+    }
+    if (endInput) {
+        endInput.value = advancedFilters.dateRange.end || '';
+        endInput.onchange = () => {
+            advancedFilters.dateRange.end = endInput.value || null;
+        };
+    }
+
+    // Populate amount range inputs and attach event listeners
+    const minInput = document.getElementById('filter-amount-min');
+    const maxInput = document.getElementById('filter-amount-max');
+    if (minInput) {
+        minInput.value = advancedFilters.amountRange.min !== null ? advancedFilters.amountRange.min : '';
+        minInput.onchange = () => {
+            const val = parseFloat(minInput.value);
+            advancedFilters.amountRange.min = minInput.value && !isNaN(val) ? val : null;
+        };
+    }
+    if (maxInput) {
+        maxInput.value = advancedFilters.amountRange.max !== null ? advancedFilters.amountRange.max : '';
+        maxInput.onchange = () => {
+            const val = parseFloat(maxInput.value);
+            advancedFilters.amountRange.max = maxInput.value && !isNaN(val) ? val : null;
+        };
+    }
+
+    // Populate category checkboxes
+    const catList = document.getElementById('filter-categories-list');
+    if (catList) {
+        let html = '';
+        Object.keys(expenseCategories).forEach(cat => {
+            const isChecked = advancedFilters.categories.includes(cat);
+            const checkboxId = 'filter-cat-' + cat.replace(/\s+/g, '-');
+            const escapedCat = escapeHtml(cat);
+            const escapedId = escapeHtml(checkboxId);
+            html += `<div class="flex items-center justify-between px-4 py-3 border-b border-zinc-700/30 last:border-0">
+                <label for="${escapedId}" class="flex-1 text-sm text-zinc-200 cursor-pointer">${mainEmojis[cat] || '📁'} ${escapedCat}</label>
+                <input type="checkbox" id="${escapedId}" data-category="${escapedCat}"
+                       ${isChecked ? 'checked' : ''}
+                       class="w-5 h-5 rounded bg-zinc-700 border-zinc-600 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-zinc-900 cursor-pointer">
+            </div>`;
+        });
+        catList.innerHTML = html;
+
+        // Attach event listeners to category checkboxes
+        catList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.onchange = () => {
+                const cat = cb.dataset.category;
+                if (cb.checked) {
+                    if (!advancedFilters.categories.includes(cat)) {
+                        advancedFilters.categories.push(cat);
+                    }
+                } else {
+                    advancedFilters.categories = advancedFilters.categories.filter(c => c !== cat);
+                }
+            };
+        });
+    }
+
+    // Render saved filter presets
+    _renderSavedFilters();
+}
+
+function hideAdvancedFilters() {
+    document.getElementById('advanced-filter-modal').classList.add('hidden');
+    renderTransactions();
+}
+
+function applyAdvancedFilters() {
+    hideAdvancedFilters();
+}
+
+function clearAllFilters() {
+    // Reset all advanced filters to default state
+    advancedFilters.dateRange.start = null;
+    advancedFilters.dateRange.end = null;
+    advancedFilters.categories = [];
+    advancedFilters.amountRange.min = null;
+    advancedFilters.amountRange.max = null;
+
+    // Re-populate the modal with cleared values
+    _populateFilterModal();
+
+    // Re-render transactions with filters cleared
+    renderTransactions();
+}
+
+/* ── Saved Filter Presets ─────────────────────── */
+function saveFilterPreset() {
+    // Check if there are any active filters to save
+    const hasDateRange = advancedFilters.dateRange.start || advancedFilters.dateRange.end;
+    const hasCategories = advancedFilters.categories.length > 0;
+    const hasAmountRange = advancedFilters.amountRange.min !== null || advancedFilters.amountRange.max !== null;
+
+    if (!hasDateRange && !hasCategories && !hasAmountRange) {
+        alert('Please set at least one filter before saving.');
+        return;
+    }
+
+    // Prompt for preset name
+    const name = prompt('Enter a name for this filter preset:');
+    if (!name || !name.trim()) return;
+
+    // Create preset object
+    const preset = {
+        id: Date.now().toString(),
+        name: name.trim(),
+        filters: {
+            dateRange: { ...advancedFilters.dateRange },
+            categories: [...advancedFilters.categories],
+            amountRange: { ...advancedFilters.amountRange }
+        }
+    };
+
+    // Add to savedFilters array
+    savedFilters.push(preset);
+
+    // Persist to storage
+    saveData();
+
+    // Update the saved filters list in the modal
+    _renderSavedFilters();
+}
+
+function _renderSavedFilters() {
+    const listEl = document.getElementById('filter-presets-list');
+    if (!listEl) return;
+
+    if (savedFilters.length === 0) {
+        listEl.innerHTML = '<div class="px-4 py-3 text-xs text-zinc-600 text-center">No saved filters yet</div>';
+        return;
+    }
+
+    let html = '';
+    savedFilters.forEach(preset => {
+        // Build filter description
+        const parts = [];
+        if (preset.filters.dateRange.start || preset.filters.dateRange.end) {
+            const start = escapeHtml(preset.filters.dateRange.start || '...');
+            const end = escapeHtml(preset.filters.dateRange.end || '...');
+            parts.push(`📅 ${start} → ${end}`);
+        }
+        if (preset.filters.categories.length > 0) {
+            parts.push(`🏷️ ${preset.filters.categories.length} categories`);
+        }
+        if (preset.filters.amountRange.min !== null || preset.filters.amountRange.max !== null) {
+            const minStr = preset.filters.amountRange.min !== null ? String(preset.filters.amountRange.min) : '...';
+            const maxStr = preset.filters.amountRange.max !== null ? String(preset.filters.amountRange.max) : '...';
+            parts.push(`💵 $${escapeHtml(minStr)} - $${escapeHtml(maxStr)}`);
+        }
+        const description = parts.join(' · ');
+
+        html += `<div class="border-t border-zinc-700/40 first:border-t-0">
+            <div class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-zinc-800/50 transition-colors" onclick="loadFilterPreset('${preset.id}')">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-medium text-sm truncate">${escapeHtml(preset.name)}</span>
+                    </div>
+                    <p class="text-[11px] text-zinc-500 truncate">${description}</p>
+                </div>
+                <button onclick="event.stopPropagation();deleteFilterPreset('${preset.id}')"
+                    class="shrink-0 w-8 h-8 rounded-full bg-zinc-800 hover:bg-rose-500/20 flex items-center justify-center text-zinc-500 hover:text-rose-400 transition-colors"
+                    aria-label="Delete preset">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                    </svg>
+                </button>
+            </div>
+        </div>`;
+    });
+
+    listEl.innerHTML = html;
+}
+
+function loadFilterPreset(presetId) {
+    const preset = savedFilters.find(p => p.id === presetId);
+    if (!preset) return;
+
+    // Apply preset filters to advancedFilters state
+    advancedFilters.dateRange.start = preset.filters.dateRange.start;
+    advancedFilters.dateRange.end = preset.filters.dateRange.end;
+    advancedFilters.categories = [...preset.filters.categories];
+    advancedFilters.amountRange.min = preset.filters.amountRange.min;
+    advancedFilters.amountRange.max = preset.filters.amountRange.max;
+
+    // Re-populate the modal to reflect loaded filters
+    _populateFilterModal();
+
+    // Close modal and apply filters
+    hideAdvancedFilters();
+}
+
+function deleteFilterPreset(presetId) {
+    if (!confirm('Delete this filter preset?')) return;
+
+    // Remove preset from savedFilters array
+    const index = savedFilters.findIndex(p => p.id === presetId);
+    if (index === -1) return;
+
+    savedFilters.splice(index, 1);
+    saveData();
+
+    // Re-render the saved filters list
+    _renderSavedFilters();
 }
 
 /* ══════════════════════════════════════════════

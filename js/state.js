@@ -95,6 +95,14 @@ let txFilter = 'all';
 let selectedTxMonth = '';
 /** @type {'date-desc'|'date-asc'|'amount-desc'|'amount-asc'} Transaction list sort order */
 let txSort = 'date-desc';
+/** @type {{dateRange: {start: string|null, end: string|null}, categories: string[], amountRange: {min: number|null, max: number|null}}} Advanced filter state */
+let advancedFilters = {
+    dateRange: { start: null, end: null },
+    categories: [],
+    amountRange: { min: null, max: null }
+};
+/** @type {Array<{id: string, name: string, filters: Object}>} Saved filter presets */
+let savedFilters = [];
 /** @type {Object|null} Undo data snapshot for transaction deletion */
 let _undoData = null;
 /** @type {number|null} Undo toast timeout timer ID */
@@ -588,7 +596,7 @@ let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
     const snap = {
-        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts, customTemplates,
+        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts, customTemplates, savedFilters,
         categoryOrder: Object.keys(expenseCategories)
         // incomeCats is now derived from expenseCategories['Income'] — not saved separately
     };
@@ -645,6 +653,7 @@ function _applyData(d) {
     itemIcons         = d.itemIcons         || {};
     walletAccounts    = d.walletAccounts    || [];
     customTemplates   = d.customTemplates   || [];
+    savedFilters      = d.savedFilters      || [];
     incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
     selectedMonth = getCurrentMonthKey();
     selectedBudgetMonth = selectedMonth;
@@ -696,6 +705,7 @@ function loadData() {
         itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
         walletAccounts:    JSON.parse(localStorage.getItem('walletAccounts')),
         customTemplates:   JSON.parse(localStorage.getItem('customTemplates')),
+        savedFilters:      JSON.parse(localStorage.getItem('savedFilters')),
         incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
         categoryOrder:     JSON.parse(localStorage.getItem('categoryOrder')),
     });
@@ -872,6 +882,21 @@ function _updateMasterMonthUI() {
         const isCurrent = selectedMonth === getCurrentMonthKey();
         thisBtn.classList.toggle('hidden', isCurrent);
     }
+}
+
+/**
+ * Escape HTML special characters to prevent XSS
+ * @param {string} unsafe - Untrusted user input
+ * @returns {string} HTML-safe string
+ */
+function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return '';
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 /* ── Recurring transaction generation ─────────────────────── */
