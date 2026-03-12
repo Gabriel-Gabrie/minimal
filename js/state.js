@@ -596,7 +596,7 @@ let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
     const snap = {
-        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts, customTemplates,
+        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts, customTemplates, savedFilters,
         categoryOrder: Object.keys(expenseCategories)
         // incomeCats is now derived from expenseCategories['Income'] — not saved separately
     };
@@ -653,6 +653,7 @@ function _applyData(d) {
     itemIcons         = d.itemIcons         || {};
     walletAccounts    = d.walletAccounts    || [];
     customTemplates   = d.customTemplates   || [];
+    savedFilters      = d.savedFilters      || [];
     incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
     selectedMonth = getCurrentMonthKey();
     selectedBudgetMonth = selectedMonth;
@@ -704,6 +705,7 @@ function loadData() {
         itemIcons:         JSON.parse(localStorage.getItem('itemIcons')),
         walletAccounts:    JSON.parse(localStorage.getItem('walletAccounts')),
         customTemplates:   JSON.parse(localStorage.getItem('customTemplates')),
+        savedFilters:      JSON.parse(localStorage.getItem('savedFilters')),
         incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
         categoryOrder:     JSON.parse(localStorage.getItem('categoryOrder')),
     });
