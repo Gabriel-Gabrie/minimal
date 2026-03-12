@@ -378,16 +378,59 @@ function _renderSavedFilters() {
         const description = parts.join(' · ');
 
         html += `<div class="border-t border-zinc-700/40 first:border-t-0">
-            <div class="px-4 py-3">
-                <div class="flex items-center justify-between mb-1">
-                    <span class="font-medium text-sm">${preset.name}</span>
+            <div class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-zinc-800/50 transition-colors" onclick="loadFilterPreset('${preset.id}')">
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-medium text-sm truncate">${preset.name}</span>
+                    </div>
+                    <p class="text-[11px] text-zinc-500 truncate">${description}</p>
                 </div>
-                <p class="text-[11px] text-zinc-500">${description}</p>
+                <button onclick="event.stopPropagation();deleteFilterPreset('${preset.id}')"
+                    class="shrink-0 w-8 h-8 rounded-full bg-zinc-800 hover:bg-rose-500/20 flex items-center justify-center text-zinc-500 hover:text-rose-400 transition-colors"
+                    aria-label="Delete preset">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                    </svg>
+                </button>
             </div>
         </div>`;
     });
 
     listEl.innerHTML = html;
+}
+
+function loadFilterPreset(presetId) {
+    const preset = savedFilters.find(p => p.id === presetId);
+    if (!preset) return;
+
+    // Apply preset filters to advancedFilters state
+    advancedFilters.dateRange.start = preset.filters.dateRange.start;
+    advancedFilters.dateRange.end = preset.filters.dateRange.end;
+    advancedFilters.categories = [...preset.filters.categories];
+    advancedFilters.amountRange.min = preset.filters.amountRange.min;
+    advancedFilters.amountRange.max = preset.filters.amountRange.max;
+
+    // Re-populate the modal to reflect loaded filters
+    _populateFilterModal();
+
+    // Close modal and apply filters
+    hideAdvancedFilters();
+}
+
+function deleteFilterPreset(presetId) {
+    if (!confirm('Delete this filter preset?')) return;
+
+    // Remove preset from savedFilters array
+    const index = savedFilters.findIndex(p => p.id === presetId);
+    if (index === -1) return;
+
+    savedFilters.splice(index, 1);
+    saveData();
+
+    // Re-render the saved filters list
+    _renderSavedFilters();
 }
 
 /* ══════════════════════════════════════════════
