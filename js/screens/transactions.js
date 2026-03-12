@@ -219,23 +219,93 @@ function showAdvancedFilters() {
 }
 
 function _populateFilterModal() {
-    // Populate date range inputs
+    // Populate date range inputs and attach event listeners
     const startInput = document.getElementById('filter-date-start');
     const endInput = document.getElementById('filter-date-end');
-    if (startInput) startInput.value = advancedFilters.dateRange.start || '';
-    if (endInput) endInput.value = advancedFilters.dateRange.end || '';
+    if (startInput) {
+        startInput.value = advancedFilters.dateRange.start || '';
+        startInput.onchange = () => {
+            advancedFilters.dateRange.start = startInput.value || null;
+        };
+    }
+    if (endInput) {
+        endInput.value = advancedFilters.dateRange.end || '';
+        endInput.onchange = () => {
+            advancedFilters.dateRange.end = endInput.value || null;
+        };
+    }
 
-    // Populate amount range inputs
+    // Populate amount range inputs and attach event listeners
     const minInput = document.getElementById('filter-amount-min');
     const maxInput = document.getElementById('filter-amount-max');
-    if (minInput) minInput.value = advancedFilters.amountRange.min !== null ? advancedFilters.amountRange.min : '';
-    if (maxInput) maxInput.value = advancedFilters.amountRange.max !== null ? advancedFilters.amountRange.max : '';
+    if (minInput) {
+        minInput.value = advancedFilters.amountRange.min !== null ? advancedFilters.amountRange.min : '';
+        minInput.onchange = () => {
+            const val = parseFloat(minInput.value);
+            advancedFilters.amountRange.min = minInput.value && !isNaN(val) ? val : null;
+        };
+    }
+    if (maxInput) {
+        maxInput.value = advancedFilters.amountRange.max !== null ? advancedFilters.amountRange.max : '';
+        maxInput.onchange = () => {
+            const val = parseFloat(maxInput.value);
+            advancedFilters.amountRange.max = maxInput.value && !isNaN(val) ? val : null;
+        };
+    }
 
-    // TODO: Populate category checkboxes (will be implemented in subtask-3-3)
+    // Populate category checkboxes
+    const catList = document.getElementById('filter-categories-list');
+    if (catList) {
+        let html = '';
+        Object.keys(expenseCategories).forEach(cat => {
+            const isChecked = advancedFilters.categories.includes(cat);
+            const checkboxId = 'filter-cat-' + cat.replace(/\s+/g, '-');
+            html += `<div class="flex items-center justify-between px-4 py-3 border-b border-zinc-700/30 last:border-0">
+                <label for="${checkboxId}" class="flex-1 text-sm text-zinc-200 cursor-pointer">${mainEmojis[cat] || '📁'} ${cat}</label>
+                <input type="checkbox" id="${checkboxId}" data-category="${cat}"
+                       ${isChecked ? 'checked' : ''}
+                       class="w-5 h-5 rounded bg-zinc-700 border-zinc-600 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-zinc-900 cursor-pointer">
+            </div>`;
+        });
+        catList.innerHTML = html;
+
+        // Attach event listeners to category checkboxes
+        catList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.onchange = () => {
+                const cat = cb.dataset.category;
+                if (cb.checked) {
+                    if (!advancedFilters.categories.includes(cat)) {
+                        advancedFilters.categories.push(cat);
+                    }
+                } else {
+                    advancedFilters.categories = advancedFilters.categories.filter(c => c !== cat);
+                }
+            };
+        });
+    }
 }
 
 function hideAdvancedFilters() {
     document.getElementById('advanced-filter-modal').classList.add('hidden');
+    renderTransactions();
+}
+
+function applyAdvancedFilters() {
+    hideAdvancedFilters();
+}
+
+function clearAllFilters() {
+    // Reset all advanced filters to default state
+    advancedFilters.dateRange.start = null;
+    advancedFilters.dateRange.end = null;
+    advancedFilters.categories = [];
+    advancedFilters.amountRange.min = null;
+    advancedFilters.amountRange.max = null;
+
+    // Re-populate the modal with cleared values
+    _populateFilterModal();
+
+    // Re-render transactions with filters cleared
     renderTransactions();
 }
 
