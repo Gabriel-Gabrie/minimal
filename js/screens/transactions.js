@@ -42,8 +42,18 @@ function renderTransactions() {
     _initSharedMonth();
     selectedTxMonth = selectedMonth;
 
-    // Transactions for this month only
-    const monthTx = transactions.filter(t => t.date.startsWith(selectedTxMonth));
+    // Transactions for this month (or date range if advanced filters active)
+    let monthTx;
+    if (advancedFilters.dateRange.start && advancedFilters.dateRange.end) {
+        // Filter by date range (can span multiple months)
+        monthTx = transactions.filter(t =>
+            t.date >= advancedFilters.dateRange.start &&
+            t.date <= advancedFilters.dateRange.end
+        );
+    } else {
+        // Filter by selected month only
+        monthTx = transactions.filter(t => t.date.startsWith(selectedTxMonth));
+    }
 
     const listEl     = document.getElementById('full-list');
     const emptyEl    = document.getElementById('tx-empty');
