@@ -291,9 +291,11 @@ function _populateFilterModal() {
         Object.keys(expenseCategories).forEach(cat => {
             const isChecked = advancedFilters.categories.includes(cat);
             const checkboxId = 'filter-cat-' + cat.replace(/\s+/g, '-');
+            const escapedCat = escapeHtml(cat);
+            const escapedId = escapeHtml(checkboxId);
             html += `<div class="flex items-center justify-between px-4 py-3 border-b border-zinc-700/30 last:border-0">
-                <label for="${checkboxId}" class="flex-1 text-sm text-zinc-200 cursor-pointer">${mainEmojis[cat] || '📁'} ${cat}</label>
-                <input type="checkbox" id="${checkboxId}" data-category="${cat}"
+                <label for="${escapedId}" class="flex-1 text-sm text-zinc-200 cursor-pointer">${mainEmojis[cat] || '📁'} ${escapedCat}</label>
+                <input type="checkbox" id="${escapedId}" data-category="${escapedCat}"
                        ${isChecked ? 'checked' : ''}
                        class="w-5 h-5 rounded bg-zinc-700 border-zinc-600 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-zinc-900 cursor-pointer">
             </div>`;
@@ -394,17 +396,17 @@ function _renderSavedFilters() {
         // Build filter description
         const parts = [];
         if (preset.filters.dateRange.start || preset.filters.dateRange.end) {
-            const start = preset.filters.dateRange.start || '...';
-            const end = preset.filters.dateRange.end || '...';
+            const start = escapeHtml(preset.filters.dateRange.start || '...');
+            const end = escapeHtml(preset.filters.dateRange.end || '...');
             parts.push(`📅 ${start} → ${end}`);
         }
         if (preset.filters.categories.length > 0) {
             parts.push(`🏷️ ${preset.filters.categories.length} categories`);
         }
         if (preset.filters.amountRange.min !== null || preset.filters.amountRange.max !== null) {
-            const min = preset.filters.amountRange.min !== null ? `$${preset.filters.amountRange.min}` : '...';
-            const max = preset.filters.amountRange.max !== null ? `$${preset.filters.amountRange.max}` : '...';
-            parts.push(`💵 ${min} - ${max}`);
+            const minStr = preset.filters.amountRange.min !== null ? String(preset.filters.amountRange.min) : '...';
+            const maxStr = preset.filters.amountRange.max !== null ? String(preset.filters.amountRange.max) : '...';
+            parts.push(`💵 $${escapeHtml(minStr)} - $${escapeHtml(maxStr)}`);
         }
         const description = parts.join(' · ');
 
