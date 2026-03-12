@@ -283,6 +283,9 @@ function _populateFilterModal() {
             };
         });
     }
+
+    // Render saved filter presets
+    _renderSavedFilters();
 }
 
 function hideAdvancedFilters() {
@@ -307,6 +310,84 @@ function clearAllFilters() {
 
     // Re-render transactions with filters cleared
     renderTransactions();
+}
+
+/* ── Saved Filter Presets ─────────────────────── */
+function saveFilterPreset() {
+    // Check if there are any active filters to save
+    const hasDateRange = advancedFilters.dateRange.start || advancedFilters.dateRange.end;
+    const hasCategories = advancedFilters.categories.length > 0;
+    const hasAmountRange = advancedFilters.amountRange.min !== null || advancedFilters.amountRange.max !== null;
+
+    if (!hasDateRange && !hasCategories && !hasAmountRange) {
+        alert('Please set at least one filter before saving.');
+        return;
+    }
+
+    // Prompt for preset name
+    const name = prompt('Enter a name for this filter preset:');
+    if (!name || !name.trim()) return;
+
+    // Create preset object
+    const preset = {
+        id: Date.now().toString(),
+        name: name.trim(),
+        filters: {
+            dateRange: { ...advancedFilters.dateRange },
+            categories: [...advancedFilters.categories],
+            amountRange: { ...advancedFilters.amountRange }
+        }
+    };
+
+    // Add to savedFilters array
+    savedFilters.push(preset);
+
+    // Persist to storage
+    saveData();
+
+    // Update the saved filters list in the modal
+    _renderSavedFilters();
+}
+
+function _renderSavedFilters() {
+    const listEl = document.getElementById('filter-presets-list');
+    if (!listEl) return;
+
+    if (savedFilters.length === 0) {
+        listEl.innerHTML = '<div class="px-4 py-3 text-xs text-zinc-600 text-center">No saved filters yet</div>';
+        return;
+    }
+
+    let html = '';
+    savedFilters.forEach(preset => {
+        // Build filter description
+        const parts = [];
+        if (preset.filters.dateRange.start || preset.filters.dateRange.end) {
+            const start = preset.filters.dateRange.start || '...';
+            const end = preset.filters.dateRange.end || '...';
+            parts.push(`📅 ${start} → ${end}`);
+        }
+        if (preset.filters.categories.length > 0) {
+            parts.push(`🏷️ ${preset.filters.categories.length} categories`);
+        }
+        if (preset.filters.amountRange.min !== null || preset.filters.amountRange.max !== null) {
+            const min = preset.filters.amountRange.min !== null ? `$${preset.filters.amountRange.min}` : '...';
+            const max = preset.filters.amountRange.max !== null ? `$${preset.filters.amountRange.max}` : '...';
+            parts.push(`💵 ${min} - ${max}`);
+        }
+        const description = parts.join(' · ');
+
+        html += `<div class="border-t border-zinc-700/40 first:border-t-0">
+            <div class="px-4 py-3">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="font-medium text-sm">${preset.name}</span>
+                </div>
+                <p class="text-[11px] text-zinc-500">${description}</p>
+            </div>
+        </div>`;
+    });
+
+    listEl.innerHTML = html;
 }
 
 /* ══════════════════════════════════════════════
