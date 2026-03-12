@@ -91,9 +91,15 @@ function renderTransactions() {
     const sortLbl = document.getElementById('tx-sort-label');
     if (sortLbl) sortLbl.textContent = SORT_LABELS[txSort] || 'Date ↓';
 
-    // Filter by type + search query
+    // Filter by type + search query + categories
     const filtered = sorted.filter(t => {
         if (txFilter !== 'all' && t.type !== txFilter) return false;
+
+        // Multi-category filter
+        if (advancedFilters.categories.length > 0) {
+            if (!advancedFilters.categories.includes(t.mainCategory)) return false;
+        }
+
         if (!q) return true;
         return [t.desc||'', t.mainCategory||'', t.subCategory||'',
             parseFloat(t.amount).toFixed(2)].join(' ').toLowerCase().includes(q);
