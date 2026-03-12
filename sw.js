@@ -23,6 +23,8 @@ const ASSETS = [
     '/js/modals/template-management.js',
     '/js/utils/tutorial.js',
     '/js/utils/transaction-row.js',
+    '/js/utils/pwa-install.js',
+    '/js/utils/sync-status.js',
     '/manifest.json',
 ];
 
