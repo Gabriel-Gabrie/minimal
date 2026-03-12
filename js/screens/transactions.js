@@ -49,14 +49,18 @@ function _countActiveFilters() {
 
 function _updateFilterBadge() {
     const badge = document.getElementById('tx-filter-badge');
-    if (!badge) return;
+    const clearBtn = document.getElementById('tx-clear-filters-btn');
 
     const count = _countActiveFilters();
     if (count > 0) {
-        badge.textContent = count;
-        badge.classList.remove('hidden');
+        if (badge) {
+            badge.textContent = count;
+            badge.classList.remove('hidden');
+        }
+        if (clearBtn) clearBtn.classList.remove('hidden');
     } else {
-        badge.classList.add('hidden');
+        if (badge) badge.classList.add('hidden');
+        if (clearBtn) clearBtn.classList.add('hidden');
     }
 }
 
