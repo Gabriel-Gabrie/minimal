@@ -600,9 +600,19 @@ function saveData() {
     _saveTimer = setTimeout(() => {
         const user = _fbAuth ? _fbAuth.currentUser : null;
         if (!user || !_fbDb) return;
+        // Set sync state to 'syncing' when Firestore write begins
+        if (typeof setSyncStateSyncing === 'function') setSyncStateSyncing();
         _fbDb.collection('users').doc(user.uid)
             .set({ data: snap, updatedAt: new Date().toISOString() }, { merge: true })
-            .catch(e => console.warn('Firestore write:', e.message));
+            .then(() => {
+                // Set sync state to 'synced' on success
+                if (typeof setSyncStateSynced === 'function') setSyncStateSynced();
+            })
+            .catch(e => {
+                console.warn('Firestore write:', e.message);
+                // Set sync state to 'failed' on error
+                if (typeof setSyncStateFailed === 'function') setSyncStateFailed();
+            });
     }, 1500);
 }
 

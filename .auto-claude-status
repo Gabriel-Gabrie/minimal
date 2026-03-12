@@ -3,7 +3,7 @@
   "spec": "002-pwa-install-experience-offline-status-indicator",
   "state": "building",
   "subtasks": {
-    "completed": 5,
+    "completed": 6,
     "total": 8,
     "in_progress": 1,
     "failed": 0
@@ -18,8 +18,8 @@
     "max": 1
   },
   "session": {
-    "number": 1,
+    "number": 2,
     "started_at": "2026-03-11T20:48:20.852278"
   },
-  "last_update": "2026-03-11T20:48:20.966523"
+  "last_update": "2026-03-11T20:50:11.472120"
 }
