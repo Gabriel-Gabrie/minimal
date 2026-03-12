@@ -292,10 +292,11 @@
                         <span id="tx-sort-label">Date</span>
                     </button>
                     <button onclick="showAdvancedFilters()" id="tx-advanced-filter-btn"
-                        class="shrink-0 flex items-center gap-1 px-2.5 py-2 rounded-xl bg-zinc-900 text-zinc-400 text-xs font-semibold transition-colors hover:bg-zinc-800"
+                        class="shrink-0 relative flex items-center gap-1 px-2.5 py-2 rounded-xl bg-zinc-900 text-zinc-400 text-xs font-semibold transition-colors hover:bg-zinc-800"
                         title="Advanced Filters">
                         <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
                         <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        <span id="tx-filter-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-white text-[9px] font-bold flex items-center justify-center">0</span>
                     </button>
                 </div>
             </div>

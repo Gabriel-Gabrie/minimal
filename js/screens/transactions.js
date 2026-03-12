@@ -36,6 +36,30 @@ function _dateLabel(ds) {
     return new Date(y, mo - 1, day).toLocaleDateString('default', { weekday:'short', month:'short', day:'numeric' });
 }
 
+function _countActiveFilters() {
+    let count = 0;
+    // Count date range filter (1 point if either start or end is set)
+    if (advancedFilters.dateRange.start || advancedFilters.dateRange.end) count++;
+    // Count selected categories
+    count += advancedFilters.categories.length;
+    // Count amount range filter (1 point if either min or max is set)
+    if (advancedFilters.amountRange.min !== null || advancedFilters.amountRange.max !== null) count++;
+    return count;
+}
+
+function _updateFilterBadge() {
+    const badge = document.getElementById('tx-filter-badge');
+    if (!badge) return;
+
+    const count = _countActiveFilters();
+    if (count > 0) {
+        badge.textContent = count;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
 /* ── Main render ─────────────────────────────────── */
 function renderTransactions() {
     // Sync from shared month
@@ -79,6 +103,9 @@ function renderTransactions() {
     let nAll = 0, nExp = 0, nInc = 0, nTrf = 0;
     monthTx.forEach(t => { nAll++; if (t.type === 'transfer') nTrf++; else if (t.type === 'expense') nExp++; else nInc++; });
     _updatePills(nAll, nExp, nInc, nTrf);
+
+    // Update filter badge
+    _updateFilterBadge();
 
     // Sort
     const sorted = monthTx.slice().sort((a, b) => {
