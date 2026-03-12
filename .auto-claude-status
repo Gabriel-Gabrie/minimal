@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "019-budget-templates-quick-start-presets",
+  "spec": "002-pwa-install-experience-offline-status-indicator",
   "state": "building",
   "subtasks": {
-    "completed": 7,
+    "completed": 5,
     "total": 8,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Polish & Verification",
+    "current": "Sync Status Indicator",
     "id": null,
-    "total": 2
+    "total": 3
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 9,
-    "started_at": "2026-03-10T20:44:27.181814"
+    "number": 1,
+    "started_at": "2026-03-11T20:48:20.852278"
   },
-  "last_update": "2026-03-10T21:10:01.901614"
+  "last_update": "2026-03-11T20:48:20.966523"
 }
