@@ -412,7 +412,7 @@ function _renderSavedFilters() {
             <div class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-zinc-800/50 transition-colors" onclick="loadFilterPreset('${preset.id}')">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between mb-1">
-                        <span class="font-medium text-sm truncate">${preset.name}</span>
+                        <span class="font-medium text-sm truncate">${escapeHtml(preset.name)}</span>
                     </div>
                     <p class="text-[11px] text-zinc-500 truncate">${description}</p>
                 </div>

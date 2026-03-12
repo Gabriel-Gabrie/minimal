@@ -884,6 +884,21 @@ function _updateMasterMonthUI() {
     }
 }
 
+/**
+ * Escape HTML special characters to prevent XSS
+ * @param {string} unsafe - Untrusted user input
+ * @returns {string} HTML-safe string
+ */
+function escapeHtml(unsafe) {
+    if (typeof unsafe !== 'string') return '';
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
 /* ── Recurring transaction generation ─────────────────────── */
 
 function generateRecurringTransactions() {
