@@ -95,6 +95,14 @@ let txFilter = 'all';
 let selectedTxMonth = '';
 /** @type {'date-desc'|'date-asc'|'amount-desc'|'amount-asc'} Transaction list sort order */
 let txSort = 'date-desc';
+/** @type {{dateRange: {start: string|null, end: string|null}, categories: string[], amountRange: {min: number|null, max: number|null}}} Advanced filter state */
+let advancedFilters = {
+    dateRange: { start: null, end: null },
+    categories: [],
+    amountRange: { min: null, max: null }
+};
+/** @type {Array<{id: string, name: string, filters: Object}>} Saved filter presets */
+let savedFilters = [];
 /** @type {Object|null} Undo data snapshot for transaction deletion */
 let _undoData = null;
 /** @type {number|null} Undo toast timeout timer ID */
