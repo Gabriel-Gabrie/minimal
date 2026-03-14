@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Load Verification - Minimal PWA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .test-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .test-item {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 0.5rem;
+            border-left: 4px solid #e5e7eb;
+        }
+        .test-item.pass {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+        }
+        .test-item.fail {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+        }
+        .test-item.pending {
+            background: #fefce8;
+            border-left-color: #eab308;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        .badge.pass { background: #10b981; color: white; }
+        .badge.fail { background: #ef4444; color: white; }
+        .badge.pending { background: #eab308; color: white; }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        pre {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+        .console-log {
+            margin: 0.25rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+        .console-log.info { color: #3b82f6; }
+        .console-log.success { color: #10b981; }
+        .console-log.warning { color: #f59e0b; }
+        .console-log.error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <h1 class="text-3xl font-bold mb-2 text-gray-800">📋 App Load Verification</h1>
+        <p class="text-gray-600 mb-6">Subtask 6-5: Verify no console errors and app still loads</p>
+
+        <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+            <h3 class="font-bold text-blue-900 mb-2">🔍 What This Tests:</h3>
+            <ul class="text-sm text-blue-800 space-y-1">
+                <li>✓ App loads without errors</li>
+                <li>✓ No console errors or warnings (except expected migration log)</li>
+                <li>✓ UI displays (may show old/placeholder data - OK for Phase 1)</li>
+                <li>✓ Navigation between tabs works</li>
+                <li>✓ No JavaScript exceptions</li>
+            </ul>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Test Results</h2>
+            <div id="testResults">
+                <div class="test-item pending">
+                    <span class="badge pending">PENDING</span>
+                    <strong class="ml-2">Waiting to run tests...</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Console Monitor</h2>
+            <div id="consoleOutput" style="max-height: 300px; overflow-y: auto; background: #f9fafb; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb;">
+                <div class="console-log info">Console monitoring started...</div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <button onclick="runTests()" class="btn btn-primary w-full">
+                ▶ Run Verification Tests
+            </button>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Manual Verification Steps</h2>
+            <div class="space-y-3">
+                <div class="test-item pending" id="manual-1">
+                    <input type="checkbox" id="check-1" class="mr-2">
+                    <label for="check-1">Open the main app: <a href="/" target="_blank" class="text-blue-600 underline">http://localhost:8000</a></label>
+                </div>
+                <div class="test-item pending" id="manual-2">
+                    <input type="checkbox" id="check-2" class="mr-2">
+                    <label for="check-2">Open DevTools (F12) and check Console tab - no errors except migration log</label>
+                </div>
+                <div class="test-item pending" id="manual-3">
+                    <input type="checkbox" id="check-3" class="mr-2">
+                    <label for="check-3">Verify UI displays correctly (Overview tab shows)</label>
+                </div>
+                <div class="test-item pending" id="manual-4">
+                    <input type="checkbox" id="check-4" class="mr-2">
+                    <label for="check-4">Click Transactions tab - tab switches without error</label>
+                </div>
+                <div class="test-item pending" id="manual-5">
+                    <input type="checkbox" id="check-5" class="mr-2">
+                    <label for="check-5">Click Budgets tab - tab switches without error</label>
+                </div>
+                <div class="test-item pending" id="manual-6">
+                    <input type="checkbox" id="check-6" class="mr-2">
+                    <label for="check-6">Click Wallet tab - tab switches without error</label>
+                </div>
+                <div class="test-item pending" id="manual-7">
+                    <input type="checkbox" id="check-7" class="mr-2">
+                    <label for="check-7">Click Reports tab - tab switches without error</label>
+                </div>
+                <div class="test-item pending" id="manual-8">
+                    <input type="checkbox" id="check-8" class="mr-2">
+                    <label for="check-8">No JavaScript exceptions in console during navigation</label>
+                </div>
+            </div>
+        </div>
+
+        <div id="finalStatus" class="hidden mt-6 p-4 rounded-lg text-center text-white font-bold text-lg">
+        </div>
+    </div>
+
+    <script>
+        // Intercept console methods to monitor output
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+
+        let consoleMessages = [];
+
+        function addConsoleMessage(type, args) {
+            const message = Array.from(args).map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+            ).join(' ');
+
+            consoleMessages.push({ type, message, timestamp: new Date() });
+
+            const output = document.getElementById('consoleOutput');
+            const div = document.createElement('div');
+            div.className = `console-log ${type}`;
+            div.textContent = `[${type.toUpperCase()}] ${message}`;
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            addConsoleMessage('info', args);
+            originalLog.apply(console, args);
+        };
+
+        console.warn = function(...args) {
+            addConsoleMessage('warning', args);
+            originalWarn.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            addConsoleMessage('error', args);
+            originalError.apply(console, args);
+        };
+
+        // Test suite
+        async function runTests() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '';
+
+            const tests = [
+                {
+                    name: 'Server is running',
+                    test: async () => {
+                        const response = await fetch('/');
+                        return response.ok || response.status === 301;
+                    }
+                },
+                {
+                    name: 'index.html is accessible',
+                    test: async () => {
+                        const response = await fetch('/index.html');
+                        return response.ok;
+                    }
+                },
+                {
+                    name: 'js/state.js loads successfully',
+                    test: async () => {
+                        const response = await fetch('/js/state.js');
+                        return response.ok;
+                    }
+                },
+                {
+                    name: 'js/app.js loads successfully',
+                    test: async () => {
+                        const response = await fetch('/js/app.js');
+                        return response.ok;
+                    }
+                },
+                {
+                    name: 'CSS files are accessible',
+                    test: async () => {
+                        const response = await fetch('/css/base.css');
+                        return response.ok;
+                    }
+                },
+                {
+                    name: 'Service worker is accessible',
+                    test: async () => {
+                        const response = await fetch('/sw.js');
+                        return response.ok;
+                    }
+                },
+                {
+                    name: 'Manifest file is accessible',
+                    test: async () => {
+                        const response = await fetch('/manifest.json');
+                        return response.ok;
+                    }
+                },
+                {
+                    name: 'No JavaScript errors detected so far',
+                    test: async () => {
+                        const errors = consoleMessages.filter(m => m.type === 'error');
+                        return errors.length === 0;
+                    }
+                }
+            ];
+
+            let allPassed = true;
+
+            for (const { name, test } of tests) {
+                const div = document.createElement('div');
+                div.className = 'test-item pending';
+                div.innerHTML = `<span class="badge pending">RUNNING</span> <strong class="ml-2">${name}...</strong>`;
+                results.appendChild(div);
+
+                try {
+                    const passed = await test();
+                    if (passed) {
+                        div.className = 'test-item pass';
+                        div.innerHTML = `<span class="badge pass">✓ PASS</span> <strong class="ml-2">${name}</strong>`;
+                    } else {
+                        div.className = 'test-item fail';
+                        div.innerHTML = `<span class="badge fail">✗ FAIL</span> <strong class="ml-2">${name}</strong>`;
+                        allPassed = false;
+                    }
+                } catch (error) {
+                    div.className = 'test-item fail';
+                    div.innerHTML = `<span class="badge fail">✗ ERROR</span> <strong class="ml-2">${name}</strong><br><small class="text-red-600 ml-8">${error.message}</small>`;
+                    allPassed = false;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            // Show final status
+            const finalStatus = document.getElementById('finalStatus');
+            finalStatus.classList.remove('hidden');
+
+            if (allPassed) {
+                finalStatus.style.background = '#10b981';
+                finalStatus.innerHTML = '✅ All automated tests PASSED! Please complete manual verification steps above.';
+            } else {
+                finalStatus.style.background = '#ef4444';
+                finalStatus.innerHTML = '❌ Some tests FAILED. Please review the results above.';
+            }
+
+            console.log('Verification tests completed');
+        }
+
+        // Track manual checkbox changes
+        document.addEventListener('change', (e) => {
+            if (e.target.type === 'checkbox') {
+                const parent = e.target.closest('.test-item');
+                if (e.target.checked) {
+                    parent.classList.remove('pending');
+                    parent.classList.add('pass');
+                } else {
+                    parent.classList.remove('pass');
+                    parent.classList.add('pending');
+                }
+
+                // Check if all manual steps are complete
+                const allChecked = Array.from(document.querySelectorAll('input[type="checkbox"]'))
+                    .every(cb => cb.checked);
+
+                if (allChecked) {
+                    console.log('✅ All manual verification steps completed!');
+                }
+            }
+        });
+
+        console.log('Test page loaded. Click "Run Verification Tests" to begin.');
+    </script>
+</body>
+</html>
