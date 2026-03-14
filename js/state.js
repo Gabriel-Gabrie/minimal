@@ -63,6 +63,24 @@ let monthlyBudgets = {};
 let walletAccounts = [];
 let customTemplates = [];
 
+/**
+ * @typedef {Object.<string, string[]>} MasterSections
+ * Object mapping section names to arrays of category names.
+ * This serves as the global library of available budget sections/categories.
+ * Each key is a section name (e.g., "Income", "Bills") and each value is an array of category names.
+ */
+let masterSections = {};
+
+/**
+ * @type {string[]} Array of section names defining display order
+ */
+let masterSectionOrder = [];
+
+/**
+ * @type {number} Data migration version tracker (0 = pre-migration, 1 = migrated to new structure)
+ */
+let _dataVersion = 0;
+
 /* ── Firebase & demo state (shared across modules) ── */
 /** @type {Object|null} Firebase Auth instance */
 let _fbAuth = null;
