@@ -734,7 +734,7 @@ function _applyData(d) {
     }
 
     // ── Migration 3: Keep incomeCats in sync (derived) ─────────────
-    incomeCats = expenseCategories['Income'] || [];
+    incomeCats = masterSections['Income'] || [];
 
     // ── Migration 4: Data Version 1 — masterSections & per-month budgets ────
     // Check if this is a brand new user (no existing budget data at all)
