@@ -1092,6 +1092,36 @@ function addSectionToBudget(monthKey, sectionName) {
     }
 }
 
+/**
+ * Remove a section from a month's budget.
+ * @param {string} monthKey - Month key in YYYY-MM format
+ * @param {string} sectionName - Name of the section to remove
+ */
+function removeSectionFromBudget(monthKey, sectionName) {
+    // Check if month exists
+    if (!budgetMonths[monthKey]) {
+        return; // Month doesn't exist, nothing to remove
+    }
+
+    const month = budgetMonths[monthKey];
+
+    // Remove section from activeSections
+    if (month.activeSections[sectionName]) {
+        delete month.activeSections[sectionName];
+    }
+
+    // Remove section from sectionOrder
+    const sectionIndex = month.sectionOrder.indexOf(sectionName);
+    if (sectionIndex !== -1) {
+        month.sectionOrder.splice(sectionIndex, 1);
+    }
+
+    // Remove section from budgets
+    if (month.budgets[sectionName]) {
+        delete month.budgets[sectionName];
+    }
+}
+
 /* ── Recurring transaction generation ─────────────────────── */
 
 function generateRecurringTransactions() {
