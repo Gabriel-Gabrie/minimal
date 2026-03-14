@@ -184,6 +184,17 @@ const defaultItemIcons = {
     "Banking:Cash Withdrawal":    "💵",
 };
 
+const defaultSections = {
+    "Income":         ["Salary", "Freelance", "Investments"],
+    "Bills":          ["Rent/Mortgage", "Utilities", "Internet", "Insurance"],
+    "Groceries":      ["Supermarket", "Farmers Market", "Meal Prep"],
+    "Transport":      ["Public Transit", "Gas/Charging", "Car Payment", "Auto Insurance", "Maintenance"],
+    "Personal":       ["Phone Plan", "Subscriptions", "Grooming/Haircut", "Laundry"],
+    "Entertainment":  ["Dining Out", "Movies/Shows", "Hobbies", "Events"],
+    "Health":         ["Medical", "Supplements", "Gym/Fitness"],
+    "Household":      ["Furniture", "Home Maintenance", "Supplies"],
+};
+
 /* ── Budget Templates ─────────────────────── */
 
 const budgetTemplates = {
