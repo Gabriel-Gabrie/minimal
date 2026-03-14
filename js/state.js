@@ -1050,6 +1050,48 @@ function getActiveSections(monthKey) {
     return budgetMonths[monthKey]?.activeSections || {};
 }
 
+/**
+ * Add a section to a month's budget.
+ * @param {string} monthKey - Month key in YYYY-MM format
+ * @param {string} sectionName - Name of the section to add
+ */
+function addSectionToBudget(monthKey, sectionName) {
+    // Initialize month structure if it doesn't exist
+    if (!budgetMonths[monthKey]) {
+        budgetMonths[monthKey] = {
+            activeSections: {},
+            sectionOrder: [],
+            budgets: {}
+        };
+    }
+
+    const month = budgetMonths[monthKey];
+
+    // Check if section already exists
+    if (month.activeSections[sectionName]) {
+        return; // Section already exists, nothing to do
+    }
+
+    // Get categories from masterSections, or use empty array if section not in master
+    const categories = masterSections[sectionName] || [];
+    month.activeSections[sectionName] = [...categories];
+
+    // Add section to sectionOrder if not already there
+    if (!month.sectionOrder.includes(sectionName)) {
+        month.sectionOrder.push(sectionName);
+    }
+
+    // Initialize budgets structure for this section
+    if (!month.budgets[sectionName]) {
+        month.budgets[sectionName] = {};
+
+        // Initialize each category with empty object
+        categories.forEach(categoryName => {
+            month.budgets[sectionName][categoryName] = {};
+        });
+    }
+}
+
 /* ── Recurring transaction generation ─────────────────────── */
 
 function generateRecurringTransactions() {
