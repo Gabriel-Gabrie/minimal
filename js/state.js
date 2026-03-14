@@ -1167,6 +1167,37 @@ function addCategoryToBudget(monthKey, sectionName, categoryName) {
     }
 }
 
+/**
+ * Remove a category from a section within a month's budget.
+ * @param {string} monthKey - Month key in YYYY-MM format
+ * @param {string} sectionName - Name of the section
+ * @param {string} categoryName - Name of the category to remove
+ */
+function removeCategoryFromBudget(monthKey, sectionName, categoryName) {
+    // Check if month exists
+    if (!budgetMonths[monthKey]) {
+        return; // Month doesn't exist, nothing to remove
+    }
+
+    const month = budgetMonths[monthKey];
+
+    // Check if section exists
+    if (!month.activeSections[sectionName]) {
+        return; // Section doesn't exist, nothing to remove
+    }
+
+    // Remove category from section's active categories array
+    const categoryIndex = month.activeSections[sectionName].indexOf(categoryName);
+    if (categoryIndex !== -1) {
+        month.activeSections[sectionName].splice(categoryIndex, 1);
+    }
+
+    // Remove category from budgets structure
+    if (month.budgets[sectionName] && month.budgets[sectionName][categoryName]) {
+        delete month.budgets[sectionName][categoryName];
+    }
+}
+
 /* ── Recurring transaction generation ─────────────────────── */
 
 function generateRecurringTransactions() {
