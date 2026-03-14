@@ -737,7 +737,22 @@ function _applyData(d) {
     incomeCats = expenseCategories['Income'] || [];
 
     // ── Migration 4: Data Version 1 — masterSections & per-month budgets ────
-    if (_dataVersion < 1) {
+    // Check if this is a brand new user (no existing budget data at all)
+    const isNewUser = _dataVersion === 0
+        && Object.keys(masterSections).length === 0
+        && Object.keys(budgetMonths).length === 0
+        && Object.keys(monthlyBudgets).length === 0;
+
+    if (isNewUser) {
+        // New user initialization (skip migration path)
+        console.log('New user detected - initializing with default sections');
+        masterSections = {...defaultSections};
+        masterSectionOrder = Object.keys(masterSections);
+        budgetMonths = {};
+        _dataVersion = 1;
+        console.log('New user initialization complete');
+    } else if (_dataVersion < 1) {
+        // Existing user migration
         console.log('Starting budget data migration to v1...');
 
         // Migrate expenseCategories to masterSections
