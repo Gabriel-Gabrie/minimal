@@ -626,6 +626,7 @@ function saveData() {
     if (_demoMode) return; // never persist demo data
     const snap = {
         transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts, customTemplates, savedFilters,
+        masterSections, masterSectionOrder, _dataVersion,
         categoryOrder: Object.keys(expenseCategories)
         // incomeCats is now derived from expenseCategories['Income'] — not saved separately
     };
