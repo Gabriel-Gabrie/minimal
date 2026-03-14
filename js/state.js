@@ -1039,6 +1039,17 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
+/* ── Budget Section Helpers ─────────────────────── */
+
+/**
+ * Get active sections for a given month.
+ * @param {string} monthKey - Month key in YYYY-MM format
+ * @returns {Object.<string, string[]>} Active sections object mapping section names to arrays of category names, or empty object if month doesn't exist
+ */
+function getActiveSections(monthKey) {
+    return budgetMonths[monthKey]?.activeSections || {};
+}
+
 /* ── Recurring transaction generation ─────────────────────── */
 
 function generateRecurringTransactions() {
