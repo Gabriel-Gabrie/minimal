@@ -49,6 +49,16 @@ let expenseCategories = {};
 let monthlyBudgets = {};
 
 /**
+ * @typedef {Object.<string, BudgetMonth>} BudgetMonths
+ * Per-month budget structure with active sections and nested budgets.
+ * @typedef {Object} BudgetMonth
+ * @property {Object.<string, string[]>} activeSections - Map of section names to arrays of category names
+ * @property {string[]} sectionOrder - Array of section names defining display order
+ * @property {Object.<string, Object.<string, Object.<string, Object>>>} budgets - Nested: section→category→item→{amount}
+ */
+let budgetMonths = {};
+
+/**
  * @typedef {Object} WalletAccount
  * @property {string} id - Unique account identifier
  * @property {string} name - Account name
@@ -625,7 +635,7 @@ let _saveTimer = null;
 function saveData() {
     if (_demoMode) return; // never persist demo data
     const snap = {
-        transactions, expenseCategories, monthlyBudgets, itemIcons, walletAccounts, customTemplates, savedFilters,
+        transactions, expenseCategories, monthlyBudgets, budgetMonths, itemIcons, walletAccounts, customTemplates, savedFilters,
         masterSections, masterSectionOrder, _dataVersion,
         categoryOrder: Object.keys(expenseCategories)
         // incomeCats is now derived from expenseCategories['Income'] — not saved separately
@@ -659,7 +669,8 @@ function saveData() {
  * Applies data migrations, restores category order, and initializes derived state.
  * @param {Object} d - Data snapshot object
  * @param {ExpenseCategories} [d.expenseCategories] - Category definitions
- * @param {MonthlyBudgets} [d.monthlyBudgets] - Budget data by month
+ * @param {MonthlyBudgets} [d.monthlyBudgets] - Budget data by month (legacy)
+ * @param {BudgetMonths} [d.budgetMonths] - Per-month budget structure (new)
  * @param {Transaction[]} [d.transactions] - Transaction history
  * @param {Object.<string, string>} [d.itemIcons] - Icon mappings ("Main:Sub" → emoji)
  * @param {WalletAccount[]} [d.walletAccounts] - Wallet accounts
@@ -680,6 +691,7 @@ function _applyData(d) {
         expenseCategories = ordered;
     }
     monthlyBudgets    = d.monthlyBudgets    || {};
+    budgetMonths      = d.budgetMonths      || {};
 
     transactions      = d.transactions      || [];
     recurringTransactions = d.recurringTransactions || [];
@@ -739,6 +751,61 @@ function _applyData(d) {
 
         // Build masterSectionOrder from section names
         masterSectionOrder = Object.keys(masterSections);
+
+        // Migrate legacy monthlyBudgets to per-month budgetMonths structure
+        if (monthlyBudgets && Object.keys(monthlyBudgets).length > 0) {
+            console.log('Migrating legacy budgets to per-month structure...');
+            budgetMonths = {};
+
+            Object.keys(monthlyBudgets).forEach(monthKey => {
+                const legacyMonth = monthlyBudgets[monthKey];
+                const activeSections = {};
+                const sectionOrder = [];
+                const budgets = {};
+
+                // Process each section (old category) in this month
+                Object.keys(legacyMonth).forEach(sectionName => {
+                    const legacySection = legacyMonth[sectionName];
+
+                    // Extract categories (old items) for this section
+                    const categories = Object.keys(legacySection);
+
+                    // Add to activeSections
+                    activeSections[sectionName] = categories;
+
+                    // Add to sectionOrder
+                    sectionOrder.push(sectionName);
+
+                    // Build nested budgets structure
+                    budgets[sectionName] = {};
+                    categories.forEach(categoryName => {
+                        const amount = legacySection[categoryName];
+
+                        // Create nested structure: section → category → item → {amount}
+                        // Use "Budget" as default item name since old format didn't have items
+                        budgets[sectionName][categoryName] = {
+                            "Budget": { amount: amount }
+                        };
+                    });
+                });
+
+                // Store migrated month data
+                budgetMonths[monthKey] = {
+                    activeSections,
+                    sectionOrder,
+                    budgets
+                };
+            });
+
+            console.log(`Migrated ${Object.keys(budgetMonths).length} months to new budget structure`);
+        } else {
+            // No legacy budgets, initialize empty
+            budgetMonths = {};
+        }
+
+        // Set version flag to prevent re-migration
+        _dataVersion = 1;
+        console.log('Budget data migration to v1 complete');
     }
 }
 
@@ -752,6 +819,7 @@ function loadData() {
     _applyData({
         expenseCategories: JSON.parse(localStorage.getItem('expenseCategories')),
         monthlyBudgets:    JSON.parse(localStorage.getItem('monthlyBudgets')),
+        budgetMonths:      JSON.parse(localStorage.getItem('budgetMonths')),
 
         transactions:      JSON.parse(localStorage.getItem('transactions')),
         recurringTransactions: JSON.parse(localStorage.getItem('recurringTransactions')),
