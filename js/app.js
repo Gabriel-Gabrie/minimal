@@ -77,6 +77,12 @@ window.onload = () => {
         _showApp();
     }
 
+    // ── Init PWA install prompt ──────────────────────
+    initPWAInstall();
+
+    // ── Init sync status indicator ───────────────────
+    initSyncStatus();
+
     // ── Tabs scroll fade ─────────────────────────────
     const scroller = document.getElementById('tabs-scroller');
     const wrap     = document.getElementById('tabs-fade-wrap');
@@ -98,6 +104,8 @@ function _showApp() {
     if (dm) dm.classList.add('hidden');
     const pm = document.getElementById('profile-menu');
     if (pm) pm.classList.add('hidden');
+    // Generate any pending recurring transactions
+    generateRecurringTransactions();
     // Offset content when demo banner is visible
     _updateDemoBannerPadding();
     switchTab(getLaunchTab());

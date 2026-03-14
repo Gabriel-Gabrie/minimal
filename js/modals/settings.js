@@ -3,6 +3,7 @@ function showDataModal() {
     document.getElementById('data-modal').classList.remove('hidden');
     renderSettingsStats();
     renderCategoryEditorCount();
+    renderRecurringCount();
     loadNotifSettings();
     _updateThemePills();
     _updateHomeDot();
@@ -388,6 +389,31 @@ function toggleNotifAccordion() {
     if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
 }
 
+/* ── Budget Templates accordion ─────────────────────────────── */
+function toggleTemplatesAccordion() {
+    const body = document.getElementById('templates-acc-body');
+    const chev = document.getElementById('templates-acc-chev');
+    if (!body) return;
+    const open = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', open);
+    if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+}
+
+function applyTemplate(templateName) {
+    // Call applyBudgetTemplate from state.js (handles confirmation dialog)
+    applyBudgetTemplate(templateName);
+
+    // Refresh settings UI to reflect changes
+    renderSettingsStats();
+    renderCategoryEditorCount();
+
+    // If category editor is open, re-render it
+    const catEditorBody = document.getElementById('cat-editor-body');
+    if (catEditorBody && catEditorBody.classList.contains('open')) {
+        renderCategoryEditor();
+    }
+}
+
 function getNotifPrefs() {
     return JSON.parse(localStorage.getItem('notifPrefs') || '{}');
 }
@@ -483,6 +509,199 @@ function _orderMoveAccount(id, dir) {
     [walletAccounts[idx], walletAccounts[swapIdx]] = [walletAccounts[swapIdx], walletAccounts[idx]];
     saveData();
     renderOrderList();
+}
+
+/* ── Recurring Transactions accordion ──────────────────── */
+function toggleRecurringAccordion() {
+    const body = document.getElementById('recurring-acc-body');
+    const chev = document.getElementById('recurring-acc-chev');
+    if (!body) return;
+    const open = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', open);
+    if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
+    if (!open) renderRecurringTransactions();
+}
+
+function renderRecurringCount() {
+    const el = document.getElementById('recurring-acc-count');
+    if (!el) return;
+    const active = recurringTransactions.filter(r => r.active !== false);
+    const n = active.length;
+    el.textContent = n === 0
+        ? 'No active recurring transactions'
+        : `${n} active recurring transaction${n !== 1 ? 's' : ''}`;
+}
+
+function renderRecurringTransactions() {
+    const el = document.getElementById('recurring-list');
+    if (!el) return;
+
+    const active = recurringTransactions.filter(r => r.active !== false);
+
+    if (active.length === 0) {
+        el.innerHTML = `<div class="px-5 py-6 text-center text-sm text-zinc-600">
+            No recurring transactions yet.<br>
+            <span class="text-xs">Add one when creating a transaction!</span>
+        </div>`;
+        return;
+    }
+
+    const frequencyLabels = {
+        weekly: 'Weekly',
+        'bi-weekly': 'Bi-Weekly',
+        monthly: 'Monthly',
+        yearly: 'Yearly'
+    };
+
+    el.innerHTML = active.map((rec, idx) => {
+        const icon = itemIcons[`${rec.mainCategory}:${rec.subCategory}`] || mainEmojis[rec.mainCategory] || '💸';
+        const freqLabel = frequencyLabels[rec.frequency] || rec.frequency;
+        const nextDateFormatted = rec.nextDate ? new Date(rec.nextDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+        const amount = Math.abs(rec.amount || 0).toFixed(2);
+        const typeColor = rec.type === 'income' ? 'text-emerald-400' : 'text-zinc-100';
+
+        return `
+            <div class="flex items-center gap-3 px-5 py-3.5 ${idx > 0 ? 'border-t border-zinc-800/60' : ''}">
+                <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-lg shrink-0">${icon}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-medium text-sm text-zinc-100 truncate">${rec.desc || rec.subCategory || 'Untitled'}</div>
+                    <div class="text-[11px] text-zinc-500 mt-0.5">
+                        ${freqLabel} · Next: ${nextDateFormatted}
+                    </div>
+                </div>
+                <div class="${typeColor} text-sm font-semibold shrink-0">
+                    ${rec.type === 'income' ? '+' : '−'}$${amount}
+                </div>
+                <button onclick="skipNextOccurrence('${rec.id}')" class="w-7 h-7 flex items-center justify-center text-zinc-600 hover:text-amber-400 transition-colors shrink-0" title="Skip next">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M5 4l10 8-10 8V4z"/>
+                        <line x1="19" y1="5" x2="19" y2="19"/>
+                    </svg>
+                </button>
+                <button onclick="editRecurringTransaction('${rec.id}')" class="w-7 h-7 flex items-center justify-center text-zinc-600 hover:text-emerald-400 transition-colors shrink-0" title="Edit">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </button>
+                <button onclick="cancelRecurringSeries('${rec.id}')" class="w-7 h-7 flex items-center justify-center text-zinc-600 hover:text-rose-400 transition-colors shrink-0" title="Cancel series">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>`;
+    }).join('');
+}
+
+/* ── Edit recurring transaction ──────────────────── */
+function editRecurringTransaction(id) {
+    const rec = recurringTransactions.find(r => r.id === id);
+    if (!rec) return;
+
+    _editingRecurringId = id;
+    _editingTxIdx = null;
+
+    // Open transaction modal
+    document.getElementById('add-modal').classList.remove('hidden');
+
+    // Populate basic fields
+    document.getElementById('date').value = rec.startDate || getCurrentDateEST();
+    document.getElementById('amount').value = parseFloat(rec.amount).toFixed(2);
+    document.getElementById('desc').value = rec.desc || '';
+
+    // Set exclude toggle
+    const exclCb = document.getElementById('tx-exclude');
+    if (exclCb) exclCb.checked = !!rec.excluded;
+
+    // Set transaction type
+    setType(rec.type === 'transfer' ? 'transfer' : (rec.type === 'expense' || rec.excluded ? 'expense' : rec.type));
+    updateExcludeUI();
+
+    // Populate recurring fields
+    const recurringToggle = document.getElementById('tx-recurring');
+    if (recurringToggle) recurringToggle.checked = true;
+    updateRecurringUI();
+
+    const freqSel = document.getElementById('recurring-frequency');
+    if (freqSel) freqSel.value = rec.frequency || 'monthly';
+
+    const endDateInput = document.getElementById('recurring-end-date');
+    if (endDateInput) endDateInput.value = rec.endDate || '';
+
+    // After setType populates selects, set values
+    setTimeout(() => {
+        if (rec.type === 'transfer') {
+            const fromSel = document.getElementById('transfer-from');
+            const toSel   = document.getElementById('transfer-to');
+            if (fromSel) fromSel.value = rec.fromAccountId || '';
+            _populateTransferAccounts();
+            if (fromSel) fromSel.value = rec.fromAccountId || '';
+            if (toSel) {
+                const fromId = fromSel.value;
+                toSel.innerHTML = walletAccounts
+                    .filter(a => a.id !== fromId)
+                    .map(a => `<option value="${a.id}">${a.icon || '🏦'} ${a.name}</option>`)
+                    .join('');
+                toSel.value = rec.toAccountId || '';
+            }
+            _updateTransferBudgetInfo();
+            const saveBtn = document.getElementById('save-transaction-btn');
+            if (saveBtn) saveBtn.textContent = 'Update Recurring';
+        } else if (rec.type === 'expense' && !rec.excluded) {
+            document.getElementById('main-cat').value = rec.mainCategory || '';
+            updateSubOptions();
+            setTimeout(() => {
+                document.getElementById('sub-cat').value = rec.subCategory || '';
+            }, 0);
+            const expAccSel = document.getElementById('expense-account');
+            if (expAccSel && rec.walletAccountId) expAccSel.value = rec.walletAccountId;
+            const saveBtn = document.getElementById('save-transaction-btn');
+            if (saveBtn) saveBtn.textContent = 'Update Recurring';
+        } else if (rec.type === 'income') {
+            document.getElementById('income-cat').value = rec.mainCategory || '';
+            const incAccSel = document.getElementById('income-account');
+            if (incAccSel && rec.walletAccountId) incAccSel.value = rec.walletAccountId;
+            const saveBtn = document.getElementById('save-transaction-btn');
+            if (saveBtn) saveBtn.textContent = 'Update Recurring';
+        }
+    }, 0);
+}
+
+/* ── Cancel recurring series ────────────────────── */
+function cancelRecurringSeries(id) {
+    const rec = recurringTransactions.find(r => r.id === id);
+    if (!rec) return;
+
+    const desc = rec.desc || rec.subCategory || 'this recurring transaction';
+    if (!confirm(`Cancel "${desc}"?\n\nNo new transactions will be generated. Past transactions will not be affected.`)) return;
+
+    rec.active = false;
+    saveData();
+    renderRecurringTransactions();
+    renderRecurringCount();
+    showToast('Recurring series cancelled', 'emerald');
+}
+
+/* ── Skip next occurrence ───────────────────────── */
+function skipNextOccurrence(id) {
+    const rec = recurringTransactions.find(r => r.id === id);
+    if (!rec) return;
+
+    if (!rec.nextDate) {
+        showToast('No upcoming occurrence to skip', 'rose');
+        return;
+    }
+
+    const desc = rec.desc || rec.subCategory || 'this occurrence';
+    const nextDateFormatted = new Date(rec.nextDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    if (!confirm(`Skip "${desc}" on ${nextDateFormatted}?\n\nThis occurrence will be skipped. The next one will be generated as usual.`)) return;
+
+    if (!rec.skippedDates) rec.skippedDates = [];
+    rec.skippedDates.push(rec.nextDate);
+    saveData();
+    renderRecurringTransactions();
+    showToast('Next occurrence skipped', 'emerald');
 }
 
 /* ── In-app notification checks (called after data changes) ── */
