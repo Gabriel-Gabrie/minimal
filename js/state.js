@@ -1051,6 +1051,20 @@ function getActiveSections(monthKey) {
 }
 
 /**
+ * Check if a section is active in any budget month.
+ * @param {string} sectionName - Name of the section to check
+ * @returns {boolean} True if section is active in at least one month, false otherwise
+ */
+function isSectionActiveInAnyBudget(sectionName) {
+    for (const monthKey in budgetMonths) {
+        if (budgetMonths[monthKey]?.activeSections?.[sectionName]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * Add a section to a month's budget.
  * @param {string} monthKey - Month key in YYYY-MM format
  * @param {string} sectionName - Name of the section to add
