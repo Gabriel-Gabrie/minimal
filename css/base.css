@@ -81,24 +81,6 @@ body { font-family: 'Inter', system_ui, sans-serif; }
 .tut-divider      { background: #27272a; }
 .tut-chart-bg     { fill: #0a0a0a; }
 
-/* ── Template cards ─────────────────────── */
-.tut-template-card {
-    background: #18181b;
-    border: 2px solid #27272a;
-    border-radius: 16px;
-    padding: 1rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.tut-template-card:active {
-    transform: scale(0.98);
-}
-.tut-template-card.selected {
-    background: rgba(16,185,129,.08);
-    border-color: #10b981;
-    box-shadow: 0 0 0 1px rgba(16,185,129,.2);
-}
-
 /* ── Tutorial light-mode tokens ────────── */
 html.light #tut-modal   { background: #f4f4f5; }
 html.light .tut-heading  { color: #18181b; }
@@ -113,18 +95,11 @@ html.light .tut-phone     { background: #f4f4f5; border-color: #e4e4e7; box-shad
 html.light .tut-chart-bg  { fill: #f4f4f5; }
 html.light .tut-dot        { background: #d4d4d8; }
 html.light .tut-dot.active { background: #10b981; }
-html.light .tut-template-card { background: #ffffff; border-color: #e4e4e7; }
-html.light .tut-template-card.selected { background: rgba(16,185,129,.05); border-color: #10b981; }
 /* Budget over-limit bar pulse */
 @keyframes _budgetOver {
     0%,100% { opacity:1; }
     50%      { opacity:.55; } }
 .budget-bar-over { animation:_budgetOver 1.6s ease-in-out infinite; }
-/* Sync status pulse */
-@keyframes _syncPulse {
-    0%,100% { opacity:1; }
-    50%      { opacity:.4; } }
-.sync-pulse { animation:_syncPulse 1.2s ease-in-out infinite; }
 /* ── Transactions ── */
 .tx-item { position:relative; overflow:hidden; background:transparent; border-radius:14px; user-select:none; }
 .tx-content { position:relative; z-index:1; background:transparent; will-change:transform; transition:transform .3s cubic-bezier(.25,.46,.45,.94); }

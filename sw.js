@@ -2,7 +2,7 @@
    SERVICE WORKER — Offline caching for Minimal
 ══════════════════════════════════════════════ */
 
-const CACHE_NAME = 'minimal-v5';
+const CACHE_NAME = 'minimal-v4';
 const ASSETS = [
     '/',
     '/index.html',
@@ -20,11 +20,7 @@ const ASSETS = [
     '/js/modals/budget-item.js',
     '/js/modals/settings.js',
     '/js/modals/bank-import.js',
-    '/js/modals/template-management.js',
     '/js/utils/tutorial.js',
-    '/js/utils/transaction-row.js',
-    '/js/utils/pwa-install.js',
-    '/js/utils/sync-status.js',
     '/manifest.json',
 ];
 

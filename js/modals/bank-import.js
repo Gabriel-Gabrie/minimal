@@ -254,21 +254,24 @@ function _impRenderReviewStep(title, subtitle, body, footer) {
         byDate[date].forEach(({ t, i }) => {
             const isExcl = t._excluded;
             const isInc = t.type === 'income';
-
-            // Build custom subtitle: "Duplicate"/"Excluded" for excluded txs, category label otherwise
+            const isExp = t.type === 'expense';
+            const emoji = isExcl ? '🚫' : isInc ? '💰' : '💸';
+            const sign = isInc ? '+' : '\u2212';
+            const amtCls = isExcl ? 'text-zinc-600 line-through' : isInc ? 'text-emerald-400' : 'text-zinc-200';
             const catLabel = isInc ? (t._incCat || 'Income') : `${t._main || ''} · ${t._sub || ''}`;
-            const subtitle = isExcl ? (t.isDup ? 'Duplicate' : 'Excluded') : catLabel;
 
-            html += buildTransactionRowHTML(t, {
-                variant: 'import',
-                onClick: `_impTapRow(${i})`,
-                customSubtitle: subtitle,
-                isEditing: _impEditIdx === i
-            });
-
-            // Editing this row? Render edit form
+            // Editing this row?
             if (_impEditIdx === i) {
                 html += _impEditRowHtml(t, i);
+            } else {
+                html += `<div class="flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors ${isExcl ? 'opacity-40' : 'active:bg-zinc-800'} cursor-pointer" onclick="_impTapRow(${i})">
+                    <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">${emoji}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium leading-snug truncate ${isExcl ? 'line-through' : ''}">${_escHtml(t.desc)}</p>
+                        <p class="text-[11px] text-zinc-500 mt-0.5 truncate">${isExcl ? (t.isDup ? 'Duplicate' : 'Excluded') : catLabel}</p>
+                    </div>
+                    <span class="${amtCls} font-semibold text-sm tabular-nums shrink-0">${sign}$${t.amount.toFixed(2)}</span>
+                </div>`;
             }
         });
     });

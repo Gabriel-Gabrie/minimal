@@ -62,18 +62,6 @@
             <button onclick="exitDemoMode()" class="text-xs font-bold text-black/70 hover:text-black transition-colors px-2">✕ Exit</button>
         </div>
 
-        <!-- PWA install banner -->
-        <div id="install-banner" class="hidden fixed top-0 left-0 right-0 z-[200] flex items-center justify-between px-4 py-2 bg-emerald-500/90 backdrop-blur-sm">
-            <div class="flex-1">
-                <span class="text-xs font-semibold text-black">📱 Add Minimal to your home screen</span>
-                <p class="text-[10px] text-black/70 mt-0.5">Works offline • No app store • Instant access</p>
-            </div>
-            <div class="flex items-center gap-2">
-                <button id="install-banner-install-btn" onclick="handleInstallClick()" class="text-xs font-bold text-black bg-white/20 hover:bg-white/30 transition-colors px-3 py-1 rounded-full">Install</button>
-                <button onclick="dismissInstallBanner()" class="text-xs font-bold text-black/70 hover:text-black transition-colors px-2">✕</button>
-            </div>
-        </div>
-
         <!-- ═══ Sidebar (on desktop) / Header+Tabs (on mobile) ═══ -->
         <nav id="app-sidebar">
 
@@ -88,37 +76,6 @@
                 <button id="header-home-btn" onclick="switchTab(0)" class="hidden w-9 h-9 flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 rounded-full text-zinc-400 hover:text-white transition-colors" aria-label="Home">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21V12h6v9"/></svg>
                 </button>
-                <!-- Sync status indicator -->
-                <div class="relative">
-                    <button id="sync-status-btn" onclick="toggleSyncStatusDropdown()" class="hidden w-9 h-9 flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 rounded-full transition-colors" aria-label="Sync status">
-                        <svg id="sync-status-icon" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M3 12h4l3 9 4-18 3 9h4"/>
-                        </svg>
-                    </button>
-                    <!-- Sync status dropdown -->
-                    <div id="sync-status-dropdown" class="hidden absolute top-full right-0 mt-2 w-64 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl overflow-hidden z-50">
-                        <div class="px-4 py-3 border-b border-zinc-800">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm font-semibold text-white">Sync Status</span>
-                                <span id="sync-status-badge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">Synced</span>
-                            </div>
-                        </div>
-                        <div class="px-4 py-3 space-y-2 text-xs">
-                            <div class="flex justify-between">
-                                <span class="text-zinc-500">Connection</span>
-                                <span id="sync-connection-status" class="text-white font-medium">Online</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-zinc-500">Last synced</span>
-                                <span id="sync-last-time" class="text-white font-medium">Just now</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-zinc-500">Pending changes</span>
-                                <span id="sync-pending-count" class="text-white font-medium">0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <button id="user-avatar-btn" onclick="showProfileMenu()" class="w-9 h-9 rounded-full bg-zinc-800 overflow-hidden flex items-center justify-center shrink-0 ring-2 ring-zinc-700 hover:ring-emerald-500/50 transition-all">
                     <span id="user-avatar-initials" class="text-xs font-bold text-zinc-300"></span>
                     <img id="user-avatar-img" class="w-full h-full object-cover hidden" alt=""/>
@@ -290,19 +247,6 @@
                         class="shrink-0 flex items-center gap-1 px-2.5 py-2 rounded-xl bg-zinc-900 text-zinc-400 text-xs font-semibold transition-colors hover:bg-zinc-800">
                         <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                         <span id="tx-sort-label">Date</span>
-                    </button>
-                    <button onclick="showAdvancedFilters()" id="tx-advanced-filter-btn"
-                        class="shrink-0 relative flex items-center gap-1 px-2.5 py-2 rounded-xl bg-zinc-900 text-zinc-400 text-xs font-semibold transition-colors hover:bg-zinc-800"
-                        title="Advanced Filters">
-                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-                        <svg width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                        <span id="tx-filter-badge" class="hidden absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-white text-[9px] font-bold flex items-center justify-center">0</span>
-                    </button>
-                    <button onclick="clearAllFilters()" id="tx-clear-filters-btn"
-                        class="hidden shrink-0 flex items-center gap-1 px-2.5 py-2 rounded-xl bg-rose-500/20 text-rose-400 text-xs font-semibold transition-colors hover:bg-rose-500/30"
-                        title="Clear all filters">
-                        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                        <span>Clear</span>
                     </button>
                 </div>
             </div>
@@ -623,40 +567,6 @@
                 </label>
             </div>
 
-            <!-- Recurring toggle -->
-            <div id="recurring-toggle-wrap" class="mx-5 rounded-2xl overflow-hidden bg-zinc-800/60 mb-2 mt-2">
-                <label class="flex items-center justify-between px-4 py-3 cursor-pointer">
-                    <div>
-                        <div class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase">Make Recurring</div>
-                        <div class="text-[10px] text-zinc-600">Auto-generate on schedule</div>
-                    </div>
-                    <div class="relative flex-none ml-3">
-                        <input type="checkbox" id="tx-recurring" class="sr-only peer" onchange="updateRecurringUI()">
-                        <div class="w-10 h-5.5 bg-zinc-700 rounded-full peer peer-checked:bg-emerald-500 transition-colors" style="height:22px"></div>
-                        <div class="absolute top-0.5 left-0.5 w-[18px] h-[18px] bg-white rounded-full shadow transition-transform peer-checked:translate-x-[18px]"></div>
-                    </div>
-                </label>
-            </div>
-
-            <!-- Recurring frequency fields (shown when recurring toggle is ON) -->
-            <div id="recurring-fields" class="hidden mx-5 rounded-2xl overflow-hidden bg-zinc-800/60 mb-4">
-                <div class="flex items-center justify-between px-4 py-3">
-                    <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Frequency</span>
-                    <select id="recurring-frequency"
-                            class="bg-transparent text-sm text-zinc-100 focus:outline-none cursor-pointer text-right flex-1 min-w-0 ml-4">
-                        <option value="weekly">Weekly</option>
-                        <option value="bi-weekly">Bi-Weekly</option>
-                        <option value="monthly" selected>Monthly</option>
-                        <option value="yearly">Yearly</option>
-                    </select>
-                </div>
-                <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
-                    <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">End Date</span>
-                    <input id="recurring-end-date" type="date" placeholder="Never"
-                           class="bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600 text-right flex-1 min-w-0 ml-4">
-                </div>
-            </div>
-
             <!-- Actions -->
             <div class="px-5 pb-8 space-y-2">
                 <button onclick="addTransaction()" id="save-transaction-btn"
@@ -684,107 +594,6 @@
                 </button>
             </div>
             <div id="tx-summary-content" class="px-5 pb-8"></div>
-        </div>
-    </div>
-
-    <!-- ADVANCED FILTER MODAL -->
-    <div id="advanced-filter-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50" onclick="if(event.target===this)hideAdvancedFilters()">
-        <div class="modal-panel bg-zinc-900 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
-
-            <!-- Drag handle + close -->
-            <div class="flex justify-center pt-3 pb-0 relative">
-                <div class="w-10 h-1 rounded-full bg-zinc-700"></div>
-                <button onclick="hideAdvancedFilters()" class="absolute right-3 top-2 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors" title="Close">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                </button>
-            </div>
-
-            <!-- Title -->
-            <div class="px-5 pt-4 pb-2">
-                <h2 class="font-semibold text-lg">Advanced Filters</h2>
-                <p class="text-xs text-zinc-500 mt-1">Filter transactions by date range, categories, and amount</p>
-            </div>
-
-            <!-- Date Range Section -->
-            <div class="px-5 pt-3 pb-2">
-                <h3 class="text-xs font-semibold tracking-wider text-zinc-500 uppercase mb-2">Date Range</h3>
-                <div class="rounded-2xl overflow-hidden bg-zinc-800/60">
-                    <div class="flex items-center justify-between px-4 py-3">
-                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Start Date</span>
-                        <input id="filter-date-start" type="date"
-                               class="bg-transparent text-sm text-zinc-100 focus:outline-none text-right">
-                    </div>
-                    <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
-                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">End Date</span>
-                        <input id="filter-date-end" type="date"
-                               class="bg-transparent text-sm text-zinc-100 focus:outline-none text-right">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Categories Section -->
-            <div class="px-5 pt-3 pb-2">
-                <h3 class="text-xs font-semibold tracking-wider text-zinc-500 uppercase mb-2">Categories</h3>
-                <div id="filter-categories-list" class="rounded-2xl overflow-hidden bg-zinc-800/60">
-                    <!-- Category checkboxes will be populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Amount Range Section -->
-            <div class="px-5 pt-3 pb-2">
-                <h3 class="text-xs font-semibold tracking-wider text-zinc-500 uppercase mb-2">Amount Range</h3>
-                <div class="rounded-2xl overflow-hidden bg-zinc-800/60">
-                    <div class="flex items-center justify-between px-4 py-3">
-                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Min Amount</span>
-                        <div class="flex items-center gap-1">
-                            <span class="text-sm text-zinc-500">$</span>
-                            <input id="filter-amount-min" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
-                                   class="bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600 text-right w-24">
-                        </div>
-                    </div>
-                    <div class="border-t border-zinc-700/40 flex items-center justify-between px-4 py-3">
-                        <span class="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase shrink-0">Max Amount</span>
-                        <div class="flex items-center gap-1">
-                            <span class="text-sm text-zinc-500">$</span>
-                            <input id="filter-amount-max" type="number" inputmode="decimal" step="0.01" placeholder="0.00"
-                                   class="bg-transparent text-sm text-zinc-100 focus:outline-none placeholder-zinc-600 text-right w-24">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Saved Filters Section -->
-            <div class="px-5 pt-3 pb-2">
-                <h3 class="text-xs font-semibold tracking-wider text-zinc-500 uppercase mb-2">Saved Filters</h3>
-                <div id="filter-presets-list" class="rounded-2xl overflow-hidden bg-zinc-800/60">
-                    <div class="px-4 py-3 text-xs text-zinc-600 text-center">
-                        No saved filters yet
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="px-5 pt-4 pb-2 flex gap-2">
-                <button onclick="clearAllFilters()" class="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors font-semibold text-sm">
-                    Clear All
-                </button>
-                <button onclick="applyAdvancedFilters()" class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white transition-colors font-semibold text-sm">
-                    Apply Filters
-                </button>
-            </div>
-
-            <!-- Save Filter Button -->
-            <div class="px-5 pb-8">
-                <button onclick="saveFilterPreset()" class="w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors font-semibold text-sm flex items-center justify-center gap-2">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                        <polyline points="17 21 17 13 7 13 7 21"/>
-                        <polyline points="7 3 7 8 15 8"/>
-                    </svg>
-                    Save Current Filter
-                </button>
-            </div>
-
         </div>
     </div>
 
@@ -1071,30 +880,8 @@
                         <div id="order-sections-list" class="px-5 py-4"></div>
                     </div>
 
-                    <div class="h-px bg-zinc-800 mx-5"></div>
-
-                    <!-- Recurring Transactions accordion -->
-                    <button onclick="toggleRecurringAccordion()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
-                        <div class="w-9 h-9 rounded-xl bg-cyan-500/15 flex items-center justify-center shrink-0">
-                            <svg width="16" height="16" fill="none" stroke="#22d3ee" stroke-width="2" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12 6 12 12 16 14"/>
-                                <path d="M16 2c0 1.5-.5 3-2 3s-2-1.5-2-3M8 2c0 1.5.5 3 2 3s2-1.5 2-3"/>
-                            </svg>
-                        </div>
-                        <div class="flex-1 min-w-0 text-left">
-                            <div class="font-semibold text-sm">Recurring Transactions</div>
-                            <div class="text-[11px] text-zinc-500 mt-0.5" id="recurring-acc-count">No active recurring transactions</div>
-                        </div>
-                        <svg id="recurring-acc-chev" class="w-4 h-4 text-zinc-600 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <div id="recurring-acc-body" class="hidden border-t border-zinc-800">
-                        <div id="recurring-list"></div>
-                    </div>
-
                 </div>
             </div>
-
             <div class="px-5 mb-5">
                 <div class="text-[9px] font-black tracking-[.16em] text-zinc-600 uppercase mb-2 px-1">Data</div>
                 <div class="bg-zinc-900 rounded-3xl overflow-hidden">
@@ -1246,7 +1033,6 @@
 
     <!-- ── JS Modules (load order matters) ── -->
     <script src="js/state.js"></script>
-    <script src="js/utils/transaction-row.js"></script>
     <script src="js/screens/overview.js"></script>
     <script src="js/screens/transactions.js"></script>
     <script src="js/screens/budgets.js"></script>
@@ -1255,11 +1041,8 @@
     <script src="js/modals/budget-item.js"></script>
     <script src="js/modals/settings.js"></script>
     <script src="js/modals/bank-import.js"></script>
-    <script src="js/modals/template-management.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/utils/tutorial.js"></script>
-    <script src="js/utils/pwa-install.js"></script>
-    <script src="js/utils/sync-status.js"></script>
     <script src="js/app.js"></script>
 
 
@@ -1807,12 +1590,13 @@
                     </div>
                     <span class="font-semibold text-sm text-zinc-200">Wallet</span>
                 </button>
-                <button onclick="hideProfileMenu();showTemplateManagement()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors border-b border-zinc-800/50">
-                    <div class="w-9 h-9 rounded-xl bg-purple-500/15 flex items-center justify-center shrink-0 text-lg">
-                        📋
+                <button onclick="hideProfileMenu();switchTab(3)" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors border-b border-zinc-800/50">
+                    <div class="w-9 h-9 rounded-xl bg-sky-500/15 flex items-center justify-center shrink-0">
+                        <svg width="16" height="16" fill="none" stroke="#38bdf8" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-5 4 3 5-6"/></svg>
                     </div>
-                    <span class="font-semibold text-sm text-zinc-200">Budget Templates</span>
-                </button>                <button onclick="hideProfileMenu();showDataModal()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
+                    <span class="font-semibold text-sm text-zinc-200">Reports</span>
+                </button>
+                <button onclick="hideProfileMenu();showDataModal()" class="w-full flex items-center gap-4 px-5 py-4 hover:bg-zinc-800/60 transition-colors">
                     <div class="w-9 h-9 rounded-xl bg-zinc-700/50 flex items-center justify-center shrink-0">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                     </div>
@@ -2027,22 +1811,7 @@
             </div>
         </div>
     </div>
-    <!-- TEMPLATE MANAGEMENT MODAL -->
-    <div id="template-management-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-[160]" onclick="if(event.target===this)hideTemplateManagement()">
-        <div class="modal-panel bg-zinc-950 w-full rounded-t-3xl max-h-[92vh] overflow-auto">
-            <!-- Drag handle + close button -->
-            <div class="flex justify-center pt-3 pb-1 sticky top-0 bg-zinc-950 z-10 relative">
-                <div class="w-10 h-1 bg-zinc-700 rounded-full"></div>
-                <button onclick="hideTemplateManagement()" class="absolute right-3 top-2 w-8 h-8 flex items-center justify-center text-zinc-500 hover:text-zinc-200 transition-colors" title="Close">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                </button>
-            </div>
-            <!-- Content area (dynamically populated by template-management.js) -->
-            <div id="template-content" class="px-5 pb-8">
-                <!-- Will be populated by _renderTemplateList(), _showTemplateDetail(), or _showTemplateForm() -->
-            </div>
-        </div>
-    </div>
+
     <!-- ── Service Worker ── -->
     <script>
         if ('serviceWorker' in navigator) {

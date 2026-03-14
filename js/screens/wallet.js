@@ -409,11 +409,32 @@ function openWalletDetail(id) {
     if (linked.length) {
         txEmpty.classList.add('hidden');
         txList.innerHTML = linked.map(t => {
-            return buildTransactionRowHTML(t, {
-                variant: 'compact',
-                customSubtitle: _walletDateLabel(t.date),
-                walletAccountId: id
-            });
+            let emoji, amtCls, sign, title, dateLbl;
+            dateLbl = _walletDateLabel(t.date);
+            if (t.type === 'transfer') {
+                const isOutgoing = t.fromAccountId === id;
+                const otherAcc = _getAccById(isOutgoing ? t.toAccountId : t.fromAccountId);
+                const otherName = otherAcc ? otherAcc.name : '?';
+                emoji  = '🔄';
+                amtCls = isOutgoing ? 'text-rose-400' : 'text-emerald-400';
+                sign   = isOutgoing ? '\u2212' : '+';
+                title  = t.desc || (isOutgoing ? '→ ' + otherName : '← ' + otherName);
+            } else {
+                const isInc = t.type === 'income';
+                const iconKey = t.mainCategory + ':' + (t.subCategory || '');
+                emoji  = itemIcons[iconKey] || mainEmojis[t.mainCategory] || (isInc ? '💰' : '💸');
+                amtCls = isInc ? 'text-emerald-400' : 'text-zinc-200';
+                sign   = isInc ? '+' : '\u2212';
+                title  = t.desc || (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : ''));
+            }
+            return `<div class="flex items-center gap-3 py-2">
+                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">${emoji}</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium leading-snug truncate">${title}</p>
+                    <p class="text-[11px] text-zinc-600 mt-0.5">${dateLbl}</p>
+                </div>
+                <span class="${amtCls} font-semibold text-sm tabular-nums">${sign}$${parseFloat(t.amount).toFixed(2)}</span>
+            </div>`;
         }).join('');
     } else {
         txList.innerHTML = '';
@@ -575,117 +596,17 @@ function addTransaction() {
         if (incAccId) trans.walletAccountId = incAccId;
     }
 
-    // Check if recurring toggle is ON
-    const isRecurring = !!(document.getElementById('tx-recurring')?.checked);
-
-    // Handle editing recurring template
-    if (_editingRecurringId !== null) {
-        const recIdx = recurringTransactions.findIndex(r => r.id === _editingRecurringId);
-        if (recIdx >= 0) {
-            const existing = recurringTransactions[recIdx];
-            const frequency = document.getElementById('recurring-frequency')?.value || 'monthly';
-            const endDate = document.getElementById('recurring-end-date')?.value || null;
-
-            // Update template (preserve id, active, startDate, nextDate, skippedDates)
-            recurringTransactions[recIdx] = {
-                ...existing,
-                frequency: frequency,
-                endDate: endDate,
-                // Transaction template fields
-                type: trans.type,
-                amount: trans.amount,
-                desc: trans.desc,
-                mainCategory: trans.mainCategory || '',
-                subCategory: trans.subCategory || '',
-                excluded: trans.excluded || false,
-            };
-
-            // Add transfer-specific fields
-            if (trans.type === 'transfer') {
-                recurringTransactions[recIdx].fromAccountId = trans.fromAccountId;
-                recurringTransactions[recIdx].toAccountId = trans.toAccountId;
-            } else {
-                delete recurringTransactions[recIdx].fromAccountId;
-                delete recurringTransactions[recIdx].toAccountId;
-            }
-
-            // Add wallet account ID for expense/income
-            if (trans.walletAccountId) {
-                recurringTransactions[recIdx].walletAccountId = trans.walletAccountId;
-            } else {
-                delete recurringTransactions[recIdx].walletAccountId;
-            }
-        }
-        _editingRecurringId = null;
-    } else if (isRecurring && _editingTxIdx === null) {
-        // Create recurring transaction template
-        const frequency = document.getElementById('recurring-frequency')?.value || 'monthly';
-        const endDate = document.getElementById('recurring-end-date')?.value || null;
-
-        const recurringTemplate = {
-            id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-            active: true,
-            frequency: frequency,
-            startDate: date,
-            nextDate: date,
-            endDate: endDate,
-            skippedDates: [],
-            // Transaction template fields
-            type: trans.type,
-            amount: trans.amount,
-            desc: trans.desc,
-            mainCategory: trans.mainCategory || '',
-            subCategory: trans.subCategory || '',
-            excluded: trans.excluded || false,
-        };
-
-        // Add transfer-specific fields
-        if (trans.type === 'transfer') {
-            recurringTemplate.fromAccountId = trans.fromAccountId;
-            recurringTemplate.toAccountId = trans.toAccountId;
-        }
-
-        // Add wallet account ID for expense/income
-        if (trans.walletAccountId) {
-            recurringTemplate.walletAccountId = trans.walletAccountId;
-        }
-
-        // Add to recurringTransactions array
-        recurringTransactions.push(recurringTemplate);
-
-        // Generate first occurrence
-        trans.id = Date.now();
-        trans.recurringId = recurringTemplate.id;
-        transactions.unshift(trans);
-
-        // Calculate and set next occurrence date
-        if (frequency === 'weekly') {
-            recurringTemplate.nextDate = addWeeks(date, 1);
-        } else if (frequency === 'bi-weekly') {
-            recurringTemplate.nextDate = addBiWeekly(date);
-        } else if (frequency === 'monthly') {
-            recurringTemplate.nextDate = addMonths(date, 1);
-        } else if (frequency === 'yearly') {
-            recurringTemplate.nextDate = addYears(date, 1);
-        }
-
-        // Apply balance changes for first occurrence
-        _updateAccountBalances(trans, false);
+    // Undo old balance changes when editing
+    if (_editingTxIdx !== null) {
+        _updateAccountBalances(transactions[_editingTxIdx], true);
+        trans.id = transactions[_editingTxIdx].id;
+        transactions[_editingTxIdx] = trans;
     } else {
-        // Normal transaction (non-recurring or editing)
-        // Undo old balance changes when editing
-        if (_editingTxIdx !== null) {
-            _updateAccountBalances(transactions[_editingTxIdx], true);
-            trans.id = transactions[_editingTxIdx].id;
-            transactions[_editingTxIdx] = trans;
-        } else {
-            trans.id = Date.now();
-            transactions.unshift(trans);
-        }
-        // Apply new balance changes
-        _updateAccountBalances(trans, false);
+        trans.id = Date.now();
+        transactions.unshift(trans);
     }
-
+    // Apply new balance changes
+    _updateAccountBalances(trans, false);
     saveData();
     hideModal();
     renderAll();

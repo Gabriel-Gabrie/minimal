@@ -201,27 +201,36 @@ function _brmPopulateTxList(main, sub, isInc, isDynamic) {
     listEl.innerHTML = monthTxs.map(t => {
         const d = new Date(t.date + 'T00:00:00');
         const day = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const realIdx = transactions.indexOf(t);
-
-        // Build subtitle: category/account + date
-        const linkedAcc = t.walletAccountId ? _getAccById(t.walletAccountId) : null;
         const isTrf = t.type === 'transfer';
-        let baseSubtitle;
+        const isTxInc = t.type === 'income';
+
+        let emoji, title, subtitle, sign, amtCls;
         if (isTrf) {
             const fromAcc = _getAccById(t.fromAccountId);
             const toAcc = _getAccById(t.toAccountId);
-            baseSubtitle = (fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?');
+            emoji = '🔄';
+            title = t.desc || ((fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?'));
+            subtitle = (fromAcc ? fromAcc.name : '?') + ' → ' + (toAcc ? toAcc.name : '?');
+            sign = '⇄'; amtCls = 'text-sky-400';
         } else {
-            baseSubtitle = linkedAcc ? linkedAcc.name : (t.mainCategory || '');
+            const iconKey = t.mainCategory + ':' + (t.subCategory || '');
+            emoji = itemIcons[iconKey] || mainEmojis[t.mainCategory] || (isTxInc ? '💰' : '💸');
+            title = t.desc || (t.mainCategory + (t.subCategory ? ' · ' + t.subCategory : ''));
+            const linkedAcc = t.walletAccountId ? _getAccById(t.walletAccountId) : null;
+            subtitle = linkedAcc ? linkedAcc.name : (t.mainCategory || '');
+            sign = isTxInc ? '+' : '\u2212';
+            amtCls = isTxInc ? 'text-emerald-400' : 'text-zinc-200';
         }
-        const subtitle = baseSubtitle + ' · ' + day;
 
-        return buildTransactionRowHTML(t, {
-            variant: 'compact',
-            onClick: `showTxSummary(${realIdx}); _closeRemainingModal();`,
-            customSubtitle: subtitle,
-            extraClasses: 'px-3 py-2.5 cursor-pointer active:bg-zinc-800 transition-colors rounded-2xl'
-        });
+        const realIdx = transactions.indexOf(t);
+        return `<div class="flex items-center gap-3 px-3 py-2.5 cursor-pointer active:bg-zinc-800 transition-colors rounded-2xl" onclick="showTxSummary(${realIdx}); _closeRemainingModal();">
+            <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-lg shrink-0">${emoji}</div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium leading-snug truncate">${title}</p>
+                <p class="text-[11px] text-zinc-600 mt-0.5 truncate">${subtitle} · ${day}</p>
+            </div>
+            <span class="${amtCls} font-semibold text-sm tabular-nums shrink-0">${sign}$${parseFloat(t.amount).toFixed(2)}</span>
+        </div>`;
     }).join('');
 }
 
@@ -500,16 +509,8 @@ function showAddModal(type) {
     document.getElementById('desc').value = '';
     const excl = document.getElementById('tx-exclude');
     if (excl) excl.checked = false;
-    const recurring = document.getElementById('tx-recurring');
-    if (recurring) recurring.checked = false;
-    const recurringFreq = document.getElementById('recurring-frequency');
-    if (recurringFreq) recurringFreq.value = 'monthly';
-    const recurringEndDate = document.getElementById('recurring-end-date');
-    if (recurringEndDate) recurringEndDate.value = '';
-    _editingRecurringId = null;
     setType(type || 'expense');
     updateExcludeUI();
-    updateRecurringUI();
 }
 
 function updateExcludeUI() {
@@ -529,22 +530,9 @@ function updateExcludeUI() {
     }
 }
 
-function updateRecurringUI() {
-    const recurring = !!document.getElementById('tx-recurring')?.checked;
-    const recurringFields = document.getElementById('recurring-fields');
-    if (recurringFields) {
-        if (recurring) {
-            recurringFields.classList.remove('hidden');
-        } else {
-            recurringFields.classList.add('hidden');
-        }
-    }
-}
-
 function hideModal() {
     document.getElementById('add-modal').classList.add('hidden');
     _editingTxIdx = null;
-    _editingRecurringId = null;
 }
 
 function setType(type) {

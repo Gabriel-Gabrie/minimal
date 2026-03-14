@@ -1,25 +1,25 @@
 {
   "active": true,
   "spec": "006-budget-architecture-data-model-migration-phase-1-6",
-  "state": "building",
+  "state": "complete",
   "subtasks": {
-    "completed": 22,
+    "completed": 23,
     "total": 23,
-    "in_progress": 1,
+    "in_progress": 0,
     "failed": 0
   },
   "phase": {
-    "current": "Integration Testing & Verification",
-    "id": null,
-    "total": 5
+    "current": "",
+    "id": 0,
+    "total": 0
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 1448,
-    "started_at": "2026-03-13T23:14:42.796249"
+    "number": 0,
+    "started_at": "2026-03-14T11:45:58.823560"
   },
-  "last_update": "2026-03-14T03:32:22.967800"
+  "last_update": "2026-03-14T11:45:58.915277"
 }
