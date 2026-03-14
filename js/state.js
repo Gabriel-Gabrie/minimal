@@ -665,6 +665,9 @@ function saveData() {
  * @param {WalletAccount[]} [d.walletAccounts] - Wallet accounts
  * @param {string[]} [d.incomeCats] - Legacy income categories (now derived)
  * @param {string[]} [d.categoryOrder] - Category key order for restoration
+ * @param {MasterSections} [d.masterSections] - Master section definitions
+ * @param {string[]} [d.masterSectionOrder] - Master section order array
+ * @param {number} [d._dataVersion] - Data migration version tracker
  * @returns {void}
  */
 function _applyData(d) {
@@ -685,6 +688,9 @@ function _applyData(d) {
     customTemplates   = d.customTemplates   || [];
     savedFilters      = d.savedFilters      || [];
     incomeCats        = d.incomeCats        || ["Salary","Freelance","Investments","Gifts","Other"];
+    masterSections    = d.masterSections    || {};
+    masterSectionOrder = d.masterSectionOrder || [];
+    _dataVersion      = d._dataVersion      || 0;
     selectedMonth = getCurrentMonthKey();
     selectedBudgetMonth = selectedMonth;
     selectedTxMonth = selectedMonth;
