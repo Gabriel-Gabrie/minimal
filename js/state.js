@@ -738,6 +738,10 @@ function loadData() {
         savedFilters:      JSON.parse(localStorage.getItem('savedFilters')),
         incomeCats:        JSON.parse(localStorage.getItem('incomeCats')),
         categoryOrder:     JSON.parse(localStorage.getItem('categoryOrder')),
+
+        masterSections:    JSON.parse(localStorage.getItem('masterSections')),
+        masterSectionOrder: JSON.parse(localStorage.getItem('masterSectionOrder')),
+        _dataVersion:      JSON.parse(localStorage.getItem('_dataVersion')),
     });
 }
 
