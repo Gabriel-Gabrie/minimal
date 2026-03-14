@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Loading Verification Test - Minimal Budget App</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #18181b;
+            color: #fafafa;
+        }
+        h1 { color: #10b981; }
+        h2 { color: #34d399; margin-top: 32px; }
+        .test-result {
+            background: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+        .pass { border-left: 4px solid #10b981; }
+        .fail { border-left: 4px solid #ef4444; }
+        .pending { border-left: 4px solid #f59e0b; }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .status.pass { background: #10b981; color: #000; }
+        .status.fail { background: #ef4444; color: #fff; }
+        .status.pending { background: #f59e0b; color: #000; }
+        code {
+            background: #18181b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #10b981;
+        }
+        .instruction {
+            background: #3f3f46;
+            border-left: 4px solid #3b82f6;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+        button {
+            background: #10b981;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px 8px 8px 0;
+        }
+        button:hover { background: #059669; }
+        button.secondary {
+            background: #3f3f46;
+            color: #fafafa;
+        }
+        button.secondary:hover { background: #52525b; }
+        .checklist { list-style: none; padding: 0; }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #3f3f46;
+        }
+        .checklist li:last-child { border-bottom: none; }
+        pre {
+            background: #18181b;
+            border: 1px solid #3f3f46;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .summary {
+            background: #27272a;
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        .summary h3 { margin-top: 0; color: #10b981; }
+    </style>
+</head>
+<body>
+    <h1>📋 App Loading Verification Test</h1>
+    <p><strong>Subtask:</strong> subtask-6-5 - Verify no console errors and app still loads</p>
+    <p><strong>Phase:</strong> Integration Testing & Verification</p>
+
+    <div class="instruction">
+        <strong>🎯 Test Objective:</strong><br>
+        Verify that the Minimal Budget App loads successfully in the browser without JavaScript errors, console warnings, or runtime exceptions after the data model migration implementation. The UI should display and navigation should work, even if showing placeholder/old data.
+    </div>
+
+    <h2>📝 Manual Verification Checklist</h2>
+
+    <div class="test-result pending">
+        <h3>✅ Test 1: App Loads Without Errors</h3>
+        <p><span class="status pending">Manual</span></p>
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>Open <code>http://localhost:8000</code> in your browser</li>
+            <li>Open browser DevTools (F12 or Right-Click → Inspect)</li>
+            <li>Go to the Console tab</li>
+            <li>Refresh the page</li>
+            <li>Verify the app loads and displays</li>
+        </ol>
+        <p><strong>Expected Result:</strong></p>
+        <ul>
+            <li>✅ App displays the login/signup screen OR main dashboard (if previously logged in)</li>
+            <li>✅ Page is not blank/white screen</li>
+            <li>✅ No red error messages in the console</li>
+        </ul>
+    </div>
+
+    <div class="test-result pending">
+        <h3>🚨 Test 2: No Console Errors or Warnings</h3>
+        <p><span class="status pending">Manual</span></p>
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>With DevTools Console open, review all messages</li>
+            <li>Look for red error messages (❌ indicates errors)</li>
+            <li>Check for yellow warning messages (⚠️ indicates warnings)</li>
+        </ol>
+        <p><strong>Expected Result:</strong></p>
+        <ul>
+            <li>✅ No red console errors</li>
+            <li>✅ No yellow console warnings (except migration-related logs which are expected)</li>
+            <li>✅ Migration logs may appear (blue ℹ️ info messages) - these are OK:
+                <ul>
+                    <li>"New user detected - initializing with default sections"</li>
+                    <li>"Starting budget data migration to v1..."</li>
+                    <li>"Budget data migration to v1 complete"</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="test-result pending">
+        <h3>🎨 Test 3: UI Displays Properly</h3>
+        <p><span class="status pending">Manual</span></p>
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>Observe the rendered UI in the browser</li>
+            <li>Check if the layout appears correct</li>
+            <li>Verify text is readable (not overlapping or hidden)</li>
+        </ol>
+        <p><strong>Expected Result:</strong></p>
+        <ul>
+            <li>✅ UI renders (may show old/placeholder data - this is OK for Phase 1)</li>
+            <li>✅ Layout is not broken (no overlapping elements)</li>
+            <li>✅ Text is visible and readable</li>
+            <li>✅ Buttons and navigation elements are visible</li>
+        </ul>
+        <p><strong>Note:</strong> The data displayed may not reflect the new structure yet - Phase 1 only updates the data layer, not the UI. The important thing is that the app <em>loads</em> without errors.</p>
+    </div>
+
+    <div class="test-result pending">
+        <h3>🔄 Test 4: Navigation Between Tabs Works</h3>
+        <p><span class="status pending">Manual</span></p>
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>Click on different tabs in the bottom navigation bar:
+                <ul>
+                    <li>Overview (home icon)</li>
+                    <li>Transactions (list icon)</li>
+                    <li>Budgets (pie chart icon)</li>
+                    <li>Wallet (wallet icon)</li>
+                    <li>Reports (bar chart icon)</li>
+                </ul>
+            </li>
+            <li>Verify each tab displays content</li>
+            <li>Check console for any errors when switching tabs</li>
+        </ol>
+        <p><strong>Expected Result:</strong></p>
+        <ul>
+            <li>✅ All tabs are clickable</li>
+            <li>✅ Tab content changes when clicked</li>
+            <li>✅ No console errors when navigating</li>
+            <li>✅ Active tab is highlighted</li>
+        </ul>
+    </div>
+
+    <div class="test-result pending">
+        <h3>⚡ Test 5: No JavaScript Exceptions</h3>
+        <p><span class="status pending">Manual</span></p>
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>Keep DevTools Console open</li>
+            <li>Interact with the app (click buttons, navigate tabs, scroll)</li>
+            <li>Monitor console for any uncaught exceptions or errors</li>
+        </ol>
+        <p><strong>Expected Result:</strong></p>
+        <ul>
+            <li>✅ No "Uncaught" errors appear in console</li>
+            <li>✅ No "TypeError", "ReferenceError", or "SyntaxError" messages</li>
+            <li>✅ App continues to function without freezing or crashing</li>
+        </ul>
+    </div>
+
+    <h2>🔍 Additional Verification (Optional)</h2>
+
+    <div class="test-result pending">
+        <h3>📦 localStorage Structure Check</h3>
+        <p><span class="status pending">Optional</span></p>
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>In DevTools, go to Application tab → Storage → Local Storage → http://localhost:8000</li>
+            <li>Find the <code>budgetAppData</code> key</li>
+            <li>Click on it to view the JSON structure</li>
+        </ol>
+        <p><strong>Expected Result:</strong></p>
+        <ul>
+            <li>✅ Key exists with JSON data</li>
+            <li>✅ Data includes new fields: <code>masterSections</code>, <code>masterSectionOrder</code>, <code>_dataVersion</code>, <code>budgetMonths</code></li>
+        </ul>
+        <p><strong>Quick Test in Console:</strong></p>
+        <pre>// Run this in the browser console:
+const data = JSON.parse(localStorage.getItem('budgetAppData'));
+console.log('Data Version:', data._dataVersion);
+console.log('Master Sections:', Object.keys(data.masterSections || {}));
+console.log('Budget Months:', Object.keys(data.budgetMonths || {}));</pre>
+    </div>
+
+    <h2>📊 Test Results Summary</h2>
+
+    <div class="summary">
+        <h3>✅ Verification Checklist</h3>
+        <ul class="checklist">
+            <li>☐ <strong>App loads without errors</strong> - Displays login/dashboard screen</li>
+            <li>☐ <strong>No console errors</strong> - No red error messages (migration logs OK)</li>
+            <li>☐ <strong>No console warnings</strong> - No yellow warning messages</li>
+            <li>☐ <strong>UI displays correctly</strong> - Layout renders, text visible, no broken elements</li>
+            <li>☐ <strong>Tab navigation works</strong> - All 5 tabs are clickable and functional</li>
+            <li>☐ <strong>No JavaScript exceptions</strong> - No uncaught errors during interaction</li>
+        </ul>
+    </div>
+
+    <h2>🎬 Quick Start</h2>
+
+    <div class="instruction">
+        <p><strong>To perform this verification:</strong></p>
+        <ol>
+            <li>Ensure the server is running: <code>npx serve . -l 8000</code></li>
+            <li>Open <strong><a href="http://localhost:8000" target="_blank" style="color: #10b981;">http://localhost:8000</a></strong> in your browser</li>
+            <li>Open DevTools (F12)</li>
+            <li>Follow each test in order and verify expected results</li>
+            <li>Mark checkboxes in the summary as you complete each verification</li>
+        </ol>
+    </div>
+
+    <h2>📝 Code Review Notes</h2>
+
+    <div class="test-result pass">
+        <h3>✅ Code Implementation Review</h3>
+        <p><span class="status pass">Automated</span></p>
+        <p>The following code elements have been verified:</p>
+        <ul>
+            <li>✅ <code>js/state.js</code> - No syntax errors detected</li>
+            <li>✅ Global variables properly declared: <code>masterSections</code>, <code>masterSectionOrder</code>, <code>_dataVersion</code>, <code>budgetMonths</code></li>
+            <li>✅ Migration logic implemented in <code>_applyData()</code> with version guard</li>
+            <li>✅ New user initialization path implemented</li>
+            <li>✅ Persistence functions updated: <code>saveData()</code>, <code>loadData()</code></li>
+            <li>✅ 7 helper functions added for budget management</li>
+            <li>✅ Income sync updated to read from <code>masterSections.Income</code></li>
+        </ul>
+    </div>
+
+    <h2>🚀 Next Steps</h2>
+
+    <div class="instruction">
+        <p><strong>After verifying all tests pass:</strong></p>
+        <ol>
+            <li>Document any issues found in the test results</li>
+            <li>If all tests pass, commit the verification:
+                <pre>git add .
+git commit -m "auto-claude: subtask-6-5 - Verify no console errors and app still loads"</pre>
+            </li>
+            <li>Update <code>implementation_plan.json</code> to mark subtask-6-5 as "completed"</li>
+        </ol>
+    </div>
+
+    <hr style="margin: 40px 0; border: 1px solid #3f3f46;">
+
+    <p style="text-align: center; color: #71717a; font-size: 14px;">
+        <strong>Test Page Created:</strong> 2026-03-14<br>
+        <strong>Project:</strong> Minimal Budget App - Phase 1: Data Model Migration<br>
+        <strong>Subtask:</strong> subtask-6-5
+    </p>
+</body>
+</html>
