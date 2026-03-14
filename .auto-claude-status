@@ -1,25 +1,25 @@
 {
   "active": true,
-  "spec": "001-advanced-transaction-filtering-saved-filters",
+  "spec": "006-budget-architecture-data-model-migration-phase-1-6",
   "state": "building",
   "subtasks": {
-    "completed": 10,
-    "total": 12,
+    "completed": 4,
+    "total": 23,
     "in_progress": 1,
     "failed": 0
   },
   "phase": {
-    "current": "Visual Filter Indicators",
+    "current": "Update Persistence Layer",
     "id": null,
-    "total": 2
+    "total": 4
   },
   "workers": {
     "active": 0,
     "max": 1
   },
   "session": {
-    "number": 12,
-    "started_at": "2026-03-11T21:11:47.913224"
+    "number": 5,
+    "started_at": "2026-03-13T23:14:42.796249"
   },
-  "last_update": "2026-03-11T21:38:03.792355"
+  "last_update": "2026-03-13T23:23:14.890443"
 }
