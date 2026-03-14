@@ -1122,6 +1122,51 @@ function removeSectionFromBudget(monthKey, sectionName) {
     }
 }
 
+/**
+ * Add a category to a section within a month's budget.
+ * @param {string} monthKey - Month key in YYYY-MM format
+ * @param {string} sectionName - Name of the section
+ * @param {string} categoryName - Name of the category to add
+ */
+function addCategoryToBudget(monthKey, sectionName, categoryName) {
+    // Initialize month structure if it doesn't exist
+    if (!budgetMonths[monthKey]) {
+        budgetMonths[monthKey] = {
+            activeSections: {},
+            sectionOrder: [],
+            budgets: {}
+        };
+    }
+
+    const month = budgetMonths[monthKey];
+
+    // Initialize section if it doesn't exist
+    if (!month.activeSections[sectionName]) {
+        month.activeSections[sectionName] = [];
+
+        // Add section to sectionOrder if not already there
+        if (!month.sectionOrder.includes(sectionName)) {
+            month.sectionOrder.push(sectionName);
+        }
+
+        // Initialize budgets structure for this section
+        month.budgets[sectionName] = {};
+    }
+
+    // Check if category already exists in this section
+    if (month.activeSections[sectionName].includes(categoryName)) {
+        return; // Category already exists, nothing to do
+    }
+
+    // Add category to section's active categories array
+    month.activeSections[sectionName].push(categoryName);
+
+    // Initialize budgets structure for this category
+    if (!month.budgets[sectionName][categoryName]) {
+        month.budgets[sectionName][categoryName] = {};
+    }
+}
+
 /* ── Recurring transaction generation ─────────────────────── */
 
 function generateRecurringTransactions() {
