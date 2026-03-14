@@ -723,6 +723,23 @@ function _applyData(d) {
 
     // ── Migration 3: Keep incomeCats in sync (derived) ─────────────
     incomeCats = expenseCategories['Income'] || [];
+
+    // ── Migration 4: Data Version 1 — masterSections & per-month budgets ────
+    if (_dataVersion < 1) {
+        console.log('Starting budget data migration to v1...');
+
+        // Migrate expenseCategories to masterSections
+        if (expenseCategories && Object.keys(expenseCategories).length > 0) {
+            masterSections = {...expenseCategories};
+            console.log('Migrated expenseCategories to masterSections');
+        } else {
+            masterSections = {...defaultSections};
+            console.log('Initialized masterSections from defaultSections');
+        }
+
+        // Build masterSectionOrder from section names
+        masterSectionOrder = Object.keys(masterSections);
+    }
 }
 
 /**
