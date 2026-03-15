@@ -738,9 +738,17 @@ function undoTxDelete() {
 
         function _closestBudgetMonth(targetKey) {
     // Returns the nearest month key that has at least one budget value set
-    const months = Object.keys(monthlyBudgets).filter(mk => {
-        const b = monthlyBudgets[mk];
-        return b && Object.values(b).some(cat => Object.values(cat||{}).some(v => v > 0));
+    const months = Object.keys(budgetMonths).filter(mk => {
+        const m = budgetMonths[mk];
+        if (!m || !m.budgets) return false;
+        // Check if any section has any category with any item with amount > 0
+        return Object.values(m.budgets).some(section =>
+            Object.values(section).some(category =>
+                Object.values(category).some(item =>
+                    item.amount && item.amount > 0
+                )
+            )
+        );
     });
     if (!months.length) return null;
     const [ty, tm] = targetKey.split('-').map(Number);
