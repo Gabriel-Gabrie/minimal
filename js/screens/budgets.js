@@ -48,19 +48,27 @@ function renderBudgets() {
     monthlyBudgets[selectedBudgetMonth] = monthlyBudgets[selectedBudgetMonth] || {};
 
     // ── Zero-Sum Budget Balancer ───────────────────────────────────
-    const incomePlanned = Object.values(monthBudgets['Income'] || {})
-        .reduce((s, v) => s + (v || 0), 0);
-    let expBudgeted = 0;
-    Object.keys(expenseCategories).forEach(cat => {
-        if (cat === 'Income') return;
-        expenseCategories[cat].forEach(item => {
-            expBudgeted += (monthBudgets[cat] || {})[item] || 0;
+    const currentBudget = budgetMonths[selectedBudgetMonth] || {};
+    const budgetsObj = currentBudget.budgets || {};
+
+    // Calculate income from Income section (if exists)
+    let incomePlanned = 0;
+    if (budgetsObj['Income']) {
+        Object.keys(budgetsObj['Income']).forEach(category => {
+            Object.keys(budgetsObj['Income'][category]).forEach(item => {
+                incomePlanned += budgetsObj['Income'][category][item].amount || 0;
+            });
         });
-    });
-    // Include dynamic Saving/Debt section budgets
-    ['Saving', 'Debt'].forEach(secType => {
-        walletAccounts.filter(a => a.type === secType.toLowerCase()).forEach(acc => {
-            expBudgeted += (monthBudgets[secType] || {})[acc.name] || 0;
+    }
+
+    // Calculate expenses from all non-Income sections
+    let expBudgeted = 0;
+    Object.keys(budgetsObj).forEach(section => {
+        if (section === 'Income') return;
+        Object.keys(budgetsObj[section]).forEach(category => {
+            Object.keys(budgetsObj[section][category]).forEach(item => {
+                expBudgeted += budgetsObj[section][category][item].amount || 0;
+            });
         });
     });
     const balance = incomePlanned - expBudgeted;
