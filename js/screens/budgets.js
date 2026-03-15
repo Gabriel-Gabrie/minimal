@@ -346,6 +346,20 @@ function renderBudgets() {
         html += `</div></div>`;
     });
 
+    // ── Add Section button (shows inactive sections from masterSectionOrder) ──
+    const inactiveSections = masterSectionOrder.filter(s => !sectionOrder.includes(s));
+    if (inactiveSections.length > 0) {
+        html += `<div class="mt-4">
+            <button id="add-section-btn" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all"
+                onclick="_toggleAddSectionDropdown()">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                <span class="text-xs font-semibold">Add Section</span>
+                <svg id="add-section-chevron" class="w-3.5 h-3.5 shrink-0 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="add-section-dropdown" class="hidden mt-2 bg-zinc-900 rounded-2xl p-2 space-y-1"></div>
+        </div>`;
+    }
+
     document.getElementById('budgets-list').innerHTML = html || '<p class="text-center text-zinc-600 text-sm py-10">No sections yet</p>';
     attachBudgetItemListeners();
     attachBudgetSwipe();
@@ -360,6 +374,46 @@ function attachBudgetItemListeners() {
     document.querySelectorAll('.add-budget-item-btn').forEach(btn => {
         btn.addEventListener('click', () => addBudgetItemToMain(btn.dataset.main));
     });
+}
+
+/* ── Add Section Dropdown ─────────────────────── */
+function _toggleAddSectionDropdown() {
+    const dropdown = document.getElementById('add-section-dropdown');
+    const chevron = document.getElementById('add-section-chevron');
+    if (!dropdown) return;
+
+    const isHidden = dropdown.classList.contains('hidden');
+
+    if (isHidden) {
+        // Build and show dropdown
+        const currentBudget = budgetMonths[selectedBudgetMonth] || {};
+        const sectionOrder = currentBudget.sectionOrder || [];
+        const inactiveSections = masterSectionOrder.filter(s => !sectionOrder.includes(s));
+
+        let dropdownHTML = '';
+        inactiveSections.forEach(sectionName => {
+            const icon = mainEmojis[sectionName] || '📂';
+            dropdownHTML += `<button onclick="_addSectionFromDropdown('${sectionName.replace(/'/g, "\\'")}')"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-800 text-zinc-300 hover:text-white text-left transition-colors">
+                <span class="text-lg">${icon}</span>
+                <span class="text-sm font-medium">${sectionName}</span>
+            </button>`;
+        });
+
+        dropdown.innerHTML = dropdownHTML;
+        dropdown.classList.remove('hidden');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+        // Hide dropdown
+        dropdown.classList.add('hidden');
+        if (chevron) chevron.style.transform = '';
+    }
+}
+
+function _addSectionFromDropdown(sectionName) {
+    addSectionToBudget(selectedBudgetMonth, sectionName);
+    saveData();
+    renderBudgets();
 }
 
 function inlineEditName(row, main, sub) {
