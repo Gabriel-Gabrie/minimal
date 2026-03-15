@@ -762,6 +762,14 @@ function undoTxDelete() {
 }
 
 function _createBlankBudget(monthKey) {
+    // Initialize new per-month budget structure
+    budgetMonths[monthKey] = {
+        activeSections: {},
+        sectionOrder: [],
+        budgets: {}
+    };
+
+    // Legacy: Initialize old monthlyBudgets structure for backward compatibility
     monthlyBudgets[monthKey] = {};
     Object.keys(expenseCategories).forEach(cat => {
         monthlyBudgets[monthKey][cat] = {};
@@ -777,6 +785,7 @@ function _createBlankBudget(monthKey) {
             accs.forEach(acc => { monthlyBudgets[monthKey][secType][acc.name] = 0; });
         }
     });
+
     saveData();
     renderBudgets();
 }
