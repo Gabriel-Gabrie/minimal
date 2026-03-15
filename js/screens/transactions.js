@@ -800,14 +800,14 @@ function _createBlankBudget(monthKey) {
 
 function resetBudgetMonth() {
     if (!confirm('Reset this month\'s budget to factory defaults? All custom amounts will be cleared.')) return;
-    // Build from defaultCategories only (no user-added items)
+    // Clear budgetMonths structure to empty state
+    budgetMonths[selectedBudgetMonth] = {
+        activeSections: {},
+        sectionOrder: [],
+        budgets: {}
+    };
+    // Also clear legacy monthlyBudgets for backward compatibility
     monthlyBudgets[selectedBudgetMonth] = {};
-    Object.keys(defaultCategories).forEach(cat => {
-        monthlyBudgets[selectedBudgetMonth][cat] = {};
-        defaultCategories[cat].forEach(item => {
-            monthlyBudgets[selectedBudgetMonth][cat][item] = 0;
-        });
-    });
     saveData();
     renderBudgets();
     showToast('Budget reset to defaults');
