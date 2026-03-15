@@ -791,9 +791,9 @@ function _createBlankBudget(monthKey) {
 }
 
         function _copyBudgetMonth(fromKey, toKey) {
-    const src = monthlyBudgets[fromKey];
+    const src = budgetMonths[fromKey];
     if (!src) return;
-    monthlyBudgets[toKey] = JSON.parse(JSON.stringify(src));
+    budgetMonths[toKey] = JSON.parse(JSON.stringify(src));
     saveData();
     renderBudgets();
 }
