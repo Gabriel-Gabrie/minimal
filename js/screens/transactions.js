@@ -738,9 +738,17 @@ function undoTxDelete() {
 
         function _closestBudgetMonth(targetKey) {
     // Returns the nearest month key that has at least one budget value set
-    const months = Object.keys(monthlyBudgets).filter(mk => {
-        const b = monthlyBudgets[mk];
-        return b && Object.values(b).some(cat => Object.values(cat||{}).some(v => v > 0));
+    const months = Object.keys(budgetMonths).filter(mk => {
+        const m = budgetMonths[mk];
+        if (!m || !m.budgets) return false;
+        // Check if any section has any category with any item with amount > 0
+        return Object.values(m.budgets).some(section =>
+            Object.values(section).some(category =>
+                Object.values(category).some(item =>
+                    item.amount && item.amount > 0
+                )
+            )
+        );
     });
     if (!months.length) return null;
     const [ty, tm] = targetKey.split('-').map(Number);
@@ -754,6 +762,14 @@ function undoTxDelete() {
 }
 
 function _createBlankBudget(monthKey) {
+    // Initialize new per-month budget structure
+    budgetMonths[monthKey] = {
+        activeSections: {},
+        sectionOrder: [],
+        budgets: {}
+    };
+
+    // Legacy: Initialize old monthlyBudgets structure for backward compatibility
     monthlyBudgets[monthKey] = {};
     Object.keys(expenseCategories).forEach(cat => {
         monthlyBudgets[monthKey][cat] = {};
@@ -769,28 +785,29 @@ function _createBlankBudget(monthKey) {
             accs.forEach(acc => { monthlyBudgets[monthKey][secType][acc.name] = 0; });
         }
     });
+
     saveData();
     renderBudgets();
 }
 
         function _copyBudgetMonth(fromKey, toKey) {
-    const src = monthlyBudgets[fromKey];
+    const src = budgetMonths[fromKey];
     if (!src) return;
-    monthlyBudgets[toKey] = JSON.parse(JSON.stringify(src));
+    budgetMonths[toKey] = JSON.parse(JSON.stringify(src));
     saveData();
     renderBudgets();
 }
 
 function resetBudgetMonth() {
     if (!confirm('Reset this month\'s budget to factory defaults? All custom amounts will be cleared.')) return;
-    // Build from defaultCategories only (no user-added items)
+    // Clear budgetMonths structure to empty state
+    budgetMonths[selectedBudgetMonth] = {
+        activeSections: {},
+        sectionOrder: [],
+        budgets: {}
+    };
+    // Also clear legacy monthlyBudgets for backward compatibility
     monthlyBudgets[selectedBudgetMonth] = {};
-    Object.keys(defaultCategories).forEach(cat => {
-        monthlyBudgets[selectedBudgetMonth][cat] = {};
-        defaultCategories[cat].forEach(item => {
-            monthlyBudgets[selectedBudgetMonth][cat][item] = 0;
-        });
-    });
     saveData();
     renderBudgets();
     showToast('Budget reset to defaults');

@@ -48,19 +48,29 @@ function renderBudgets() {
     monthlyBudgets[selectedBudgetMonth] = monthlyBudgets[selectedBudgetMonth] || {};
 
     // ── Zero-Sum Budget Balancer ───────────────────────────────────
-    const incomePlanned = Object.values(monthBudgets['Income'] || {})
-        .reduce((s, v) => s + (v || 0), 0);
-    let expBudgeted = 0;
-    Object.keys(expenseCategories).forEach(cat => {
-        if (cat === 'Income') return;
-        expenseCategories[cat].forEach(item => {
-            expBudgeted += (monthBudgets[cat] || {})[item] || 0;
+    const currentBudget = budgetMonths[selectedBudgetMonth] || {};
+    const budgetsObj = currentBudget.budgets || {};
+    const activeSections = currentBudget.activeSections || {};
+    const sectionOrder = currentBudget.sectionOrder || [];
+
+    // Calculate income from Income section (if exists)
+    let incomePlanned = 0;
+    if (budgetsObj['Income']) {
+        Object.keys(budgetsObj['Income']).forEach(category => {
+            Object.keys(budgetsObj['Income'][category]).forEach(item => {
+                incomePlanned += budgetsObj['Income'][category][item].amount || 0;
+            });
         });
-    });
-    // Include dynamic Saving/Debt section budgets
-    ['Saving', 'Debt'].forEach(secType => {
-        walletAccounts.filter(a => a.type === secType.toLowerCase()).forEach(acc => {
-            expBudgeted += (monthBudgets[secType] || {})[acc.name] || 0;
+    }
+
+    // Calculate expenses from all non-Income sections
+    let expBudgeted = 0;
+    Object.keys(budgetsObj).forEach(section => {
+        if (section === 'Income') return;
+        Object.keys(budgetsObj[section]).forEach(category => {
+            Object.keys(budgetsObj[section][category]).forEach(item => {
+                expBudgeted += budgetsObj[section][category][item].amount || 0;
+            });
         });
     });
     const balance = incomePlanned - expBudgeted;
@@ -95,17 +105,17 @@ function renderBudgets() {
 
             // Build spent-by-section entries
             const spentEntries = [];
-            Object.keys(expenseCategories).filter(k => k !== 'Income').forEach(cat => {
-                const spent = expenseCategories[cat].reduce((s, item) => s + calculateSpentInMonth(selectedBudgetMonth, cat, item), 0);
-                if (spent > 0) spentEntries.push({ cat, spent });
-            });
-            ['Saving', 'Debt'].forEach(secType => {
-                const spent = walletAccounts.filter(a => a.type === secType.toLowerCase())
-                    .reduce((s, acc) => {
-                        const net = _calculateTransferToAccount(selectedBudgetMonth, acc.id);
-                        return s + Math.max(0, net);
-                    }, 0);
-                if (spent > 0) spentEntries.push({ cat: secType, spent });
+            sectionOrder.forEach(sectionName => {
+                if (sectionName === 'Income') return;
+                const categories = activeSections[sectionName] || [];
+                let sectionSpent = 0;
+                categories.forEach(category => {
+                    const categoryBudgets = (budgetsObj[sectionName] || {})[category] || {};
+                    Object.keys(categoryBudgets).forEach(item => {
+                        sectionSpent += calculateSpentInMonth(selectedBudgetMonth, category, item);
+                    });
+                });
+                if (sectionSpent > 0) spentEntries.push({ cat: sectionName, spent: sectionSpent });
             });
             spentEntries.sort((a, b) => b.spent - a.spent);
 
@@ -149,18 +159,19 @@ function renderBudgets() {
             // ── PLAN MODE RING: budgeted by section / income ──
             const palette = isBalanced ? emeraldShades : (balance > 0 ? amberShades : roseShades);
 
-            const catEntries = Object.keys(expenseCategories)
-                .filter(k => k !== 'Income')
-                .map(cat => ({
-                    cat,
-                    catBudget: expenseCategories[cat].reduce((s, item) => s + ((monthBudgets[cat]||{})[item]||0), 0)
-                }))
-                .filter(x => x.catBudget > 0 && incomePlanned > 0);
-            ['Saving', 'Debt'].forEach(secType => {
-                const secBudget = walletAccounts.filter(a => a.type === secType.toLowerCase())
-                    .reduce((s, acc) => s + ((monthBudgets[secType]||{})[acc.name]||0), 0);
-                if (secBudget > 0 && incomePlanned > 0) {
-                    catEntries.push({ cat: secType, catBudget: secBudget });
+            const catEntries = [];
+            sectionOrder.forEach(sectionName => {
+                if (sectionName === 'Income') return;
+                const categories = activeSections[sectionName] || [];
+                let sectionBudget = 0;
+                categories.forEach(category => {
+                    const categoryBudgets = (budgetsObj[sectionName] || {})[category] || {};
+                    Object.keys(categoryBudgets).forEach(item => {
+                        sectionBudget += categoryBudgets[item].amount || 0;
+                    });
+                });
+                if (sectionBudget > 0 && incomePlanned > 0) {
+                    catEntries.push({ cat: sectionName, catBudget: sectionBudget });
                 }
             });
             catEntries.sort((a, b) => b.catBudget - a.catBudget);
@@ -243,159 +254,117 @@ function renderBudgets() {
     }
 
     let html = '';
-    Object.keys(expenseCategories).forEach(main => {
-        const isIncome = main === 'Income';
-        const subs = expenseCategories[main];
+
+    // ── Iterate sections in display order ──
+    sectionOrder.forEach(sectionName => {
+        const categories = activeSections[sectionName] || [];
+        if (!categories.length) return;
+
+        const isIncome = sectionName === 'Income';
+        const sectionBudgets = budgetsObj[sectionName] || {};
 
         html += `<div class="mb-5">`;
         html += `<div class="flex items-center gap-2 px-1 mb-2">
-            <span class="text-lg">${mainEmojis[main] || '📂'}</span>
-            <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase flex-1">${main}</span>
+            <span class="text-lg">${mainEmojis[sectionName] || '📂'}</span>
+            <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase flex-1">${sectionName}</span>
         </div>`;
 
         html += `<div class="space-y-1.5">`;
-        subs.forEach(sub => {
-            monthBudgets[main] = monthBudgets[main] || {};
-            const budget = monthBudgets[main][sub] || 0;
-            const actual = isIncome
-                ? calculateIncomeInMonth(selectedBudgetMonth, sub)
-                : calculateSpentInMonth(selectedBudgetMonth, main, sub);
-            const pct = budget > 0 ? actual / budget * 100 : 0;
-            const donutColor = _budgetItemColor(pct, isIncome);
-            const icon = itemIcons[`${main}:${sub}`] || defaultItemIcons[`${main}:${sub}`] || (isIncome ? '💵' : '💸');
-            const mEsc = main.replace(/'/g,"\\'");
-            const sEsc = sub.replace(/'/g,"\\'");
 
-            if (_budgetViewMode === 'plan') {
-                const planAmtText = budget === 0 ? 'Set amount' : `$${Math.round(budget)}`;
-                const planAmtCls  = budget === 0 ? 'text-zinc-600' : 'text-zinc-300';
-                html += `<div class="flex items-center gap-3 bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
-                             onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
-                    <div class="text-2xl shrink-0">${icon}</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-semibold text-zinc-200 truncate">${sub}</div>
-                    </div>
-                    <div class="text-sm font-bold ${planAmtCls} shrink-0">${planAmtText}</div>
-                </div>`;
-            } else {
-                // Remaining mode: row with progress bar
-                const barPct = Math.min(pct, 100);
-                let leftText, leftColor;
-                if (budget === 0) {
-                    leftText = 'No budget'; leftColor = 'text-zinc-600';
-                } else if (isIncome) {
-                    const diff = actual - budget;
-                    leftText = diff >= 0 ? `+$${Math.round(diff)}` : `$${Math.round(budget - actual)} left`;
-                    leftColor = diff >= 0 ? 'text-emerald-400' : 'text-amber-400';
-                } else {
-                    const left = budget - actual;
-                    leftText = left >= 0 ? `$${Math.round(left)} left` : `-$${Math.round(-left)} over`;
-                    leftColor = left >= 0 ? 'text-emerald-400' : 'text-rose-400';
-                }
-                html += `<div class="bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
-                             onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
-                    <div class="flex items-center gap-3 ${budget > 0 ? 'mb-2' : ''}">
+        // ── Iterate categories within section ──
+        categories.forEach(category => {
+            const categoryBudgets = sectionBudgets[category] || {};
+            const items = Object.keys(categoryBudgets);
+
+            // ── Iterate items within category ──
+            items.forEach(item => {
+                const itemData = categoryBudgets[item] || {};
+                const budget = itemData.amount || 0;
+                const actual = isIncome
+                    ? calculateIncomeInMonth(selectedBudgetMonth, item)
+                    : calculateSpentInMonth(selectedBudgetMonth, category, item);
+                const pct = budget > 0 ? actual / budget * 100 : 0;
+                const donutColor = _budgetItemColor(pct, isIncome);
+                const icon = itemIcons[`${category}:${item}`] || defaultItemIcons[`${category}:${item}`] || (isIncome ? '💵' : '💸');
+                const catEsc = category.replace(/'/g,"\\'");
+                const itemEsc = item.replace(/'/g,"\\'");
+
+                if (_budgetViewMode === 'plan') {
+                    const planAmtText = budget === 0 ? 'Set amount' : `$${Math.round(budget)}`;
+                    const planAmtCls  = budget === 0 ? 'text-zinc-600' : 'text-zinc-300';
+                    html += `<div class="flex items-center gap-3 bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
+                                 onclick="openBudgetItemModal('${catEsc}','${itemEsc}')">
                         <div class="text-2xl shrink-0">${icon}</div>
                         <div class="flex-1 min-w-0">
-                            <div class="text-sm font-semibold text-zinc-200 truncate">${sub}</div>
+                            <div class="text-sm font-semibold text-zinc-200 truncate">${item}</div>
                         </div>
-                        <div class="text-xs font-bold ${leftColor} shrink-0">${leftText}</div>
-                    </div>
-                    ${budget > 0 ? `<div class="ml-11">
-                        <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-1">
-                            <div class="h-full rounded-full progress-bar" style="width:${barPct}%;background:${donutColor}"></div>
+                        <div class="text-sm font-bold ${planAmtCls} shrink-0">${planAmtText}</div>
+                    </div>`;
+                } else {
+                    // Remaining mode: row with progress bar
+                    const barPct = Math.min(pct, 100);
+                    let leftText, leftColor;
+                    if (budget === 0) {
+                        leftText = 'No budget'; leftColor = 'text-zinc-600';
+                    } else if (isIncome) {
+                        const diff = actual - budget;
+                        leftText = diff >= 0 ? `+$${Math.round(diff)}` : `$${Math.round(budget - actual)} left`;
+                        leftColor = diff >= 0 ? 'text-emerald-400' : 'text-amber-400';
+                    } else {
+                        const left = budget - actual;
+                        leftText = left >= 0 ? `$${Math.round(left)} left` : `-$${Math.round(-left)} over`;
+                        leftColor = left >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                    }
+                    html += `<div class="bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
+                                 onclick="openBudgetItemModal('${catEsc}','${itemEsc}')">
+                        <div class="flex items-center gap-3 ${budget > 0 ? 'mb-2' : ''}">
+                            <div class="text-2xl shrink-0">${icon}</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-semibold text-zinc-200 truncate">${item}</div>
+                            </div>
+                            <div class="text-xs font-bold ${leftColor} shrink-0">${leftText}</div>
                         </div>
-                        <div class="text-[11px] text-zinc-500">$${Math.round(actual)} / $${Math.round(budget)}</div>
-                    </div>` : ''}
-                </div>`;
-            }
+                        ${budget > 0 ? `<div class="ml-11">
+                            <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-1">
+                                <div class="h-full rounded-full progress-bar" style="width:${barPct}%;background:${donutColor}"></div>
+                            </div>
+                            <div class="text-[11px] text-zinc-500">$${Math.round(actual)} / $${Math.round(budget)}</div>
+                        </div>` : ''}
+                    </div>`;
+                }
+            });
         });
 
-        // Add item row
-        const mEscQ = main.replace(/"/g,'&quot;');
-        html += `<button class="add-budget-item-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all"
-                     data-main="${mEscQ}">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="text-xs">Add category</span>
-        </button>`;
+        // Add category row with dropdown
+        const secEscQ = sectionName.replace(/"/g,'&quot;');
+        const secEscS = sectionName.replace(/'/g,"\\'");
+        const inactiveCategories = (masterSections[sectionName] || []).filter(c => !categories.includes(c));
+        if (inactiveCategories.length > 0) {
+            html += `<button id="add-cat-btn-${sectionName.replace(/\s+/g,'-')}" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all"
+                         onclick="_toggleAddCategoryDropdown('${secEscS}')">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                <span class="text-xs">Add category</span>
+                <svg id="add-cat-chevron-${sectionName.replace(/\s+/g,'-')}" class="w-3.5 h-3.5 shrink-0 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="add-cat-dropdown-${sectionName.replace(/\s+/g,'-')}" class="hidden mt-2 bg-zinc-900 rounded-2xl p-2 space-y-1"></div>`;
+        }
 
         html += `</div></div>`;
     });
 
-    // ── Dynamic Saving & Debt sections (driven by wallet accounts) ──
-    ['Saving', 'Debt'].forEach(secType => {
-        const wType = secType.toLowerCase();
-        const accs = walletAccounts.filter(a => a.type === wType);
-        if (!accs.length) return;
-
-        const isDebt = wType === 'debt';
-
-        html += `<div class="mb-5">`;
-        html += `<div class="flex items-center gap-2 px-1 mb-2">
-            <span class="text-lg">${mainEmojis[secType] || '📂'}</span>
-            <span class="text-xs font-bold text-zinc-500 tracking-widest uppercase">${secType}</span>
+    // ── Add Section button (shows inactive sections from masterSectionOrder) ──
+    const inactiveSections = masterSectionOrder.filter(s => !sectionOrder.includes(s));
+    if (inactiveSections.length > 0) {
+        html += `<div class="mt-4">
+            <button id="add-section-btn" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all"
+                onclick="_toggleAddSectionDropdown()">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                <span class="text-xs font-semibold">Add Section</span>
+                <svg id="add-section-chevron" class="w-3.5 h-3.5 shrink-0 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="add-section-dropdown" class="hidden mt-2 bg-zinc-900 rounded-2xl p-2 space-y-1"></div>
         </div>`;
-        html += `<div class="space-y-1.5">`;
-
-        accs.forEach(acc => {
-            const sub = acc.name;
-            monthBudgets[secType] = monthBudgets[secType] || {};
-            const budget = monthBudgets[secType][sub] || 0;
-            const actual = _calculateTransferToAccount(selectedBudgetMonth, acc.id);
-            const pct = budget > 0 ? actual / budget * 100 : 0;
-            const donutColor = _budgetItemColor(pct, true);
-            const icon = acc.icon || (isDebt ? '💳' : '🐷');
-            const mEsc = secType.replace(/'/g,"\\'");
-            const sEsc = sub.replace(/'/g,"\\'");
-
-            if (_budgetViewMode === 'plan') {
-                const planAmtText = budget === 0 ? 'Set amount' : `$${Math.round(budget)}`;
-                const planAmtCls  = budget === 0 ? 'text-zinc-600' : 'text-zinc-300';
-                html += `<div class="flex items-center gap-3 bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
-                             onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
-                    <div class="text-2xl shrink-0">${icon}</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-sm font-semibold text-zinc-200 truncate">${sub}</div>
-                    </div>
-                    <div class="text-sm font-bold ${planAmtCls} shrink-0">${planAmtText}</div>
-                </div>`;
-            } else {
-                const barPct = Math.min(pct, 100);
-                let leftText, leftColor;
-                if (budget === 0) {
-                    leftText = 'No budget'; leftColor = 'text-zinc-600';
-                } else {
-                    const diff = actual - budget;
-                    leftText = diff >= 0 ? `+$${Math.round(diff)}` : `$${Math.round(budget - actual)} left`;
-                    leftColor = diff >= 0 ? 'text-emerald-400' : 'text-amber-400';
-                }
-                html += `<div class="bg-zinc-900 rounded-2xl px-4 py-3 cursor-pointer active:bg-zinc-800 transition-colors select-none"
-                             onclick="openBudgetItemModal('${mEsc}','${sEsc}')">
-                    <div class="flex items-center gap-3 ${budget > 0 ? 'mb-2' : ''}">
-                        <div class="text-2xl shrink-0">${icon}</div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm font-semibold text-zinc-200 truncate">${sub}</div>
-                        </div>
-                        <div class="text-xs font-bold ${leftColor} shrink-0">${leftText}</div>
-                    </div>
-                    ${budget > 0 ? `<div class="ml-11">
-                        <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden mb-1">
-                            <div class="h-full rounded-full progress-bar" style="width:${barPct}%;background:${donutColor}"></div>
-                        </div>
-                        <div class="text-[11px] text-zinc-500">$${Math.round(actual)} / $${Math.round(budget)}</div>
-                    </div>` : ''}
-                </div>`;
-            }
-        });
-
-        // Add account row
-        html += `<button onclick="switchTab(4);showWalletAddModal();setWalletType('${wType}')" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="text-xs">Add Account</span>
-        </button>`;
-
-        html += `</div></div>`;
-    });
+    }
 
     document.getElementById('budgets-list').innerHTML = html || '<p class="text-center text-zinc-600 text-sm py-10">No sections yet</p>';
     attachBudgetItemListeners();
@@ -411,6 +380,93 @@ function attachBudgetItemListeners() {
     document.querySelectorAll('.add-budget-item-btn').forEach(btn => {
         btn.addEventListener('click', () => addBudgetItemToMain(btn.dataset.main));
     });
+}
+
+/* ── Add Section Dropdown ─────────────────────── */
+function _toggleAddSectionDropdown() {
+    const dropdown = document.getElementById('add-section-dropdown');
+    const chevron = document.getElementById('add-section-chevron');
+    if (!dropdown) return;
+
+    const isHidden = dropdown.classList.contains('hidden');
+
+    if (isHidden) {
+        // Build and show dropdown
+        const currentBudget = budgetMonths[selectedBudgetMonth] || {};
+        const sectionOrder = currentBudget.sectionOrder || [];
+        const inactiveSections = masterSectionOrder.filter(s => !sectionOrder.includes(s));
+
+        let dropdownHTML = '';
+        inactiveSections.forEach(sectionName => {
+            const icon = mainEmojis[sectionName] || '📂';
+            dropdownHTML += `<button onclick="_addSectionFromDropdown('${sectionName.replace(/'/g, "\\'")}')"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-800 text-zinc-300 hover:text-white text-left transition-colors">
+                <span class="text-lg">${icon}</span>
+                <span class="text-sm font-medium">${sectionName}</span>
+            </button>`;
+        });
+
+        dropdown.innerHTML = dropdownHTML;
+        dropdown.classList.remove('hidden');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+        // Hide dropdown
+        dropdown.classList.add('hidden');
+        if (chevron) chevron.style.transform = '';
+    }
+}
+
+function _addSectionFromDropdown(sectionName) {
+    addSectionToBudget(selectedBudgetMonth, sectionName);
+    saveData();
+    renderBudgets();
+}
+
+/* ── Add Category Dropdown ─────────────────────── */
+function _toggleAddCategoryDropdown(sectionName) {
+    const dropdownId = 'add-cat-dropdown-' + sectionName.replace(/\s+/g,'-');
+    const chevronId = 'add-cat-chevron-' + sectionName.replace(/\s+/g,'-');
+    const dropdown = document.getElementById(dropdownId);
+    const chevron = document.getElementById(chevronId);
+    if (!dropdown) return;
+
+    const isHidden = dropdown.classList.contains('hidden');
+
+    if (isHidden) {
+        // Build and show dropdown
+        const currentBudget = budgetMonths[selectedBudgetMonth] || {};
+        const activeSections = currentBudget.activeSections || {};
+        const activeCategories = activeSections[sectionName] || [];
+        const inactiveCategories = (masterSections[sectionName] || []).filter(c => !activeCategories.includes(c));
+
+        let dropdownHTML = '';
+        inactiveCategories.forEach(categoryName => {
+            const catEsc = categoryName.replace(/'/g, "\\'");
+            const secEsc = sectionName.replace(/'/g, "\\'");
+            // Get icon from first item in this category (if exists in itemIcons)
+            const firstItemKey = categoryName + ':' + categoryName;
+            const icon = itemIcons[firstItemKey] || defaultItemIcons[firstItemKey] || '📁';
+            dropdownHTML += `<button onclick="_addCategoryFromDropdown('${secEsc}','${catEsc}')"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-800 text-zinc-300 hover:text-white text-left transition-colors">
+                <span class="text-lg">${icon}</span>
+                <span class="text-sm font-medium">${categoryName}</span>
+            </button>`;
+        });
+
+        dropdown.innerHTML = dropdownHTML;
+        dropdown.classList.remove('hidden');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+        // Hide dropdown
+        dropdown.classList.add('hidden');
+        if (chevron) chevron.style.transform = '';
+    }
+}
+
+function _addCategoryFromDropdown(sectionName, categoryName) {
+    addCategoryToBudget(selectedBudgetMonth, sectionName, categoryName);
+    saveData();
+    renderBudgets();
 }
 
 function inlineEditName(row, main, sub) {
