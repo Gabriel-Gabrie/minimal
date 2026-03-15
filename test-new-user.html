@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New User Test - Budget App</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        h1 { color: #10b981; }
+        h2 { color: #3b82f6; margin-top: 30px; }
+        .section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #404040;
+        }
+        .pass { color: #10b981; font-weight: bold; }
+        .fail { color: #ef4444; font-weight: bold; }
+        .info { color: #3b82f6; }
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        button:hover { background: #059669; }
+        button.secondary {
+            background: #3b82f6;
+        }
+        button.secondary:hover { background: #2563eb; }
+        button.danger {
+            background: #ef4444;
+        }
+        button.danger:hover { background: #dc2626; }
+        pre {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #404040;
+            font-size: 12px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #404040;
+        }
+        .test-result.pass { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .test-result.fail { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        .test-result.info { border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .console-log {
+            background: #1a1a1a;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #3b82f6;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🆕 Budget App New User Test Suite</h1>
+    <p class="info">This page tests the new user initialization path (no existing data).</p>
+    <p class="info">Expected behavior: Skip migration, initialize with defaultSections, set _dataVersion = 1</p>
+
+    <div class="section">
+        <h2>Step 1: Clear All Data (Simulate New User)</h2>
+        <button class="danger" onclick="clearAllData()">Clear All localStorage</button>
+        <div id="setup-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Step 2: Initialize App (Trigger New User Path)</h2>
+        <button class="secondary" onclick="window.location.href='index.html'">Open App (New User)</button>
+        <p class="info">Or manually run initialization test below:</p>
+        <button onclick="runInitializationTest()">Run New User Initialization Test</button>
+        <div id="init-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Step 3: Verification Results</h2>
+        <button onclick="runVerification()">Run Full Verification</button>
+        <div id="verification-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Step 4: Console Logs</h2>
+        <button onclick="captureLogs()">Capture Console Logs</button>
+        <div id="console-logs"></div>
+    </div>
+
+    <script>
+        const logs = [];
+
+        // Capture console.log
+        const originalLog = console.log;
+        console.log = function(...args) {
+            logs.push(args.join(' '));
+            originalLog.apply(console, args);
+        };
+
+        function clearAllData() {
+            localStorage.clear();
+            const result = document.getElementById('setup-result');
+            result.innerHTML = `
+                <div class="test-result pass">
+                    <p class="pass">✓ All localStorage data cleared</p>
+                    <p>localStorage is now empty, simulating a brand new user.</p>
+                    <p class="info">Next: Run initialization test to trigger new user path</p>
+                </div>
+            `;
+            logs.length = 0; // Clear captured logs
+        }
+
+        function runInitializationTest() {
+            const result = document.getElementById('init-result');
+            result.innerHTML = '<p class="info">Loading state.js and running new user initialization...</p>';
+
+            // Load state.js
+            const script = document.createElement('script');
+            script.src = 'js/state.js';
+            script.onload = function() {
+                result.innerHTML = `
+                    <div class="test-result pass">
+                        <p class="pass">✓ state.js loaded successfully</p>
+                        <p>New user initialization should have run.</p>
+                        <p class="info">Expected console logs:</p>
+                        <ul>
+                            <li>"New user detected - initializing with default sections"</li>
+                            <li>"New user initialization complete"</li>
+                        </ul>
+                        <p class="info">Should NOT see:</p>
+                        <ul>
+                            <li>❌ "Starting budget data migration to v1..."</li>
+                            <li>❌ "Budget data migration to v1 complete"</li>
+                        </ul>
+                        <p class="info">Now run verification to check results!</p>
+                    </div>
+                `;
+            };
+            script.onerror = function() {
+                result.innerHTML = `
+                    <div class="test-result fail">
+                        <p class="fail">✗ Failed to load state.js</p>
+                        <p>Make sure the file exists at js/state.js</p>
+                    </div>
+                `;
+            };
+            document.head.appendChild(script);
+        }
+
+        function runVerification() {
+            const result = document.getElementById('verification-result');
+            let html = '<h3>New User Verification Results:</h3>';
+            let allPassed = true;
+
+            try {
+                // Get data from localStorage
+                const stored = localStorage.getItem('budgetAppData');
+                if (!stored) {
+                    html += `
+                        <div class="test-result fail">
+                            <p class="fail">✗ No data in localStorage</p>
+                            <p>After initialization, budgetAppData should exist.</p>
+                            <p>Did you run the initialization test?</p>
+                        </div>
+                    `;
+                    result.innerHTML = html;
+                    return;
+                }
+
+                const data = JSON.parse(stored);
+
+                // Test 1: Check _dataVersion = 1 (skipped migration)
+                const test1 = data._dataVersion === 1;
+                html += `
+                    <div class="test-result ${test1 ? 'pass' : 'fail'}">
+                        <strong>${test1 ? '✓' : '✗'} Test 1: _dataVersion = 1 (no migration needed)</strong>
+                        <p>Expected: 1 (skipped migration), Got: ${data._dataVersion}</p>
+                    </div>
+                `;
+                allPassed = allPassed && test1;
+
+                // Test 2: Check masterSections initialized from defaultSections
+                const test2 = data.masterSections && Object.keys(data.masterSections).length === 8;
+                const expectedSections = ['Income', 'Bills', 'Groceries', 'Transport', 'Personal', 'Entertainment', 'Health', 'Household'];
+                const hasSections = expectedSections.every(s => data.masterSections && data.masterSections[s]);
+                const test2b = test2 && hasSections;
+                html += `
+                    <div class="test-result ${test2b ? 'pass' : 'fail'}">
+                        <strong>${test2b ? '✓' : '✗'} Test 2: masterSections initialized from defaultSections</strong>
+                        <p>Expected 8 sections: ${expectedSections.join(', ')}</p>
+                        <p>Found ${data.masterSections ? Object.keys(data.masterSections).length : 0} sections: ${data.masterSections ? Object.keys(data.masterSections).join(', ') : 'none'}</p>
+                        <details>
+                            <summary>View masterSections Structure</summary>
+                            <pre>${JSON.stringify(data.masterSections, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+                allPassed = allPassed && test2b;
+
+                // Test 3: Check masterSectionOrder has 8 sections
+                const test3 = data.masterSectionOrder && Array.isArray(data.masterSectionOrder) && data.masterSectionOrder.length === 8;
+                html += `
+                    <div class="test-result ${test3 ? 'pass' : 'fail'}">
+                        <strong>${test3 ? '✓' : '✗'} Test 3: masterSectionOrder is valid array with 8 sections</strong>
+                        <p>Length: ${data.masterSectionOrder ? data.masterSectionOrder.length : 0}</p>
+                        <p>Order: ${data.masterSectionOrder ? data.masterSectionOrder.join(' → ') : 'none'}</p>
+                    </div>
+                `;
+                allPassed = allPassed && test3;
+
+                // Test 4: Check budgetMonths is empty object (no months created yet)
+                const test4 = data.budgetMonths && typeof data.budgetMonths === 'object' && Object.keys(data.budgetMonths).length === 0;
+                html += `
+                    <div class="test-result ${test4 ? 'pass' : 'fail'}">
+                        <strong>${test4 ? '✓' : '✗'} Test 4: budgetMonths is empty object (new user has no budgets yet)</strong>
+                        <p>Expected: Empty object {}, Got: ${data.budgetMonths ? JSON.stringify(data.budgetMonths) : 'undefined'}</p>
+                        <p>Months count: ${data.budgetMonths ? Object.keys(data.budgetMonths).length : 'N/A'}</p>
+                    </div>
+                `;
+                allPassed = allPassed && test4;
+
+                // Test 5: Check Income section has categories
+                const test5 = data.masterSections && data.masterSections.Income && Array.isArray(data.masterSections.Income) && data.masterSections.Income.length > 0;
+                html += `
+                    <div class="test-result ${test5 ? 'pass' : 'fail'}">
+                        <strong>${test5 ? '✓' : '✗'} Test 5: Income section has categories</strong>
+                        <p>Income categories: ${data.masterSections?.Income ? data.masterSections.Income.join(', ') : 'none'}</p>
+                    </div>
+                `;
+                allPassed = allPassed && test5;
+
+                // Test 6: Check console logs for new user messages (NOT migration messages)
+                const hasNewUserLog = logs.some(log => log.includes('New user detected'));
+                const hasInitCompleteLog = logs.some(log => log.includes('New user initialization complete'));
+                const hasMigrationLog = logs.some(log => log.includes('Starting budget data migration'));
+                const test6 = hasNewUserLog && hasInitCompleteLog && !hasMigrationLog;
+                html += `
+                    <div class="test-result ${test6 ? 'pass' : 'fail'}">
+                        <strong>${test6 ? '✓' : '✗'} Test 6: Console logs show new user path (NOT migration)</strong>
+                        <ul>
+                            <li>${hasNewUserLog ? '✓' : '✗'} "New user detected" log present</li>
+                            <li>${hasInitCompleteLog ? '✓' : '✗'} "New user initialization complete" log present</li>
+                            <li>${!hasMigrationLog ? '✓' : '✗'} NO "Starting budget data migration" log (should skip migration)</li>
+                        </ul>
+                    </div>
+                `;
+                allPassed = allPassed && test6;
+
+                // Test 7: Check transactions array exists (should be empty or from default)
+                const test7 = Array.isArray(data.transactions);
+                html += `
+                    <div class="test-result ${test7 ? 'pass' : 'fail'}">
+                        <strong>${test7 ? '✓' : '✗'} Test 7: transactions is array</strong>
+                        <p>Type: ${Array.isArray(data.transactions) ? 'Array' : typeof data.transactions}</p>
+                        <p>Length: ${data.transactions ? data.transactions.length : 'N/A'}</p>
+                    </div>
+                `;
+                allPassed = allPassed && test7;
+
+                // Summary
+                html += `
+                    <div class="section">
+                        <h3>${allPassed ? '✅ All Tests Passed!' : '❌ Some Tests Failed'}</h3>
+                        <p class="${allPassed ? 'pass' : 'fail'}">
+                            ${allPassed
+                                ? 'New user initialization works correctly! Data initialized without running migration.'
+                                : 'Some tests failed. Check the details above.'}
+                        </p>
+                        <details>
+                            <summary>View Complete localStorage Data</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+
+            } catch (error) {
+                html += `
+                    <div class="test-result fail">
+                        <p class="fail">✗ Error during verification: ${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+
+            result.innerHTML = html;
+        }
+
+        function captureLogs() {
+            const logsDiv = document.getElementById('console-logs');
+            if (logs.length === 0) {
+                logsDiv.innerHTML = '<p class="info">No console logs captured yet. Run initialization test first.</p>';
+            } else {
+                let html = '<h3>Captured Console Logs:</h3>';
+                logs.forEach((log, i) => {
+                    html += `<div class="console-log">${i + 1}. ${log}</div>`;
+                });
+                logsDiv.innerHTML = html;
+            }
+        }
+
+        // Show initial state
+        window.addEventListener('DOMContentLoaded', function() {
+            const stored = localStorage.getItem('budgetAppData');
+            if (!stored) {
+                const setupDiv = document.getElementById('setup-result');
+                setupDiv.innerHTML = `
+                    <div class="test-result info">
+                        <p class="info">ℹ️ localStorage is currently empty (perfect for new user test!)</p>
+                        <p>Ready to run initialization test.</p>
+                    </div>
+                `;
+            } else {
+                try {
+                    const data = JSON.parse(stored);
+                    const setupDiv = document.getElementById('setup-result');
+                    setupDiv.innerHTML = `
+                        <div class="test-result info">
+                            <p class="info">⚠️ Data already exists in localStorage</p>
+                            <p>_dataVersion: ${data._dataVersion}</p>
+                            <p>masterSections: ${data.masterSections ? Object.keys(data.masterSections).length + ' sections' : 'none'}</p>
+                            <p>budgetMonths: ${data.budgetMonths ? Object.keys(data.budgetMonths).length + ' months' : 'none'}</p>
+                            <p class="info">Clear data first to test new user path.</p>
+                        </div>
+                    `;
+                } catch (e) {
+                    console.error('Error checking existing data:', e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

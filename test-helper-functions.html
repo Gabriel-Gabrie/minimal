@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helper Functions Test - Budget App</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        h1 { color: #10b981; }
+        h2 { color: #3b82f6; margin-top: 30px; }
+        .section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #404040;
+        }
+        .pass { color: #10b981; font-weight: bold; }
+        .fail { color: #ef4444; font-weight: bold; }
+        .info { color: #3b82f6; }
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        button:hover { background: #059669; }
+        button.secondary {
+            background: #3b82f6;
+        }
+        button.secondary:hover { background: #2563eb; }
+        button.danger {
+            background: #ef4444;
+        }
+        button.danger:hover { background: #dc2626; }
+        pre {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #404040;
+            font-size: 12px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #404040;
+        }
+        .test-result.pass { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .test-result.fail { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        .test-result.info { border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        code {
+            background: #1a1a1a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13px;
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛠️ Budget App Helper Functions Test Suite</h1>
+    <p class="info">This page tests all 7 budget helper functions implemented in Phase 4.</p>
+    <p class="info">The tests verify correct behavior and localStorage persistence (saveData() calls).</p>
+
+    <div class="section">
+        <h2>Setup</h2>
+        <button onclick="setupTestData()">Initialize Test Data</button>
+        <button class="danger" onclick="resetData()">Reset All Data</button>
+        <div id="setup-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test 1: getActiveSections(monthKey)</h2>
+        <p class="info">Should return active sections object for a month, or empty object if month doesn't exist.</p>
+        <button onclick="runTest1()">Run Test 1</button>
+        <div id="test1-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test 2: addSectionToBudget(monthKey, sectionName)</h2>
+        <p class="info">Should add section to month's activeSections and sectionOrder, initialize budgets structure.</p>
+        <button onclick="runTest2()">Run Test 2</button>
+        <div id="test2-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test 3: addCategoryToBudget(monthKey, sectionName, categoryName)</h2>
+        <p class="info">Should add category to section's categories array and initialize budgets structure.</p>
+        <button onclick="runTest3()">Run Test 3</button>
+        <div id="test3-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test 4: isSectionActiveInAnyBudget(sectionName)</h2>
+        <p class="info">Should return true if section is active in at least one month, false otherwise.</p>
+        <button onclick="runTest4()">Run Test 4</button>
+        <div id="test4-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test 5: isCategoryActiveInAnyBudget(sectionName, categoryName)</h2>
+        <p class="info">Should return true if category is active in section in at least one month, false otherwise.</p>
+        <button onclick="runTest5()">Run Test 5</button>
+        <div id="test5-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test 6: removeCategoryFromBudget(monthKey, sectionName, categoryName)</h2>
+        <p class="info">Should remove category from section's categories array and budgets structure.</p>
+        <button onclick="runTest6()">Run Test 6</button>
+        <div id="test6-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>Test 7: removeSectionFromBudget(monthKey, sectionName)</h2>
+        <p class="info">Should remove section from activeSections, sectionOrder, and budgets.</p>
+        <button onclick="runTest7()">Run Test 7</button>
+        <div id="test7-result"></div>
+    </div>
+
+    <div class="section">
+        <h2>All Tests Summary</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <div id="summary-result"></div>
+    </div>
+
+    <script src="js/state.js"></script>
+    <script>
+        let testResults = [];
+
+        function setupTestData() {
+            const result = document.getElementById('setup-result');
+
+            // Clear any existing budget months
+            budgetMonths = {};
+
+            // Create test month with some initial data
+            budgetMonths['2026-03'] = {
+                activeSections: {
+                    'Income': ['Salary', 'Freelance'],
+                    'Bills': ['Rent', 'Utilities']
+                },
+                sectionOrder: ['Income', 'Bills'],
+                budgets: {
+                    'Income': {
+                        'Salary': { 'Paycheque': { amount: 5000 } }
+                    },
+                    'Bills': {
+                        'Rent': { 'Apartment': { amount: 1500 } }
+                    }
+                }
+            };
+
+            // Initialize masterSections if empty
+            if (Object.keys(masterSections).length === 0) {
+                masterSections = JSON.parse(JSON.stringify(defaultSections));
+                masterSectionOrder = Object.keys(defaultSections);
+                _dataVersion = 1;
+            }
+
+            // Save to localStorage
+            saveData();
+
+            result.innerHTML = `
+                <div class="test-result pass">
+                    <p class="pass">✓ Test data initialized</p>
+                    <p>Created month 2026-03 with:</p>
+                    <ul>
+                        <li>Income section (Salary, Freelance)</li>
+                        <li>Bills section (Rent, Utilities)</li>
+                    </ul>
+                    <p class="info">Ready to run tests!</p>
+                </div>
+            `;
+        }
+
+        function resetData() {
+            budgetMonths = {};
+            saveData();
+            document.getElementById('setup-result').innerHTML = `
+                <div class="test-result info">
+                    <p class="info">⟲ All budget data cleared</p>
+                    <p>Run "Initialize Test Data" to start testing.</p>
+                </div>
+            `;
+            testResults = [];
+        }
+
+        function runTest1() {
+            const result = document.getElementById('test1-result');
+            let html = '<h3>Test Results:</h3>';
+            let allPassed = true;
+
+            try {
+                // Test 1a: Get existing month
+                const test1a = getActiveSections('2026-03');
+                const passed1a = test1a && typeof test1a === 'object' && test1a.Income && test1a.Bills;
+                html += `
+                    <div class="test-result ${passed1a ? 'pass' : 'fail'}">
+                        <strong>${passed1a ? '✓' : '✗'} Test 1a: getActiveSections('2026-03')</strong>
+                        <p>Expected: Object with Income and Bills sections</p>
+                        <p>Got: ${JSON.stringify(test1a)}</p>
+                        <code>Income categories: ${test1a?.Income ? test1a.Income.join(', ') : 'none'}</code><br>
+                        <code>Bills categories: ${test1a?.Bills ? test1a.Bills.join(', ') : 'none'}</code>
+                    </div>
+                `;
+                allPassed = allPassed && passed1a;
+
+                // Test 1b: Get non-existent month
+                const test1b = getActiveSections('2025-01');
+                const passed1b = test1b && typeof test1b === 'object' && Object.keys(test1b).length === 0;
+                html += `
+                    <div class="test-result ${passed1b ? 'pass' : 'fail'}">
+                        <strong>${passed1b ? '✓' : '✗'} Test 1b: getActiveSections('2025-01') (non-existent)</strong>
+                        <p>Expected: Empty object {}</p>
+                        <p>Got: ${JSON.stringify(test1b)}</p>
+                    </div>
+                `;
+                allPassed = allPassed && passed1b;
+
+                testResults[0] = allPassed;
+            } catch (error) {
+                html += `<div class="test-result fail"><p class="fail">✗ Error: ${error.message}</p></div>`;
+                testResults[0] = false;
+            }
+
+            result.innerHTML = html;
+        }
+
+        function runTest2() {
+            const result = document.getElementById('test2-result');
+            let html = '<h3>Test Results:</h3>';
+            let allPassed = true;
+
+            try {
+                // Test 2a: Add new section to existing month
+                const beforeSections = JSON.parse(JSON.stringify(budgetMonths['2026-03']?.activeSections || {}));
+                addSectionToBudget('2026-03', 'Transport');
+                const afterSections = budgetMonths['2026-03']?.activeSections || {};
+
+                const passed2a = afterSections.Transport &&
+                                 Array.isArray(afterSections.Transport) &&
+                                 budgetMonths['2026-03'].sectionOrder.includes('Transport') &&
+                                 budgetMonths['2026-03'].budgets.Transport;
+
+                html += `
+                    <div class="test-result ${passed2a ? 'pass' : 'fail'}">
+                        <strong>${passed2a ? '✓' : '✗'} Test 2a: addSectionToBudget('2026-03', 'Transport')</strong>
+                        <p>Before: ${Object.keys(beforeSections).join(', ')}</p>
+                        <p>After: ${Object.keys(afterSections).join(', ')}</p>
+                        <p>Transport categories: ${afterSections.Transport ? afterSections.Transport.join(', ') : 'none'}</p>
+                        <p>sectionOrder: ${budgetMonths['2026-03'].sectionOrder.join(' → ')}</p>
+                        <p class="${passed2a ? 'pass' : 'fail'}">
+                            ${passed2a ? '✓ Section added with categories from masterSections' : '✗ Section not added correctly'}
+                        </p>
+                    </div>
+                `;
+                allPassed = allPassed && passed2a;
+
+                // Test 2b: Add section to new month
+                addSectionToBudget('2026-04', 'Bills');
+                const passed2b = budgetMonths['2026-04'] &&
+                                 budgetMonths['2026-04'].activeSections.Bills &&
+                                 budgetMonths['2026-04'].sectionOrder.includes('Bills') &&
+                                 budgetMonths['2026-04'].budgets.Bills;
+
+                html += `
+                    <div class="test-result ${passed2b ? 'pass' : 'fail'}">
+                        <strong>${passed2b ? '✓' : '✗'} Test 2b: addSectionToBudget('2026-04', 'Bills') (new month)</strong>
+                        <p>New month created: ${budgetMonths['2026-04'] ? 'Yes' : 'No'}</p>
+                        <p>Bills section added: ${budgetMonths['2026-04']?.activeSections?.Bills ? 'Yes' : 'No'}</p>
+                        <p class="${passed2b ? 'pass' : 'fail'}">
+                            ${passed2b ? '✓ New month initialized with section' : '✗ Month or section not created correctly'}
+                        </p>
+                    </div>
+                `;
+                allPassed = allPassed && passed2b;
+
+                // Test 2c: Verify localStorage was updated (saveData called)
+                const stored = localStorage.getItem('budgetAppData');
+                const data = stored ? JSON.parse(stored) : null;
+                const passed2c = data && data.budgetMonths && data.budgetMonths['2026-03']?.activeSections?.Transport;
+
+                html += `
+                    <div class="test-result ${passed2c ? 'pass' : 'fail'}">
+                        <strong>${passed2c ? '✓' : '✗'} Test 2c: localStorage updated (saveData called)</strong>
+                        <p class="${passed2c ? 'pass' : 'fail'}">
+                            ${passed2c ? '✓ Changes persisted to localStorage' : '✗ localStorage not updated'}
+                        </p>
+                    </div>
+                `;
+                allPassed = allPassed && passed2c;
+
+                testResults[1] = allPassed;
+            } catch (error) {
+                html += `<div class="test-result fail"><p class="fail">✗ Error: ${error.message}</p></div>`;
+                testResults[1] = false;
+            }
+
+            result.innerHTML = html;
+        }
+
+        function runTest3() {
+            const result = document.getElementById('test3-result');
+            let html = '<h3>Test Results:</h3>';
+            let allPassed = true;
+
+            try {
+                // Test 3a: Add category to existing section
+                const beforeCategories = [...(budgetMonths['2026-03']?.activeSections?.Bills || [])];
+                addCategoryToBudget('2026-03', 'Bills', 'Internet');
+                const afterCategories = budgetMonths['2026-03']?.activeSections?.Bills || [];
+
+                const passed3a = afterCategories.includes('Internet') &&
+                                 budgetMonths['2026-03'].budgets.Bills.Internet;
+
+                html += `
+                    <div class="test-result ${passed3a ? 'pass' : 'fail'}">
+                        <strong>${passed3a ? '✓' : '✗'} Test 3a: addCategoryToBudget('2026-03', 'Bills', 'Internet')</strong>
+                        <p>Before: ${beforeCategories.join(', ')}</p>
+                        <p>After: ${afterCategories.join(', ')}</p>
+                        <p>Budget structure created: ${budgetMonths['2026-03'].budgets.Bills.Internet ? 'Yes' : 'No'}</p>
+                        <p class="${passed3a ? 'pass' : 'fail'}">
+                            ${passed3a ? '✓ Category added to section' : '✗ Category not added correctly'}
+                        </p>
+                    </div>
+                `;
+                allPassed = allPassed && passed3a;
+
+                // Test 3b: Add category to new section in existing month
+                addCategoryToBudget('2026-03', 'Personal', 'Phone Plan');
+                const passed3b = budgetMonths['2026-03'].activeSections.Personal &&
+                                 budgetMonths['2026-03'].activeSections.Personal.includes('Phone Plan') &&
+                                 budgetMonths['2026-03'].sectionOrder.includes('Personal') &&
+                                 budgetMonths['2026-03'].budgets.Personal &&
+                                 budgetMonths['2026-03'].budgets.Personal['Phone Plan'];
+
+                html += `
+                    <div class="test-result ${passed3b ? 'pass' : 'fail'}">
+                        <strong>${passed3b ? '✓' : '✗'} Test 3b: addCategoryToBudget('2026-03', 'Personal', 'Phone Plan') (new section)</strong>
+                        <p>Personal section created: ${budgetMonths['2026-03'].activeSections.Personal ? 'Yes' : 'No'}</p>
+                        <p>Phone Plan added: ${budgetMonths['2026-03'].activeSections.Personal?.includes('Phone Plan') ? 'Yes' : 'No'}</p>
+                        <p class="${passed3b ? 'pass' : 'fail'}">
+                            ${passed3b ? '✓ New section and category created' : '✗ Section or category not created correctly'}
+                        </p>
+                    </div>
+                `;
+                allPassed = allPassed && passed3b;
+
+                testResults[2] = allPassed;
+            } catch (error) {
+                html += `<div class="test-result fail"><p class="fail">✗ Error: ${error.message}</p></div>`;
+                testResults[2] = false;
+            }
+
+            result.innerHTML = html;
+        }
+
+        function runTest4() {
+            const result = document.getElementById('test4-result');
+            let html = '<h3>Test Results:</h3>';
+            let allPassed = true;
+
+            try {
+                // Test 4a: Check section that exists
+                const test4a = isSectionActiveInAnyBudget('Income');
+                const passed4a = test4a === true;
+
+                html += `
+                    <div class="test-result ${passed4a ? 'pass' : 'fail'}">
+                        <strong>${passed4a ? '✓' : '✗'} Test 4a: isSectionActiveInAnyBudget('Income')</strong>
+                        <p>Expected: true (Income exists in 2026-03)</p>
+                        <p>Got: ${test4a}</p>
+                    </div>
+                `;
+                allPassed = allPassed && passed4a;
+
+                // Test 4b: Check section that doesn't exist
+                const test4b = isSectionActiveInAnyBudget('NonExistentSection');
+                const passed4b = test4b === false;
+
+                html += `
+                    <div class="test-result ${passed4b ? 'pass' : 'fail'}">
+                        <strong>${passed4b ? '✓' : '✗'} Test 4b: isSectionActiveInAnyBudget('NonExistentSection')</strong>
+                        <p>Expected: false</p>
+                        <p>Got: ${test4b}</p>
+                    </div>
+                `;
+                allPassed = allPassed && passed4b;
+
+                // Test 4c: Check section added in Test 2
+                const test4c = isSectionActiveInAnyBudget('Transport');
+                const passed4c = test4c === true;
+
+                html += `
+                    <div class="test-result ${passed4c ? 'pass' : 'fail'}">
+                        <strong>${passed4c ? '✓' : '✗'} Test 4c: isSectionActiveInAnyBudget('Transport')</strong>
+                        <p>Expected: true (Transport added in Test 2)</p>
+                        <p>Got: ${test4c}</p>
+                    </div>
+                `;
+                allPassed = allPassed && passed4c;
+
+                testResults[3] = allPassed;
+            } catch (error) {
+                html += `<div class="test-result fail"><p class="fail">✗ Error: ${error.message}</p></div>`;
+                testResults[3] = false;
+            }
+
+            result.innerHTML = html;
+        }
+
+        function runTest5() {
+            const result = document.getElementById('test5-result');
+            let html = '<h3>Test Results:</h3>';
+            let allPassed = true;
+
+            try {
+                // Test 5a: Check category that exists
+                const test5a = isCategoryActiveInAnyBudget('Bills', 'Rent');
+                const passed5a = test5a === true;
+
+                html += `
+                    <div class="test-result ${passed5a ? 'pass' : 'fail'}">
+                        <strong>${passed5a ? '✓' : '✗'} Test 5a: isCategoryActiveInAnyBudget('Bills', 'Rent')</strong>
+                        <p>Expected: true (Rent exists in Bills section)</p>
+                        <p>Got: ${test5a}</p>
+                    </div>
+                `;
+                allPassed = allPassed && passed5a;
+
+                // Test 5b: Check category that doesn't exist
+                const test5b = isCategoryActiveInAnyBudget('Bills', 'NonExistentCategory');
+                const passed5b = test5b === false;
+
+                html += `
+                    <div class="test-result ${passed5b ? 'pass' : 'fail'}">
+                        <strong>${passed5b ? '✓' : '✗'} Test 5b: isCategoryActiveInAnyBudget('Bills', 'NonExistentCategory')</strong>
+                        <p>Expected: false</p>
+                        <p>Got: ${test5b}</p>
+                    </div>
+                `;
+                allPassed = allPassed && passed5b;
+
+                // Test 5c: Check category added in Test 3
+                const test5c = isCategoryActiveInAnyBudget('Bills', 'Internet');
+                const passed5c = test5c === true;
+
+                html += `
+                    <div class="test-result ${passed5c ? 'pass' : 'fail'}">
+                        <strong>${passed5c ? '✓' : '✗'} Test 5c: isCategoryActiveInAnyBudget('Bills', 'Internet')</strong>
+                        <p>Expected: true (Internet added in Test 3)</p>
+                        <p>Got: ${test5c}</p>
+                    </div>
+                `;
+                allPassed = allPassed && passed5c;
+
+                // Test 5d: Check section that doesn't exist
+                const test5d = isCategoryActiveInAnyBudget('NonExistentSection', 'SomeCategory');
+                const passed5d = test5d === false;
+
+                html += `
+                    <div class="test-result ${passed5d ? 'pass' : 'fail'}">
+                        <strong>${passed5d ? '✓' : '✗'} Test 5d: isCategoryActiveInAnyBudget('NonExistentSection', 'SomeCategory')</strong>
+                        <p>Expected: false (section doesn't exist)</p>
+                        <p>Got: ${test5d}</p>
+                    </div>
+                `;
+                allPassed = allPassed && passed5d;
+
+                testResults[4] = allPassed;
+            } catch (error) {
+                html += `<div class="test-result fail"><p class="fail">✗ Error: ${error.message}</p></div>`;
+                testResults[4] = false;
+            }
+
+            result.innerHTML = html;
+        }
+
+        function runTest6() {
+            const result = document.getElementById('test6-result');
+            let html = '<h3>Test Results:</h3>';
+            let allPassed = true;
+
+            try {
+                // First verify Internet category exists from Test 3
+                const beforeCategories = [...(budgetMonths['2026-03']?.activeSections?.Bills || [])];
+
+                // Test 6a: Remove category from section
+                removeCategoryFromBudget('2026-03', 'Bills', 'Internet');
+                const afterCategories = budgetMonths['2026-03']?.activeSections?.Bills || [];
+
+                const passed6a = !afterCategories.includes('Internet') &&
+                                 !budgetMonths['2026-03'].budgets.Bills.Internet;
+
+                html += `
+                    <div class="test-result ${passed6a ? 'pass' : 'fail'}">
+                        <strong>${passed6a ? '✓' : '✗'} Test 6a: removeCategoryFromBudget('2026-03', 'Bills', 'Internet')</strong>
+                        <p>Before: ${beforeCategories.join(', ')}</p>
+                        <p>After: ${afterCategories.join(', ')}</p>
+                        <p>Budget structure removed: ${!budgetMonths['2026-03'].budgets.Bills.Internet ? 'Yes' : 'No'}</p>
+                        <p class="${passed6a ? 'pass' : 'fail'}">
+                            ${passed6a ? '✓ Category removed from section' : '✗ Category not removed correctly'}
+                        </p>
+                    </div>
+                `;
+                allPassed = allPassed && passed6a;
+
+                // Test 6b: Try to remove non-existent category (should handle gracefully)
+                try {
+                    removeCategoryFromBudget('2026-03', 'Bills', 'NonExistent');
+                    const passed6b = true; // If no error, it handled gracefully
+
+                    html += `
+                        <div class="test-result ${passed6b ? 'pass' : 'fail'}">
+                            <strong>${passed6b ? '✓' : '✗'} Test 6b: removeCategoryFromBudget non-existent category</strong>
+                            <p class="${passed6b ? 'pass' : 'fail'}">
+                                ${passed6b ? '✓ Handled gracefully (no error)' : '✗ Should not throw error'}
+                            </p>
+                        </div>
+                    `;
+                    allPassed = allPassed && passed6b;
+                } catch (e) {
+                    html += `
+                        <div class="test-result fail">
+                            <strong>✗ Test 6b: removeCategoryFromBudget non-existent category</strong>
+                            <p class="fail">✗ Should handle gracefully, but threw error: ${e.message}</p>
+                        </div>
+                    `;
+                    allPassed = false;
+                }
+
+                testResults[5] = allPassed;
+            } catch (error) {
+                html += `<div class="test-result fail"><p class="fail">✗ Error: ${error.message}</p></div>`;
+                testResults[5] = false;
+            }
+
+            result.innerHTML = html;
+        }
+
+        function runTest7() {
+            const result = document.getElementById('test7-result');
+            let html = '<h3>Test Results:</h3>';
+            let allPassed = true;
+
+            try {
+                // First verify Transport section exists from Test 2
+                const beforeSections = Object.keys(budgetMonths['2026-03']?.activeSections || {});
+                const beforeOrder = [...(budgetMonths['2026-03']?.sectionOrder || [])];
+
+                // Test 7a: Remove section from budget
+                removeSectionFromBudget('2026-03', 'Transport');
+                const afterSections = Object.keys(budgetMonths['2026-03']?.activeSections || {});
+                const afterOrder = budgetMonths['2026-03']?.sectionOrder || [];
+
+                const passed7a = !budgetMonths['2026-03'].activeSections.Transport &&
+                                 !afterOrder.includes('Transport') &&
+                                 !budgetMonths['2026-03'].budgets.Transport;
+
+                html += `
+                    <div class="test-result ${passed7a ? 'pass' : 'fail'}">
+                        <strong>${passed7a ? '✓' : '✗'} Test 7a: removeSectionFromBudget('2026-03', 'Transport')</strong>
+                        <p>Before: ${beforeSections.join(', ')}</p>
+                        <p>After: ${afterSections.join(', ')}</p>
+                        <p>Section order before: ${beforeOrder.join(' → ')}</p>
+                        <p>Section order after: ${afterOrder.join(' → ')}</p>
+                        <p>Budget structure removed: ${!budgetMonths['2026-03'].budgets.Transport ? 'Yes' : 'No'}</p>
+                        <p class="${passed7a ? 'pass' : 'fail'}">
+                            ${passed7a ? '✓ Section completely removed' : '✗ Section not removed correctly'}
+                        </p>
+                    </div>
+                `;
+                allPassed = allPassed && passed7a;
+
+                // Test 7b: Try to remove non-existent section (should handle gracefully)
+                try {
+                    removeSectionFromBudget('2026-03', 'NonExistent');
+                    const passed7b = true;
+
+                    html += `
+                        <div class="test-result ${passed7b ? 'pass' : 'fail'}">
+                            <strong>${passed7b ? '✓' : '✗'} Test 7b: removeSectionFromBudget non-existent section</strong>
+                            <p class="${passed7b ? 'pass' : 'fail'}">
+                                ${passed7b ? '✓ Handled gracefully (no error)' : '✗ Should not throw error'}
+                            </p>
+                        </div>
+                    `;
+                    allPassed = allPassed && passed7b;
+                } catch (e) {
+                    html += `
+                        <div class="test-result fail">
+                            <strong>✗ Test 7b: removeSectionFromBudget non-existent section</strong>
+                            <p class="fail">✗ Should handle gracefully, but threw error: ${e.message}</p>
+                        </div>
+                    `;
+                    allPassed = false;
+                }
+
+                // Test 7c: Try to remove from non-existent month (should handle gracefully)
+                try {
+                    removeSectionFromBudget('2025-01', 'SomeSection');
+                    const passed7c = true;
+
+                    html += `
+                        <div class="test-result ${passed7c ? 'pass' : 'fail'}">
+                            <strong>${passed7c ? '✓' : '✗'} Test 7c: removeSectionFromBudget from non-existent month</strong>
+                            <p class="${passed7c ? 'pass' : 'fail'}">
+                                ${passed7c ? '✓ Handled gracefully (no error)' : '✗ Should not throw error'}
+                            </p>
+                        </div>
+                    `;
+                    allPassed = allPassed && passed7c;
+                } catch (e) {
+                    html += `
+                        <div class="test-result fail">
+                            <strong>✗ Test 7c: removeSectionFromBudget from non-existent month</strong>
+                            <p class="fail">✗ Should handle gracefully, but threw error: ${e.message}</p>
+                        </div>
+                    `;
+                    allPassed = false;
+                }
+
+                testResults[6] = allPassed;
+            } catch (error) {
+                html += `<div class="test-result fail"><p class="fail">✗ Error: ${error.message}</p></div>`;
+                testResults[6] = false;
+            }
+
+            result.innerHTML = html;
+        }
+
+        function runAllTests() {
+            testResults = [];
+
+            // Reset and setup
+            setupTestData();
+
+            // Give setup a moment to complete
+            setTimeout(() => {
+                runTest1();
+                setTimeout(() => {
+                    runTest2();
+                    setTimeout(() => {
+                        runTest3();
+                        setTimeout(() => {
+                            runTest4();
+                            setTimeout(() => {
+                                runTest5();
+                                setTimeout(() => {
+                                    runTest6();
+                                    setTimeout(() => {
+                                        runTest7();
+                                        setTimeout(showSummary, 500);
+                                    }, 500);
+                                }, 500);
+                            }, 500);
+                        }, 500);
+                    }, 500);
+                }, 500);
+            }, 500);
+        }
+
+        function showSummary() {
+            const result = document.getElementById('summary-result');
+            const totalTests = 7;
+            const passedTests = testResults.filter(r => r === true).length;
+            const allPassed = passedTests === totalTests;
+
+            let html = `
+                <div class="section">
+                    <h3>${allPassed ? '✅ All Tests Passed!' : `⚠️ ${passedTests}/${totalTests} Tests Passed`}</h3>
+                    <div class="test-result ${allPassed ? 'pass' : 'fail'}">
+                        <p class="${allPassed ? 'pass' : 'fail'}">
+                            ${allPassed
+                                ? 'All 7 helper functions work correctly!'
+                                : `${totalTests - passedTests} test(s) failed. Review individual test results above.`}
+                        </p>
+                        <ul>
+                            <li>${testResults[0] ? '✓' : '✗'} Test 1: getActiveSections</li>
+                            <li>${testResults[1] ? '✓' : '✗'} Test 2: addSectionToBudget</li>
+                            <li>${testResults[2] ? '✓' : '✗'} Test 3: addCategoryToBudget</li>
+                            <li>${testResults[3] ? '✓' : '✗'} Test 4: isSectionActiveInAnyBudget</li>
+                            <li>${testResults[4] ? '✓' : '✗'} Test 5: isCategoryActiveInAnyBudget</li>
+                            <li>${testResults[5] ? '✓' : '✗'} Test 6: removeCategoryFromBudget</li>
+                            <li>${testResults[6] ? '✓' : '✗'} Test 7: removeSectionFromBudget</li>
+                        </ul>
+                    </div>
+                    <details>
+                        <summary>View Current budgetMonths Structure</summary>
+                        <pre>${JSON.stringify(budgetMonths, null, 2)}</pre>
+                    </details>
+                </div>
+            `;
+
+            result.innerHTML = html;
+        }
+
+        // Show initial state on load
+        window.addEventListener('DOMContentLoaded', function() {
+            const setupDiv = document.getElementById('setup-result');
+            setupDiv.innerHTML = `
+                <div class="test-result info">
+                    <p class="info">ℹ️ Ready to run tests</p>
+                    <p>Click "Initialize Test Data" to set up test environment, then run individual tests or "Run All Tests".</p>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

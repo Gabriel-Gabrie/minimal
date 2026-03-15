@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Sync Test - Manual Verification Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            color: #1a1a1a;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 30px;
+            border-left: 4px solid #4CAF50;
+            padding-left: 10px;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 20px;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+        }
+        .step-number {
+            font-weight: bold;
+            color: #2196F3;
+            font-size: 1.1em;
+        }
+        .code {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+        .important {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .warning {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist li:before {
+            content: "☐ ";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .field-name {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 Firestore Sync Test - Manual Verification Guide</h1>
+
+    <div class="section">
+        <h2>📋 Overview</h2>
+        <p>This guide walks you through manually verifying that the new data model fields (<span class="field-name">masterSections</span>, <span class="field-name">masterSectionOrder</span>, <span class="field-name">_dataVersion</span>, and <span class="field-name">budgetMonths</span>) are properly syncing to Firestore.</p>
+
+        <div class="important">
+            <strong>⚠️ Prerequisites:</strong>
+            <ul>
+                <li>You must have a Firebase account configured for this app</li>
+                <li>Access to Firebase Console (<a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a>)</li>
+                <li>Know your Firebase project ID</li>
+                <li>App must be running (http://localhost:8000)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🔍 Code Review - Firestore Sync Implementation</h2>
+
+        <h3>1. saveData() Function (Lines 635-665 in js/state.js)</h3>
+        <p>The <span class="field-name">saveData()</span> function includes the new fields in the snapshot:</p>
+        <div class="code">const snap = {
+    transactions, expenseCategories, monthlyBudgets, budgetMonths, itemIcons, walletAccounts, customTemplates, savedFilters,
+    <strong>masterSections, masterSectionOrder, _dataVersion,</strong>  // ← New fields included
+    categoryOrder: Object.keys(expenseCategories)
+};
+
+// Firestore write (debounced 1.5 seconds)
+_fbDb.collection('users').doc(user.uid)
+    .set({ data: snap, updatedAt: new Date().toISOString() }, { merge: true })
+        </div>
+
+        <div class="success">
+            <strong>✅ Verification:</strong> The new fields are included in the snap object that gets written to Firestore.
+        </div>
+
+        <h3>2. loadFromFirestore() Function (Lines 861-877 in js/state.js)</h3>
+        <p>The <span class="field-name">loadFromFirestore()</span> function reads all fields generically:</p>
+        <div class="code">async function loadFromFirestore(uid) {
+    const doc = await _fbDb.collection('users').doc(uid).get();
+    if (doc.exists && doc.data().data) {
+        const d = doc.data().data;  // ← Reads entire data object (includes new fields)
+        _applyData(d);  // ← Assigns all fields to global variables
+        // Mirror to localStorage so offline works
+        Object.entries(d).forEach(([k, v]) => localStorage.setItem(k, JSON.stringify(v)));
+    }
+}
+        </div>
+
+        <div class="success">
+            <strong>✅ Verification:</strong> All fields (including new ones) are automatically read from Firestore and applied to app state.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🧪 Manual Testing Procedure</h2>
+
+        <div class="step">
+            <span class="step-number">Step 1:</span> Sign In to Firebase
+            <ol>
+                <li>Open the app at <a href="http://localhost:8000" target="_blank">http://localhost:8000</a></li>
+                <li>Click the Settings icon (gear icon in top-right)</li>
+                <li>Sign in with your Firebase account (Google, Apple, or Email)</li>
+                <li>Wait for sign-in to complete</li>
+                <li>Open browser DevTools (F12) → Console tab</li>
+            </ol>
+            <div class="important">
+                <strong>Expected:</strong> Console should show "Signed in as [your email]" or similar message.
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 2:</span> Trigger a Data Change
+            <p>Make any change that triggers <span class="field-name">saveData()</span>:</p>
+            <ul>
+                <li><strong>Option A:</strong> Add a new transaction</li>
+                <li><strong>Option B:</strong> Create/edit a budget item</li>
+                <li><strong>Option C:</strong> Add/edit a wallet account</li>
+                <li><strong>Option D:</strong> Use browser console to manually trigger saveData:</li>
+            </ul>
+            <div class="code">// In browser console:
+saveData();
+console.log('saveData() called manually');
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 3:</span> Wait for Debounced Firestore Write
+            <p>The Firestore write is debounced by 1.5 seconds. Wait at least 2 seconds after the change.</p>
+            <div class="code">// Optional: Check in console after 2 seconds:
+setTimeout(() => console.log('Firestore write should be complete now'), 2000);
+            </div>
+            <div class="important">
+                <strong>Note:</strong> If the app has sync status indicators, watch for "Syncing..." → "Synced" status change.
+            </div>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 4:</span> Check Firestore Console
+            <ol>
+                <li>Open <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>
+                <li>Select your project</li>
+                <li>Navigate to <strong>Firestore Database</strong> in the left sidebar</li>
+                <li>Find the <span class="field-name">users</span> collection</li>
+                <li>Click on your user document (document ID = your Firebase UID)</li>
+                <li>Expand the <span class="field-name">data</span> field</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 5:</span> Verify New Fields Are Present
+            <p>In the Firestore document, verify the following fields exist inside the <span class="field-name">data</span> object:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field Name</th>
+                        <th>Expected Type</th>
+                        <th>Expected Content</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="field-name">masterSections</span></td>
+                        <td>Object (map)</td>
+                        <td>Section names as keys, arrays of category names as values<br>
+                            Example: <code>{ "Income": ["Salary", "Freelance"], "Bills": [...] }</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name">masterSectionOrder</span></td>
+                        <td>Array</td>
+                        <td>Array of section names defining display order<br>
+                            Example: <code>["Income", "Bills", "Groceries", "Transport", ...]</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name">_dataVersion</span></td>
+                        <td>Number</td>
+                        <td>Should be <code>1</code> (indicates migration completed)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="field-name">budgetMonths</span></td>
+                        <td>Object (map)</td>
+                        <td>Month keys (YYYY-MM) as keys, each containing:<br>
+                            - <span class="field-name">activeSections</span> (object)<br>
+                            - <span class="field-name">sectionOrder</span> (array)<br>
+                            - <span class="field-name">budgets</span> (nested object)
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="step">
+            <span class="step-number">Step 6:</span> Verify budgetMonths Structure
+            <p>Expand the <span class="field-name">budgetMonths</span> field and check one month (e.g., "2026-03"):</p>
+
+            <div class="code">{
+  "budgetMonths": {
+    "2026-03": {
+      "activeSections": {
+        "Income": ["Salary", "Freelance"],
+        "Bills": ["Rent", "Utilities"]
+      },
+      "sectionOrder": ["Income", "Bills"],
+      "budgets": {
+        "Income": {
+          "Salary": {
+            "Paycheque": { "amount": 5000 }
+          }
+        },
+        "Bills": {
+          "Rent": {
+            "Apartment": { "amount": 1500 }
+          }
+        }
+      }
+    }
+  }
+}
+            </div>
+
+            <div class="success">
+                <strong>✅ Expected Structure:</strong>
+                <ul>
+                    <li><span class="field-name">activeSections</span>: Object mapping section names to arrays of category names</li>
+                    <li><span class="field-name">sectionOrder</span>: Array of section names</li>
+                    <li><span class="field-name">budgets</span>: Nested object (section → category → item → {amount})</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>✅ Verification Checklist</h2>
+        <p>Mark each item as you verify it:</p>
+        <ul class="checklist">
+            <li>Successfully signed in to Firebase account</li>
+            <li>Made a change that triggers saveData()</li>
+            <li>Waited at least 2 seconds for debounced Firestore write</li>
+            <li>Opened Firebase Console and navigated to Firestore Database</li>
+            <li>Found user document at /users/{uid}</li>
+            <li><span class="field-name">masterSections</span> field exists in Firestore document</li>
+            <li><span class="field-name">masterSectionOrder</span> field exists in Firestore document</li>
+            <li><span class="field-name">_dataVersion</span> field exists and equals 1</li>
+            <li><span class="field-name">budgetMonths</span> field exists in Firestore document</li>
+            <li>budgetMonths contains at least one month with correct structure (activeSections, sectionOrder, budgets)</li>
+            <li>Nested budgets structure is correct (section → category → item → {amount})</li>
+            <li>No console errors during sync process</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🔄 Testing Firestore → App Sync (Bonus Test)</h2>
+        <p>To verify that data can be read FROM Firestore back into the app:</p>
+
+        <div class="step">
+            <span class="step-number">Test 1:</span> Clear Local Storage and Reload
+            <ol>
+                <li>Open browser DevTools → Application → Local Storage</li>
+                <li>Delete all localStorage items (or just the "budgetAppData" key)</li>
+                <li>Reload the page (F5)</li>
+                <li>App should automatically load data from Firestore</li>
+                <li>Check console for "Loaded from Firestore" or similar message</li>
+            </ol>
+
+            <div class="code">// Verify in console after reload:
+console.log('masterSections:', masterSections);
+console.log('masterSectionOrder:', masterSectionOrder);
+console.log('_dataVersion:', _dataVersion);
+console.log('budgetMonths:', budgetMonths);
+            </div>
+
+            <div class="success">
+                <strong>✅ Expected:</strong> All new fields are populated from Firestore and app functions normally.
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>❌ Troubleshooting</h2>
+
+        <h3>Issue: New fields not appearing in Firestore</h3>
+        <ul>
+            <li><strong>Check:</strong> Are you signed in? Console should show your user email.</li>
+            <li><strong>Check:</strong> Did you wait 2+ seconds? Firestore write is debounced by 1.5 seconds.</li>
+            <li><strong>Check:</strong> Console errors? Look for "Firestore write:" warnings.</li>
+            <li><strong>Check:</strong> Firestore rules? Ensure /users/{uid} is writable by authenticated user.</li>
+        </ul>
+
+        <h3>Issue: Fields exist but structure is wrong</h3>
+        <ul>
+            <li><strong>Check:</strong> Did migration run? Console should show "Budget data migration to v1 complete".</li>
+            <li><strong>Check:</strong> _dataVersion = 1? If 0, migration didn't complete.</li>
+            <li><strong>Check:</strong> budgetMonths structure? Each month should have activeSections, sectionOrder, budgets.</li>
+        </ul>
+
+        <h3>Issue: App doesn't load data from Firestore</h3>
+        <ul>
+            <li><strong>Check:</strong> Console for "Firestore read failed" warnings.</li>
+            <li><strong>Check:</strong> Firestore rules allow read access to /users/{uid}.</li>
+            <li><strong>Check:</strong> Network tab - is Firestore request completing?</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>📝 Test Results Documentation</h2>
+        <p>After completing the manual verification, document your results:</p>
+
+        <div class="code">// Copy this template and fill in your results:
+
+FIRESTORE SYNC VERIFICATION RESULTS
+====================================
+
+Date: [YYYY-MM-DD]
+Tester: [Your Name]
+Firebase Project: [Project ID]
+
+Sign-In Test:
+[ ] ✅ Successfully signed in
+[ ] ❌ Sign-in failed
+User UID: [uid]
+
+Firestore Write Test:
+[ ] ✅ masterSections exists in Firestore
+[ ] ✅ masterSectionOrder exists in Firestore
+[ ] ✅ _dataVersion exists and equals 1
+[ ] ✅ budgetMonths exists in Firestore
+
+budgetMonths Structure Test:
+[ ] ✅ At least one month present (e.g., 2026-03)
+[ ] ✅ Month has activeSections object
+[ ] ✅ Month has sectionOrder array
+[ ] ✅ Month has budgets nested object
+[ ] ✅ Budgets structure is section → category → item → {amount}
+
+Firestore Read Test:
+[ ] ✅ Cleared localStorage
+[ ] ✅ App loaded data from Firestore on reload
+[ ] ✅ All new fields populated correctly
+
+Console Errors:
+[ ] ✅ No console errors during sync
+[ ] ❌ Errors found (describe below)
+
+Overall Result:
+[ ] ✅ ALL TESTS PASSED - Firestore sync working correctly
+[ ] ❌ TESTS FAILED - Issues found (describe below)
+
+Notes:
+[Any additional observations or issues]
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Acceptance Criteria</h2>
+        <p>This subtask is complete when:</p>
+        <ol>
+            <li>User document exists in Firestore at <span class="field-name">/users/{uid}</span></li>
+            <li><span class="field-name">masterSections</span> field exists in Firestore document with correct structure</li>
+            <li><span class="field-name">masterSectionOrder</span> field exists in Firestore document as array</li>
+            <li><span class="field-name">_dataVersion</span> field exists and equals 1</li>
+            <li><span class="field-name">budgetMonths</span> field exists with correct per-month structure</li>
+            <li>Each month in budgetMonths has <span class="field-name">activeSections</span>, <span class="field-name">sectionOrder</span>, and <span class="field-name">budgets</span></li>
+            <li>Nested budgets structure is correct (section → category → item → {amount})</li>
+            <li>App can load data from Firestore after clearing localStorage</li>
+            <li>No console errors during Firestore sync operations</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <div class="success">
+            <h3>✅ When All Tests Pass</h3>
+            <p>Once you've verified all items in the checklist above, you can mark this subtask as <strong>COMPLETED</strong> in the implementation_plan.json file.</p>
+        </div>
+    </div>
+</body>
+</html>
