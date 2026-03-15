@@ -335,13 +335,19 @@ function renderBudgets() {
             });
         });
 
-        // Add item row
+        // Add category row with dropdown
         const secEscQ = sectionName.replace(/"/g,'&quot;');
-        html += `<button class="add-budget-item-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all"
-                     data-main="${secEscQ}">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="text-xs">Add item</span>
-        </button>`;
+        const secEscS = sectionName.replace(/'/g,"\\'");
+        const inactiveCategories = (masterSections[sectionName] || []).filter(c => !categories.includes(c));
+        if (inactiveCategories.length > 0) {
+            html += `<button id="add-cat-btn-${sectionName.replace(/\s+/g,'-')}" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-dashed border-zinc-800 hover:border-emerald-500/40 text-zinc-600 hover:text-zinc-400 active:scale-[.98] transition-all"
+                         onclick="_toggleAddCategoryDropdown('${secEscS}')">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                <span class="text-xs">Add category</span>
+                <svg id="add-cat-chevron-${sectionName.replace(/\s+/g,'-')}" class="w-3.5 h-3.5 shrink-0 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="add-cat-dropdown-${sectionName.replace(/\s+/g,'-')}" class="hidden mt-2 bg-zinc-900 rounded-2xl p-2 space-y-1"></div>`;
+        }
 
         html += `</div></div>`;
     });
@@ -412,6 +418,53 @@ function _toggleAddSectionDropdown() {
 
 function _addSectionFromDropdown(sectionName) {
     addSectionToBudget(selectedBudgetMonth, sectionName);
+    saveData();
+    renderBudgets();
+}
+
+/* ── Add Category Dropdown ─────────────────────── */
+function _toggleAddCategoryDropdown(sectionName) {
+    const dropdownId = 'add-cat-dropdown-' + sectionName.replace(/\s+/g,'-');
+    const chevronId = 'add-cat-chevron-' + sectionName.replace(/\s+/g,'-');
+    const dropdown = document.getElementById(dropdownId);
+    const chevron = document.getElementById(chevronId);
+    if (!dropdown) return;
+
+    const isHidden = dropdown.classList.contains('hidden');
+
+    if (isHidden) {
+        // Build and show dropdown
+        const currentBudget = budgetMonths[selectedBudgetMonth] || {};
+        const activeSections = currentBudget.activeSections || {};
+        const activeCategories = activeSections[sectionName] || [];
+        const inactiveCategories = (masterSections[sectionName] || []).filter(c => !activeCategories.includes(c));
+
+        let dropdownHTML = '';
+        inactiveCategories.forEach(categoryName => {
+            const catEsc = categoryName.replace(/'/g, "\\'");
+            const secEsc = sectionName.replace(/'/g, "\\'");
+            // Get icon from first item in this category (if exists in itemIcons)
+            const firstItemKey = categoryName + ':' + categoryName;
+            const icon = itemIcons[firstItemKey] || defaultItemIcons[firstItemKey] || '📁';
+            dropdownHTML += `<button onclick="_addCategoryFromDropdown('${secEsc}','${catEsc}')"
+                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-zinc-800 text-zinc-300 hover:text-white text-left transition-colors">
+                <span class="text-lg">${icon}</span>
+                <span class="text-sm font-medium">${categoryName}</span>
+            </button>`;
+        });
+
+        dropdown.innerHTML = dropdownHTML;
+        dropdown.classList.remove('hidden');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+    } else {
+        // Hide dropdown
+        dropdown.classList.add('hidden');
+        if (chevron) chevron.style.transform = '';
+    }
+}
+
+function _addCategoryFromDropdown(sectionName, categoryName) {
+    addCategoryToBudget(selectedBudgetMonth, sectionName, categoryName);
     saveData();
     renderBudgets();
 }
